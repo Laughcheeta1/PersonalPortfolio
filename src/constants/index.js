@@ -149,8 +149,8 @@ export const projects = [
         iconUrl: game,
         theme: 'btn-back-red',
         name: 'Monteria Simulator',
-        description: 'This is action game made with the greefoot game engine, that means, developed in java.\n' + 
-            'It is a quick reaction game, where you have to survive to continual hordes of enemies for the longest' + 
+        description: 'This is action game made with the greenfoot game engine, that means, developed in java.\n' + 
+            'It is a quick reaction game, where you have to survive to continual hordes of enemies for the longest ' + 
             'time possible. You can choose between two characters.',
         link: 'https://github.com/Laughcheeta1/MonteriaSimulator',
     },
@@ -185,7 +185,7 @@ export const projects = [
         iconUrl: tictactoe,
         theme: 'btn-back-black',
         name: 'TicTacToe vs AI',
-        description: 'This is a simple command line Ai vs Player tictac toe game made with the minimax algorithm.',
+        description: 'This is a simple command line Ai vs Player tic tac toe game made with the minimax algorithm.',
         link: 'https://github.com/Laughcheeta1/MinimaxTICTACTOE',
     },
     {
