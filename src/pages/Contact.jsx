@@ -8,6 +8,10 @@ import Loader from './../components/Loader';
 
 import useAlert from '../hooks/useAlert';
 
+import { Link } from 'react-router-dom';
+import linkedin from './../assets/icons/linkedin.svg';
+
+
 const Contact = () => {
     const formRef = useRef(null);
 
@@ -56,52 +60,71 @@ const Contact = () => {
         setRotate(false);
         setMakeAnimation(true);
 
-        emailjs.send(
-            import.meta.env.VITE_EMAILJS_SERVICEID,
-            import.meta.env.VITE_EMAILJS_TEMPLATEID,
-            {
-                from_name: form.name,
-                to_name: "Santiago",
-                from_email: form.email,
-                to_email: import.meta.env.VITE_MY_EMAIL,
-                message: form.message
-            },
-            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
-        ).then(() => {
+        // emailjs.send(
+        //     import.meta.env.VITE_EMAILJS_SERVICEID,
+        //     import.meta.env.VITE_EMAILJS_TEMPLATEID,
+        //     {
+        //         from_name: form.name,
+        //         to_name: "Santiago",
+        //         from_email: form.email,
+        //         to_email: import.meta.env.VITE_MY_EMAIL,
+        //         message: form.message
+        //     },
+        //     import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        // ).then(() => {
+        //     setIsLoading(false);
+
+        //     showAlert({
+        //         'show': true,
+        //         'text': 'Message Sent Successfully!',
+        //         'type': 'success'
+        //     })
+
+        //     setForm({
+        //         name: '',
+        //         email: '',
+        //         message: ''
+        //     });
+
+        //     setTimeout(() => {
+        //         hideAlert();
+
+        //         setStopAnimation(true);
+        //     }, 2000);
+
+        // }).catch((error) => {
+        //     setIsLoading(false);
+        //     console.log(error);
+
+        //     showAlert({
+        //         'show': true,
+        //         'text': 'There was a problem sending the message :(',
+        //         'type': 'danger'
+        //     });
+
+        //     setTimeout(() => {
+        //         hideAlert();
+        //     }, 3000);
+        // })
+
+        showAlert({
+            'show': true,
+            'text': 'Message Sent Successfully!',
+            'type': 'success'
+        });
+
+        setForm({
+            name: '',
+            email: '',
+            message: ''
+        });
+
+        setTimeout(() => {
+            hideAlert();
+
+            setStopAnimation(true);
             setIsLoading(false);
-
-            showAlert({
-                'show': true,
-                'text': 'Message Sent Successfully!',
-                'type': 'success'
-            })
-
-            setForm({
-                name: '',
-                email: '',
-                message: ''
-            });
-
-            setTimeout(() => {
-                hideAlert();
-
-                setStopAnimation(true);
-            }, 2000);
-
-        }).catch((error) => {
-            setIsLoading(false);
-            console.log(error);
-
-            showAlert({
-                'show': true,
-                'text': 'There was a problem sending the message :(',
-                'type': 'danger'
-            });
-
-            setTimeout(() => {
-                hideAlert();
-            }, 3000);
-        })
+        }, 2000);
     };
 
 
@@ -111,6 +134,26 @@ const Contact = () => {
 
             <div className='flex-1 min-w-[50%] flex flex-col'>
                 <h1 className='head-text'>Contact me</h1>
+
+                <p>
+                    This will not send me a message, even thought it will say it did. 
+                    I did this on porpuse to show how it should play out.
+                    <br/>
+                    I disabled it because since I have this deployed on gihub pages, to be able to use the 
+                    email service, I would have to expose the credentials for all people to see.
+                    <br/>
+                    <br/>
+                    But you can still contact me directly in 
+                    <Link 
+                        className={'block-container w-20 h-20 btn-front rounded-xl flex justify-center items-center'}
+                        to={'https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270/'}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                    >
+
+                        <img src={linkedin} />
+                    </Link>
+                </p>
 
                 <form
                     className='w-full flex flex-col gap-7 mt-14'
