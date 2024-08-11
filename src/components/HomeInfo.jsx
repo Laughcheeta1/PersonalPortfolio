@@ -16,7 +16,7 @@ const renderContent = {
         neo-brutalism-white py-4 px-8 text-black mx-5'>
             Hi, I am <span className='font-semibold'>Santiago</span>! 🤙
             <br/><br/>
-            A software engineer from 🎊<span
+            A Software Engineering Student from 🎊<span
                 className='text-yellow-400'>Colo</span><span
                 className='text-blue-700'>mb</span><span
                 className='text-red-600'>ia</span>🎊
