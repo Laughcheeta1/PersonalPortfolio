@@ -59,13 +59,13 @@ const Hand = ({ isRotating, setIsRotating, setCurrentStage, ...props}) => {
             if (!isRotating)
                 setIsRotating(true);
 
-            handRef.current.rotation.y += 0.05 * Math.PI;
+            handRef.current.rotation.y += 0.01 * Math.PI;
         }
         else if (e.key === 'ArrowRight') {
             if (!isRotating)
                 setIsRotating(true);
 
-            handRef.current.rotation.y -= 0.05 * Math.PI;
+            handRef.current.rotation.y -= 0.01 * Math.PI;
         }
     }
 
