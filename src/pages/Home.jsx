@@ -1,13 +1,13 @@
 import { Suspense, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import Loader from '../components/Loader';
+import Loader from '../components/Loader.jsx';
 
 import HomeInfo from '../components/HomeInfo.jsx';
 import Hand from '../models/Hand.jsx';
 // import Sky from '../models/Sky.tsx';
 // TODO: import an sky that works
-import SolarProbe from '../models/SolarProbe.js';
-import SpaceShip from '../models/SpaceShip.js';
+import SolarProbe from '../models/SolarProbe.jsx';
+import SpaceShip from '../models/SpaceShip.jsx';
 
 import { Sky, useHelper } from '@react-three/drei';
 import { PointLightHelper } from 'three';
@@ -19,9 +19,9 @@ const Home = () => {
     const [currentStage, setCurrentStage] = useState('');
     
     
-    const adjustHandForScreenSize = (): [number[], number[], number[]] => {
-        let screenScale: number[];
-        let screenPosition: number[] = [0, -1, 0];
+    const adjustHandForScreenSize = () => {
+        let screenScale;
+        let screenPosition = [0, -1, 0];
         let rotation = [0, 6, 0];
         
         if (window.innerWidth < 768) {
@@ -33,8 +33,8 @@ const Home = () => {
         return [screenScale, screenPosition, rotation];
     }
     
-    const adjustProbeForScreenSize = (): [number[], number[]] => {
-        let screenScale: number[], screenPosition: number[];
+    const adjustProbeForScreenSize = () => {
+        let screenScale, screenPosition;
         
         if (window.innerWidth < 768) {
             screenScale = [0.7, 0.7, 0.9];

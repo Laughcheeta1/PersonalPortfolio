@@ -1,6 +1,6 @@
 import {NavLink} from "react-router-dom";
 
-const activeProperties: string = "text-blue-500 text-shadow-yellow";
+const activeProperties = "text-blue-500 text-shadow-yellow";
 
 const Navbar = () => {
     return (

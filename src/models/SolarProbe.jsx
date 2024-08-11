@@ -1,5 +1,3 @@
-import React from 'react'
-
 import solarProbeScene from '../assets/3d/parker_solar_probe.glb'
 import { useGLTF } from '@react-three/drei'
 

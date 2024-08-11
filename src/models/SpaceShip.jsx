@@ -17,14 +17,14 @@ const SpaceShip = () => {
     const direction = useRef(-1);
 
     // This is the speed of movement in the x axis
-    const movement: number = 0.03;
+    const movement = 0.03;
 
     // These are the radious of the elipse
-    const a: number = 5;
-    const b: number = 3;
-    const c: number = 2;
+    const a = 5;
+    const b = 3;
+    const c = 2;
     
-    const getX = (): number => {
+    const getX = () => {
         if (xPos.current >= a || xPos.current <= -a)
             direction.current *= -1;  // Change the current
 
@@ -32,13 +32,13 @@ const SpaceShip = () => {
         return xPos.current;
     }
 
-    const getY = (): number => {
+    const getY = () => {
         // y formula for a 2d elipse (z = 0)
         yPos.current = Math.sqrt(1 - (xPos.current / a) ** 2) * b * direction.current;
         return yPos.current;
     };
 
-    const getZ = (): number => {
+    const getZ = () => {
         const value = 1 - (xPos.current / a) ** 2 - (yPos.current / b) ** 2;
         zPos.current = value >= 0 ? Math.sqrt(value) * c * direction.current : 0;
         return zPos.current;
