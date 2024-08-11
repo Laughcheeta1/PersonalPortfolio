@@ -99,10 +99,10 @@ const Hand = ({ isRotating, setIsRotating, setCurrentStage, ...props}) => {
                 case normalizedRotation >= 5.45 && normalizedRotation <= 5.85:
                 setCurrentStage(1);
                 break;
-                case normalizedRotation >= 0.85 && normalizedRotation <= 1.3:
+                case normalizedRotation >= 3.5 && normalizedRotation <= 4:
                 setCurrentStage(3);
                 break;
-                case normalizedRotation >= 2.4 && normalizedRotation <= 2.6:
+                case normalizedRotation >= 2.5 && normalizedRotation <= 3:
                 setCurrentStage(4);
                 break;
                 case normalizedRotation >= 4.25 && normalizedRotation <= 4.75:
