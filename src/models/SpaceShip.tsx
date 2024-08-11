@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import spaceShipScene from '../assets/3d/pelican.glb';
 import { useGLTF } from '@react-three/drei';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 
 const SpaceShip = () => {

@@ -24,16 +24,24 @@ const renderContent = {
     ),
     2: (
         <InfoBox 
-            text={"This is the second text, goes to About"}
-            link={"/About"}
+            text={"I love solving problems and imagining new ideas"}
+            link={"/about"}
             btnText={"Know me more"}
         />
     ),
     3: (
-        <h1>3</h1>
+        <InfoBox 
+            text={"I love doing projects, and have done quite a lot of them"}
+            link={"/projects"}
+            btnText={"Take a look at it"}
+        />
     ),
     4: (
-        <h1>4</h1>
+        <InfoBox 
+            text={"Have a problem you wanna solve or project you want me on?"}
+            link={"/contact"}
+            btnText={"Contact me!"}
+        />
     ),
 };
 
