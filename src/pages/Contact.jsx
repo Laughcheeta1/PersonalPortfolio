@@ -34,6 +34,8 @@ const Contact = () => {
         setTimeout(() => {
             setStopAnimation(true);
         }, 2000);
+
+        console.log()
     };
 
     const handleChange = (e) => {
@@ -55,16 +57,16 @@ const Contact = () => {
         setMakeAnimation(true);
 
         emailjs.send(
-            import.meta.env.EMAILJS_SERVICEID,
-            import.meta.env.EMAILJS_TEMPLATEID,
+            import.meta.env.VITE_EMAILJS_SERVICEID,
+            import.meta.env.VITE_EMAILJS_TEMPLATEID,
             {
                 from_name: form.name,
                 to_name: "Santiago",
                 from_email: form.email,
-                to_email: import.meta.env.MY_EMAIL,
+                to_email: import.meta.env.VITE_MY_EMAIL,
                 message: form.message
             },
-            import.meta.env.EMAILJS_PUBLIC_KEY
+            import.meta.env.VITE_EMAILJS_PUBLIC_KEY
         ).then(() => {
             setIsLoading(false);
 
@@ -74,14 +76,14 @@ const Contact = () => {
                 'type': 'success'
             })
 
+            setForm({
+                name: '',
+                email: '',
+                message: ''
+            });
+
             setTimeout(() => {
                 hideAlert();
-
-                setForm({
-                    name: '',
-                    email: '',
-                    message: ''
-                });
 
                 setStopAnimation(true);
             }, 2000);

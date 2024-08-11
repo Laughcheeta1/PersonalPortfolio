@@ -1,6 +1,7 @@
 import { projects } from './../constants';
 import { Link } from 'react-router-dom';
 import CTA from './../components/CTA';
+import { Suspense } from 'react';
 
 const Projects = () => {
     return (
@@ -11,9 +12,9 @@ const Projects = () => {
 
             <div className='mt-5 flex flex-col gap-3 text-slate-500'>
                 <p>
-                    I have done a lot of projects, but these are the ones I personally feel the proudest about
-
-                    Almost every one of them are open source, so feel free to check the repository out
+                    I have done and leaded a lot of projects, but these are the ones I personally feel the proudest about.
+                    <br/>
+                    Almost every one of them have an open repository, so feel free to check the repository out.
                 </p>
             </div>
 
@@ -38,14 +39,14 @@ const Projects = () => {
                             <p className='mt-2 text-slate-500'>
                                 {project.description}
                             </p>
-                            <div className='mt-5 flex items-center gap-2 font-poppins'>
+                            {project.link && (<div className='mt-5 flex items-center gap-2 font-poppins'>
                                 <Link
                                     to={project.link}
                                     target='_blank'
                                     rel='noopener noreferrer'
                                     className='font-semibold text-blue-600'
                                 >The repository of the project</Link>
-                            </div>
+                            </div>)}
                         </div>
                     </div>
                 ))}

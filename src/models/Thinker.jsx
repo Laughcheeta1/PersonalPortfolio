@@ -17,7 +17,6 @@ const Thinker = ({ rotate, makeAnimation, setMakeAnimation, stopAnimation, setSt
 
         if (makeAnimation) 
         {
-            console.log("entered the make animation")
             if (!startedAnimation) {
                 thinkerRef.current.rotation.y = 0;  // Set the animation to the og place
                 startedAnimation.current = true;
