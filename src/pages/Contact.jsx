@@ -139,11 +139,11 @@ const Contact = () => {
                     This will not send me a message, even thought it will say it did. 
                     I did this on porpuse to show how it should play out.
                     <br/>
-                    I disabled it because since I have this deployed on gihub pages, to be able to use the 
-                    email service, I would have to expose the credentials for all people to see.
+                    I disabled it because, since I have this deployed on github pages, to be able to use the 
+                    email service I would have to expose the credentials for all people to see.
                     <br/>
                     <br/>
-                    But you can still contact me directly in 
+                    Still you can contact me directly in 
                     <Link 
                         className={'block-container w-20 h-20 btn-front rounded-xl flex justify-center items-center'}
                         to={'https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270/'}

@@ -192,7 +192,7 @@ export const projects = [
         iconUrl: route,
         theme: 'btn-back-pink',
         name: 'Route Optimization With A*',
-        description: 'This is a file that that finds (Or tries to find) the optimal route from one point to another in a ' +
+        description: 'This is a file that that finds (or tries to find) the optimal route from one point to another in a ' +
             'a real map, basically like a Waze, but the algorithm can be used for things like favouring right turns, or other parameters. ' + 
             'It uses the A* algorithm, and OSMNX for the map data.',
         link: 'https://github.com/Laughcheeta1/MinimaxTICTACTOE',
