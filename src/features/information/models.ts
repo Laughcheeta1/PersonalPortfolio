@@ -19,13 +19,25 @@ export interface WorkRole {
   skills: SkillId[];
 }
 
-export interface WorkExperienceEntry {
+export interface CompanyWorkExperienceEntry {
   companyName: string;
   roles: WorkRole[];
 }
 
+export interface EntrepreneurialExperienceEntry {
+  startupName: string;
+  description: string;
+}
+
+export interface IndependentWorkExperienceEntry {
+  name: string;
+  description: string;
+}
+
 export interface WorkExperience {
-  workExperiences: WorkExperienceEntry[];
+  workExperiences: CompanyWorkExperienceEntry[];
+  entrepreneurialExperiences: EntrepreneurialExperienceEntry[];
+  independentWorkExperiences: IndependentWorkExperienceEntry[];
 }
 
 // Education
@@ -62,7 +74,6 @@ export interface Project {
 
 export interface ProjectsDone {
   personalProjects: Project[];
-  workProjects: Project[];
 }
 
 // Personal Information
