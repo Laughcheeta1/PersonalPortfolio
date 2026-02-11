@@ -1,12 +1,8 @@
-import './App.css'
+import './App.css';
+import SpaceShowcase from './components/SpaceShowcase';
 
 function App() {
-
-  return (
-    <>
-      
-    </>
-  )
+  return <SpaceShowcase />;
 }
 
-export default App
+export default App;
