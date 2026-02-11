@@ -1,0 +1,19 @@
+{
+  "universityEducations": [
+    {
+      "institution": "",
+      "degree": "",
+      "startDate": "",
+      "endDate": "",
+      "skills": []
+    }
+  ],
+  "courseEducations": [
+    {
+      "name": "",
+      "description": "",
+      "completionDate": "",
+      "skills": []
+    }
+  ]
+}
