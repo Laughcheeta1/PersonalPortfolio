@@ -6,13 +6,22 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 import backgroundExrUrl from '../../assets/exr/sunflowers_puresky_1k.exr';
+import type {
+  InformationItemSelection,
+  InformationSceneCategory,
+  InformationSceneItem,
+  SceneNavigationTarget,
+} from '../information/models';
+import { resolveNavigationTarget } from '../information/navigation';
 import type { SpaceModelItem } from './spaceModels';
 import { damp, wrapToPi } from './math';
 
 type RuntimeOptions = {
   container: HTMLDivElement;
   models: SpaceModelItem[];
+  categories: InformationSceneCategory[];
   onSelectionChange: (index: number | null) => void;
+  onInfoItemSelectionChange: (selection: InformationItemSelection | null) => void;
 };
 
 type FocusTarget = {
@@ -26,12 +35,25 @@ type LoadedModel = {
   meshes: THREE.Mesh[];
 };
 
+type InfoCardMesh = {
+  mesh: THREE.Mesh;
+  categoryId: InformationSceneCategory['id'];
+  subcategoryId: string;
+  item: InformationSceneItem;
+  itemIndex: number;
+  itemCount: number;
+  rowRadius: number;
+  rowOffsetY: number;
+};
+
 const TWO_PI = Math.PI * 2;
 
 export class SpaceSceneRuntime {
   private readonly container: HTMLDivElement;
   private readonly models: SpaceModelItem[];
+  private readonly categories: InformationSceneCategory[];
   private readonly onSelectionChange: (index: number | null) => void;
+  private readonly onInfoItemSelectionChange: (selection: InformationItemSelection | null) => void;
 
   private readonly scene = new THREE.Scene();
   private readonly camera: THREE.PerspectiveCamera;
@@ -42,6 +64,7 @@ export class SpaceSceneRuntime {
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointerNdc = new THREE.Vector2();
   private readonly ringGroup = new THREE.Group();
+  private readonly infoCardsGroup = new THREE.Group();
   private readonly loadedModels: LoadedModel[] = [];
 
   private readonly loader = new GLTFLoader();
@@ -53,6 +76,8 @@ export class SpaceSceneRuntime {
   private environmentTexture: THREE.Texture | null = null;
 
   private selectedIndex: number | null = null;
+  private infoCards: InfoCardMesh[] = [];
+  private pendingNavigationTarget: SceneNavigationTarget | null = null;
 
   private autoYaw = 0;
   private userYawTarget = 0;
@@ -88,13 +113,10 @@ export class SpaceSceneRuntime {
   constructor(options: RuntimeOptions) {
     this.container = options.container;
     this.models = options.models;
+    this.categories = options.categories;
     this.onSelectionChange = options.onSelectionChange;
+    this.onInfoItemSelectionChange = options.onInfoItemSelectionChange;
     this.angleStep = TWO_PI / this.models.length;
-
-    // Background is intentionally omitted so it is easy to add later.
-    // Example future options:
-    // this.scene.background = new THREE.Color('#05070f');
-    // this.scene.add(customSkyMesh);
 
     this.camera = new THREE.PerspectiveCamera(
       50,
@@ -125,6 +147,7 @@ export class SpaceSceneRuntime {
 
     this.setupLights();
     this.scene.add(this.ringGroup);
+    this.scene.add(this.infoCardsGroup);
 
     this.bindEvents();
   }
@@ -154,6 +177,8 @@ export class SpaceSceneRuntime {
       }
     });
 
+    this.clearInfoCards();
+
     this.composer.dispose();
 
     if (this.environmentTexture) {
@@ -173,9 +198,32 @@ export class SpaceSceneRuntime {
       return;
     }
 
+    if (this.selectedIndex === index) {
+      return;
+    }
+
     this.selectedIndex = index;
     this.updateModelHighlight();
+    this.rebuildInfoCards();
+
     this.onSelectionChange(index);
+    this.onInfoItemSelectionChange(null);
+  }
+
+  navigateTo(target: SceneNavigationTarget): void {
+    const normalized = resolveNavigationTarget(this.categories, target);
+    if (!normalized) {
+      return;
+    }
+
+    this.pendingNavigationTarget = normalized;
+    const category = this.categories.find((entry) => entry.id === normalized.categoryId);
+    if (!category) {
+      return;
+    }
+
+    this.setSelection(category.modelIndex);
+    this.applyPendingNavigationTarget();
   }
 
   private setupLights(): void {
@@ -292,6 +340,173 @@ export class SpaceSceneRuntime {
     this.bloomPass.strength = this.selectedIndex === null ? 0.22 : 0.34;
   }
 
+  private rebuildInfoCards(): void {
+    this.clearInfoCards();
+
+    const category = this.getSelectedCategory();
+    if (!category || category.subcategories.length === 0) {
+      this.applyPendingNavigationTarget();
+      return;
+    }
+
+    const rowSpacing = 1.35;
+    const minRadius = 2.5;
+
+    category.subcategories.forEach((subcategory, rowIndex) => {
+      if (subcategory.items.length === 0) {
+        return;
+      }
+
+      const rowRadius = minRadius + rowIndex * 1.4;
+      const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
+
+      subcategory.items.forEach((item, itemIndex) => {
+        const geometry = new THREE.PlaneGeometry(2.2, 0.92);
+        const texture = this.createCardTexture(item.title, subcategory.label);
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+          opacity: 0.92,
+          depthWrite: false,
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.userData.infoCard = true;
+        mesh.userData.infoCardIndex = this.infoCards.length;
+
+        this.infoCardsGroup.add(mesh);
+        this.infoCards.push({
+          mesh,
+          categoryId: category.id,
+          subcategoryId: subcategory.id,
+          item,
+          itemIndex,
+          itemCount: subcategory.items.length,
+          rowRadius,
+          rowOffsetY,
+        });
+      });
+    });
+
+    this.applyPendingNavigationTarget();
+  }
+
+  private clearInfoCards(): void {
+    for (const card of this.infoCards) {
+      const material = card.mesh.material;
+      if (material instanceof THREE.MeshBasicMaterial && material.map) {
+        material.map.dispose();
+      }
+      card.mesh.geometry.dispose();
+      if (Array.isArray(material)) {
+        for (const mat of material) {
+          mat.dispose();
+        }
+      } else {
+        material.dispose();
+      }
+
+      this.infoCardsGroup.remove(card.mesh);
+    }
+
+    this.infoCards = [];
+  }
+
+  private getSelectedCategory(): InformationSceneCategory | null {
+    if (this.selectedIndex === null) {
+      return null;
+    }
+
+    return this.categories.find((entry) => entry.modelIndex === this.selectedIndex) ?? null;
+  }
+
+  private createCardTexture(title: string, subtitle: string): THREE.CanvasTexture {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 384;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return new THREE.CanvasTexture(canvas);
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = 'rgba(9, 23, 42, 0.85)';
+    ctx.strokeStyle = 'rgba(126, 209, 255, 0.95)';
+    ctx.lineWidth = 6;
+
+    const padding = 22;
+    const radius = 26;
+    const width = canvas.width - padding * 2;
+    const height = canvas.height - padding * 2;
+
+    ctx.beginPath();
+    ctx.moveTo(padding + radius, padding);
+    ctx.lineTo(padding + width - radius, padding);
+    ctx.quadraticCurveTo(padding + width, padding, padding + width, padding + radius);
+    ctx.lineTo(padding + width, padding + height - radius);
+    ctx.quadraticCurveTo(padding + width, padding + height, padding + width - radius, padding + height);
+    ctx.lineTo(padding + radius, padding + height);
+    ctx.quadraticCurveTo(padding, padding + height, padding, padding + height - radius);
+    ctx.lineTo(padding, padding + radius);
+    ctx.quadraticCurveTo(padding, padding, padding + radius, padding);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = '#96d7ff';
+    ctx.font = '600 46px Inter, sans-serif';
+    ctx.fillText(subtitle, 64, 120);
+
+    ctx.fillStyle = '#eaf7ff';
+    ctx.font = '700 64px Inter, sans-serif';
+    ctx.fillText(title, 64, 220);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
+  }
+
+  private applyPendingNavigationTarget(): void {
+    const target = this.pendingNavigationTarget;
+    if (!target) {
+      return;
+    }
+
+    const category = this.getSelectedCategory();
+    if (!category || category.id !== target.categoryId) {
+      return;
+    }
+
+    if (!target.itemId) {
+      this.pendingNavigationTarget = null;
+      return;
+    }
+
+    const card = this.infoCards.find((entry) => {
+      const itemMatches = entry.item.id === target.itemId || entry.item.slug === target.itemId;
+      const subcategoryMatches =
+        target.subcategoryId === undefined || target.subcategoryId === entry.subcategoryId;
+      return itemMatches && subcategoryMatches;
+    });
+
+    if (card) {
+      this.openInfoCard(card);
+    }
+
+    this.pendingNavigationTarget = null;
+  }
+
+  private openInfoCard(card: InfoCardMesh): void {
+    this.onInfoItemSelectionChange({
+      categoryId: card.categoryId,
+      subcategoryId: card.subcategoryId,
+      item: card.item,
+    });
+  }
+
   private animate = (): void => {
     if (this.disposed) {
       return;
@@ -299,7 +514,9 @@ export class SpaceSceneRuntime {
 
     const dt = Math.min(this.clock.getDelta(), 0.06);
 
-    this.autoYaw += this.autoRotateSpeed * dt;
+    if (this.selectedIndex === null) {
+      this.autoYaw += this.autoRotateSpeed * dt;
+    }
 
     if (!this.dragging && this.selectedIndex === null) {
       const combinedYaw = this.autoYaw + this.userYawTarget;
@@ -335,10 +552,38 @@ export class SpaceSceneRuntime {
     this.camera.position.lerp(this.desiredCameraPosition, 0.08);
     this.camera.lookAt(this.cameraLookAt);
 
+    this.updateInfoCardsLayout();
+
     this.composer.render();
 
     this.animationId = requestAnimationFrame(this.animate);
   };
+
+  private updateInfoCardsLayout(): void {
+    if (this.selectedIndex === null || this.infoCards.length === 0) {
+      return;
+    }
+
+    const selectedModel = this.loadedModels[this.selectedIndex];
+    if (!selectedModel) {
+      return;
+    }
+
+    const modelPosition = selectedModel.holder.position.clone();
+    const offsetDirection = modelPosition.clone().sub(this.camera.position).normalize();
+    const anchorPosition = modelPosition.add(offsetDirection.multiplyScalar(6.1));
+
+    this.infoCardsGroup.position.lerp(anchorPosition, 0.16);
+    this.infoCardsGroup.lookAt(this.camera.position);
+
+    for (const card of this.infoCards) {
+      const spread = card.itemCount <= 1 ? 0 : (card.itemIndex / card.itemCount) * TWO_PI;
+      const angle = spread + this.userYawCurrent * 0.25;
+      const x = Math.cos(angle) * card.rowRadius;
+      const z = Math.sin(angle) * card.rowRadius * 0.32;
+      card.mesh.position.set(x, card.rowOffsetY, z);
+    }
+  }
 
   private getFocusTarget(): FocusTarget | null {
     if (this.selectedIndex === null) {
@@ -398,30 +643,38 @@ export class SpaceSceneRuntime {
     this.pointerNdc.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
-    const intersections = this.raycaster.intersectObjects(this.ringGroup.children, true);
+    const intersections = this.raycaster.intersectObjects(
+      [this.infoCardsGroup, this.ringGroup],
+      true,
+    );
 
     if (intersections.length === 0) {
       this.setSelection(null);
       return;
     }
 
-    let modelIndex: number | null = null;
     for (const hit of intersections) {
       let current: THREE.Object3D | null = hit.object;
       while (current) {
-        if (typeof current.userData.modelIndex === 'number') {
-          modelIndex = current.userData.modelIndex as number;
-          break;
+        if (current.userData.infoCard === true) {
+          const index = current.userData.infoCardIndex as number;
+          const card = this.infoCards[index];
+          if (card) {
+            this.openInfoCard(card);
+            return;
+          }
         }
-        current = current.parent;
-      }
 
-      if (modelIndex !== null) {
-        break;
+        if (typeof current.userData.modelIndex === 'number') {
+          this.setSelection(current.userData.modelIndex as number);
+          return;
+        }
+
+        current = current.parent;
       }
     }
 
-    this.setSelection(modelIndex);
+    this.setSelection(null);
   }
 
   private onPointerLeave(): void {
@@ -447,6 +700,8 @@ export class SpaceSceneRuntime {
 
     if (event.key === 'Escape') {
       this.setSelection(null);
+      this.onInfoItemSelectionChange(null);
+      return;
     }
   }
 

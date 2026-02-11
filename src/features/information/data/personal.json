@@ -1,15 +1,19 @@
 {
-  "headline": "",
-  "summary": "",
+  "headline": "Software Engineer Student building production-oriented systems",
+  "summary": "I enjoy building end-to-end products with strong architecture, practical UX, and maintainable code.",
   "availability": "open_to_offers",
-  "githubUrl": "",
-  "linkedinUrl": "",
+  "githubUrl": "https://github.com/",
+  "linkedinUrl": "https://linkedin.com/in/",
   "hobbies": [
     {
-      "name": "",
-      "description": "",
-      "skills": []
+      "id": "hobby-read-architecture",
+      "slug": "read-software-architecture",
+      "title": "Read software architecture",
+      "summary": "I study architecture patterns from real projects.",
+      "details": "I focus on maintainability and long-term design decisions.",
+      "skills": [1],
+      "links": {}
     }
   ],
-  "languagesSpoken": []
+  "languagesSpoken": ["Spanish", "English"]
 }

@@ -1,6 +1,23 @@
 {
   "1": {
     "id": 1,
-    "name": ""
+    "slug": "typescript",
+    "name": "TypeScript",
+    "category": "Frontend",
+    "summary": "Type-safe development for frontend and backend applications."
+  },
+  "2": {
+    "id": 2,
+    "slug": "react",
+    "name": "React",
+    "category": "Frontend",
+    "summary": "Component-driven UI development with modern tooling."
+  },
+  "3": {
+    "id": 3,
+    "slug": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "summary": "Server-side JavaScript for APIs and distributed systems."
   }
 }

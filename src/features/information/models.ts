@@ -1,59 +1,72 @@
 // Base primitives
 export type ISODateString = string;
 export type SkillId = number;
+export type CategoryId = 'work' | 'education' | 'projects' | 'honors' | 'skills' | 'personal';
+
+export interface LinkSet {
+  repoUrl?: string;
+  liveUrl?: string;
+  externalUrl?: string;
+}
+
+export interface BaseInformationEntry {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  details: string;
+  skills: SkillId[];
+  links?: LinkSet;
+}
 
 // General things
-export interface Achievement {
-  name: string;
-  description: string;
+export interface Achievement extends BaseInformationEntry {
   date?: ISODateString;
 }
 
 // Work
-export interface WorkRole {
-  title: string;
-  description: string;
-  achievements: Achievement[];
+export interface WorkRole extends BaseInformationEntry {
   startDate: ISODateString;
   endDate?: ISODateString;
-  skills: SkillId[];
+  achievements: Achievement[];
 }
 
-export interface CompanyWorkExperienceEntry {
+export interface CompanyWorkExperienceEntry extends BaseInformationEntry {
   companyName: string;
+  startDate: ISODateString;
+  endDate?: ISODateString;
   roles: WorkRole[];
 }
 
-export interface EntrepreneurialExperienceEntry {
-  startupName: string;
-  description: string;
+export interface EntrepreneurshipExperienceEntry extends BaseInformationEntry {
+  ventureName: string;
+  startDate: ISODateString;
+  endDate?: ISODateString;
 }
 
-export interface IndependentWorkExperienceEntry {
-  name: string;
-  description: string;
+export interface IndependentWorkExperienceEntry extends BaseInformationEntry {
+  clientOrProductName: string;
+  startDate: ISODateString;
+  endDate?: ISODateString;
 }
 
 export interface WorkExperience {
-  workExperiences: CompanyWorkExperienceEntry[];
-  entrepreneurialExperiences: EntrepreneurialExperienceEntry[];
-  independentWorkExperiences: IndependentWorkExperienceEntry[];
+  companies: CompanyWorkExperienceEntry[];
+  entrepreneurship: EntrepreneurshipExperienceEntry[];
+  independentWork: IndependentWorkExperienceEntry[];
 }
 
 // Education
-export interface UniversityEducation {
+export interface UniversityEducation extends BaseInformationEntry {
   institution: string;
   degree: string;
   startDate: ISODateString;
-  endDate: ISODateString;
-  skills: SkillId[];
+  endDate?: ISODateString;
 }
 
-export interface CourseEducation {
-  name: string;
-  description: string;
+export interface CourseEducation extends BaseInformationEntry {
+  provider: string;
   completionDate: ISODateString;
-  skills: SkillId[];
 }
 
 export interface Education {
@@ -62,18 +75,14 @@ export interface Education {
 }
 
 // Projects
-export interface Project {
-  name: string;
-  description: string;
+export interface Project extends BaseInformationEntry {
   architectureExplanation?: string;
-  repoUrl?: string;
-  liveUrl?: string;
   technologies: string[];
-  skills: SkillId[];
 }
 
 export interface ProjectsDone {
   personalProjects: Project[];
+  workProjects: Project[];
 }
 
 // Personal Information
@@ -83,11 +92,7 @@ export type AvailabilityStatus =
   | 'not_available'
   | 'student_open_to_internships';
 
-export interface Hobby {
-  name: string;
-  description: string;
-  skills: SkillId[];
-}
+export type Hobby = BaseInformationEntry;
 
 export interface PersonalInformation {
   headline: string;
@@ -102,7 +107,10 @@ export interface PersonalInformation {
 // Skills
 export interface Skill {
   id: SkillId;
+  slug: string;
   name: string;
+  category: string;
+  summary: string;
 }
 
 export type SkillsRepository = Record<SkillId, Skill>;
@@ -121,4 +129,40 @@ export interface ProfessionalProfile {
   projectsDone: ProjectsDone;
   honorsAndAwards: HonorsAndAwards;
   skillsRepository: SkillsRepository;
+}
+
+// Scene / navigation models
+export interface InformationSceneItem {
+  id: string;
+  slug: string;
+  title: string;
+  summary: string;
+  details: string;
+  skills: SkillId[];
+  links?: LinkSet;
+}
+
+export interface InformationSceneSubcategory {
+  id: string;
+  label: string;
+  items: InformationSceneItem[];
+}
+
+export interface InformationSceneCategory {
+  id: CategoryId;
+  label: string;
+  modelIndex: number;
+  subcategories: InformationSceneSubcategory[];
+}
+
+export interface SceneNavigationTarget {
+  categoryId: CategoryId;
+  subcategoryId?: string;
+  itemId?: string;
+}
+
+export interface InformationItemSelection {
+  categoryId: CategoryId;
+  subcategoryId: string;
+  item: InformationSceneItem;
 }
