@@ -40,9 +40,17 @@ type InfoCardMesh = {
   categoryId: InformationSceneCategory['id'];
   subcategoryId: string;
   item: InformationSceneItem;
+  ringIndex: number;
   angle: number;
+};
+
+type InfoRing = {
+  group: THREE.Group;
+  subcategoryId: string;
   rowRadius: number;
   rowOffsetY: number;
+  entrySide: -1 | 1;
+  introProgress: number;
 };
 
 const TWO_PI = Math.PI * 2;
@@ -76,6 +84,7 @@ export class SpaceSceneRuntime {
 
   private selectedIndex: number | null = null;
   private infoCards: InfoCardMesh[] = [];
+  private infoRings: InfoRing[] = [];
   private pendingNavigationTarget: SceneNavigationTarget | null = null;
 
   private autoYaw = 0;
@@ -358,6 +367,18 @@ export class SpaceSceneRuntime {
 
       const rowRadius = minRadius + rowIndex * 1.4;
       const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
+      const ringGroup = new THREE.Group();
+      this.infoCardsGroup.add(ringGroup);
+
+      const ringIndex = this.infoRings.length;
+      this.infoRings.push({
+        group: ringGroup,
+        subcategoryId: subcategory.id,
+        rowRadius,
+        rowOffsetY,
+        entrySide: rowIndex % 2 === 0 ? -1 : 1,
+        introProgress: 0,
+      });
 
       subcategory.items.forEach((item, itemIndex) => {
         const geometry = new THREE.BoxGeometry(2.2, 0.92, 0.09);
@@ -392,15 +413,14 @@ export class SpaceSceneRuntime {
         mesh.userData.infoCard = true;
         mesh.userData.infoCardIndex = this.infoCards.length;
 
-        this.infoCardsGroup.add(mesh);
+        ringGroup.add(mesh);
         this.infoCards.push({
           mesh,
           categoryId: category.id,
           subcategoryId: subcategory.id,
           item,
+          ringIndex,
           angle: subcategory.items.length <= 1 ? 0 : (itemIndex / subcategory.items.length) * TWO_PI,
-          rowRadius,
-          rowOffsetY,
         });
       });
     });
@@ -428,10 +448,20 @@ export class SpaceSceneRuntime {
         material.dispose();
       }
 
-      this.infoCardsGroup.remove(card.mesh);
+      const ring = this.infoRings[card.ringIndex];
+      if (ring) {
+        ring.group.remove(card.mesh);
+      } else {
+        this.infoCardsGroup.remove(card.mesh);
+      }
+    }
+
+    for (const ring of this.infoRings) {
+      this.infoCardsGroup.remove(ring.group);
     }
 
     this.infoCards = [];
+    this.infoRings = [];
   }
 
   private getSelectedCategory(): InformationSceneCategory | null {
@@ -595,25 +625,30 @@ export class SpaceSceneRuntime {
     const offsetDirection = modelPosition.clone().sub(this.camera.position).normalize();
     const anchorPosition = modelPosition
       .add(offsetDirection.multiplyScalar(6.1))
-      .add(new THREE.Vector3(0, 2.2, 0));
+      .add(new THREE.Vector3(0, 3.2, 0));
 
     this.infoCardsGroup.position.lerp(anchorPosition, 0.16);
+    const lookTarget = this.camera.position.clone();
+    lookTarget.y = this.infoCardsGroup.position.y;
+    this.infoCardsGroup.lookAt(lookTarget);
 
-    const cameraRight = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion).normalize();
-    const cameraUp = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion).normalize();
-    const rowOffsetVector = new THREE.Vector3();
-    const radialOffsetVector = new THREE.Vector3();
-    const targetPosition = new THREE.Vector3();
+    const introDistance = 11;
+
+    for (const ring of this.infoRings) {
+      ring.introProgress = damp(ring.introProgress, 1, 0.04);
+      const entryOffset = (1 - ring.introProgress) * introDistance * ring.entrySide;
+      ring.group.position.set(entryOffset, ring.rowOffsetY, 0);
+    }
 
     for (const card of this.infoCards) {
-      radialOffsetVector
-        .copy(cameraRight)
-        .multiplyScalar(Math.cos(card.angle) * card.rowRadius)
-        .add(cameraUp.clone().multiplyScalar(Math.sin(card.angle) * card.rowRadius));
-      rowOffsetVector.copy(cameraUp).multiplyScalar(card.rowOffsetY);
+      const ring = this.infoRings[card.ringIndex];
+      if (!ring) {
+        continue;
+      }
 
-      targetPosition.copy(radialOffsetVector).add(rowOffsetVector);
-      card.mesh.position.lerp(targetPosition, 0.22);
+      const x = Math.cos(card.angle) * ring.rowRadius;
+      const z = Math.sin(card.angle) * ring.rowRadius;
+      card.mesh.position.lerp(new THREE.Vector3(x, 0, z), 0.22);
       card.mesh.lookAt(this.camera.position);
     }
   }
