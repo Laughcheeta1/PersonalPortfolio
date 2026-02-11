@@ -10,6 +10,14 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
   }
 }
 
+declare module 'three/examples/jsm/loaders/EXRLoader.js' {
+  import type * as THREE from 'three/src/Three.js';
+
+  export class EXRLoader {
+    loadAsync(url: string): Promise<THREE.DataTexture>;
+  }
+}
+
 declare module 'three/examples/jsm/postprocessing/EffectComposer.js' {
   import type * as THREE from 'three/src/Three.js';
 

@@ -1,9 +1,11 @@
 import * as THREE from 'three/src/Three.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
+import backgroundExrUrl from '../../assets/exr/sunflowers_puresky_1k.exr';
 import type { SpaceModelItem } from './spaceModels';
 import { damp, wrapToPi } from './math';
 
@@ -43,10 +45,12 @@ export class SpaceSceneRuntime {
   private readonly loadedModels: LoadedModel[] = [];
 
   private readonly loader = new GLTFLoader();
+  private readonly exrLoader = new EXRLoader();
   private readonly clock = new THREE.Clock();
 
   private animationId = 0;
   private disposed = false;
+  private environmentTexture: THREE.Texture | null = null;
 
   private selectedIndex: number | null = null;
 
@@ -126,6 +130,7 @@ export class SpaceSceneRuntime {
   }
 
   async start(): Promise<void> {
+    await this.loadEnvironment();
     await this.createModelRing();
     this.updateModelHighlight();
     this.animate();
@@ -150,6 +155,12 @@ export class SpaceSceneRuntime {
     });
 
     this.composer.dispose();
+
+    if (this.environmentTexture) {
+      this.environmentTexture.dispose();
+      this.environmentTexture = null;
+    }
+
     this.renderer.dispose();
 
     if (this.renderer.domElement.parentNode === this.container) {
@@ -177,6 +188,20 @@ export class SpaceSceneRuntime {
     fillLight.position.set(-12, 6, -10);
 
     this.scene.add(ambient, keyLight, fillLight);
+  }
+
+  private async loadEnvironment(): Promise<void> {
+    const texture = await this.exrLoader.loadAsync(backgroundExrUrl);
+    if (this.disposed) {
+      texture.dispose();
+      return;
+    }
+
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+    this.scene.background = texture;
+    this.scene.environment = texture;
+    this.scene.environmentIntensity = 0.35;
+    this.environmentTexture = texture;
   }
 
   private bindEvents(): void {
