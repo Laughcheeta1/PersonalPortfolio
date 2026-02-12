@@ -9,11 +9,11 @@ import backgroundExrUrl from '../../assets/exr/sunflowers_puresky_1k.exr';
 import type {
   InformationItemSelection,
   InformationSceneCategory,
-  InformationSceneItem,
   SceneNavigationTarget,
 } from '../information/models';
 import { resolveNavigationTarget } from '../information/navigation';
 import type { SpaceModelItem } from './spaceModels';
+import { InfoCardRings } from './InfoCardRings';
 import { damp, wrapToPi } from './math';
 
 type RuntimeOptions = {
@@ -35,24 +35,6 @@ type LoadedModel = {
   meshes: THREE.Mesh[];
 };
 
-type InfoCardMesh = {
-  mesh: THREE.Mesh;
-  categoryId: InformationSceneCategory['id'];
-  subcategoryId: string;
-  item: InformationSceneItem;
-  ringIndex: number;
-  angle: number;
-};
-
-type InfoRing = {
-  group: THREE.Group;
-  subcategoryId: string;
-  rowRadius: number;
-  rowOffsetY: number;
-  entrySide: -1 | 1;
-  introProgress: number;
-};
-
 const TWO_PI = Math.PI * 2;
 
 export class SpaceSceneRuntime {
@@ -71,7 +53,7 @@ export class SpaceSceneRuntime {
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointerNdc = new THREE.Vector2();
   private readonly ringGroup = new THREE.Group();
-  private readonly infoCardsGroup = new THREE.Group();
+  private readonly infoCardRings = new InfoCardRings();
   private readonly loadedModels: LoadedModel[] = [];
 
   private readonly loader = new GLTFLoader();
@@ -83,8 +65,6 @@ export class SpaceSceneRuntime {
   private environmentTexture: THREE.Texture | null = null;
 
   private selectedIndex: number | null = null;
-  private infoCards: InfoCardMesh[] = [];
-  private infoRings: InfoRing[] = [];
   private pendingNavigationTarget: SceneNavigationTarget | null = null;
 
   private autoYaw = 0;
@@ -155,7 +135,7 @@ export class SpaceSceneRuntime {
 
     this.setupLights();
     this.scene.add(this.ringGroup);
-    this.scene.add(this.infoCardsGroup);
+    this.scene.add(this.infoCardRings.group);
 
     this.bindEvents();
   }
@@ -185,7 +165,7 @@ export class SpaceSceneRuntime {
       }
     });
 
-    this.clearInfoCards();
+    this.infoCardRings.dispose();
 
     this.composer.dispose();
 
@@ -349,119 +329,8 @@ export class SpaceSceneRuntime {
   }
 
   private rebuildInfoCards(): void {
-    this.clearInfoCards();
-
-    const category = this.getSelectedCategory();
-    if (!category || category.subcategories.length === 0) {
-      this.applyPendingNavigationTarget();
-      return;
-    }
-
-    const rowSpacing = 1.35;
-    const minRadius = 2.5;
-
-    category.subcategories.forEach((subcategory, rowIndex) => {
-      if (subcategory.items.length === 0) {
-        return;
-      }
-
-      const rowRadius = minRadius + rowIndex * 1.4;
-      const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
-      const ringGroup = new THREE.Group();
-      this.infoCardsGroup.add(ringGroup);
-
-      const ringIndex = this.infoRings.length;
-      this.infoRings.push({
-        group: ringGroup,
-        subcategoryId: subcategory.id,
-        rowRadius,
-        rowOffsetY,
-        entrySide: rowIndex % 2 === 0 ? -1 : 1,
-        introProgress: 0,
-      });
-
-      subcategory.items.forEach((item, itemIndex) => {
-        const geometry = new THREE.BoxGeometry(2.2, 0.92, 0.09);
-        const texture = this.createCardTexture(item.title, subcategory.label);
-        const frontMaterial = new THREE.MeshStandardMaterial({
-          map: texture,
-          transparent: true,
-          opacity: 0.96,
-          roughness: 0.38,
-          metalness: 0.08,
-        });
-        const sideMaterial = new THREE.MeshStandardMaterial({
-          color: '#102139',
-          roughness: 0.55,
-          metalness: 0.15,
-        });
-        const backMaterial = new THREE.MeshStandardMaterial({
-          color: '#0a162a',
-          roughness: 0.6,
-          metalness: 0.05,
-        });
-        const material: THREE.Material[] = [
-          sideMaterial,
-          sideMaterial,
-          sideMaterial,
-          sideMaterial,
-          frontMaterial,
-          backMaterial,
-        ];
-
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.userData.infoCard = true;
-        mesh.userData.infoCardIndex = this.infoCards.length;
-
-        ringGroup.add(mesh);
-        this.infoCards.push({
-          mesh,
-          categoryId: category.id,
-          subcategoryId: subcategory.id,
-          item,
-          ringIndex,
-          angle: subcategory.items.length <= 1 ? 0 : (itemIndex / subcategory.items.length) * TWO_PI,
-        });
-      });
-    });
-
+    this.infoCardRings.rebuild(this.getSelectedCategory());
     this.applyPendingNavigationTarget();
-  }
-
-  private clearInfoCards(): void {
-    for (const card of this.infoCards) {
-      const material = card.mesh.material;
-      card.mesh.geometry.dispose();
-      if (Array.isArray(material)) {
-        for (const mat of material) {
-          const mapCarrier = mat as THREE.MeshStandardMaterial;
-          if (mapCarrier.map) {
-            mapCarrier.map.dispose();
-          }
-          mat.dispose();
-        }
-      } else {
-        const mapCarrier = material as THREE.MeshStandardMaterial;
-        if (mapCarrier.map) {
-          mapCarrier.map.dispose();
-        }
-        material.dispose();
-      }
-
-      const ring = this.infoRings[card.ringIndex];
-      if (ring) {
-        ring.group.remove(card.mesh);
-      } else {
-        this.infoCardsGroup.remove(card.mesh);
-      }
-    }
-
-    for (const ring of this.infoRings) {
-      this.infoCardsGroup.remove(ring.group);
-    }
-
-    this.infoCards = [];
-    this.infoRings = [];
   }
 
   private getSelectedCategory(): InformationSceneCategory | null {
@@ -470,55 +339,6 @@ export class SpaceSceneRuntime {
     }
 
     return this.categories.find((entry) => entry.modelIndex === this.selectedIndex) ?? null;
-  }
-
-  private createCardTexture(title: string, subtitle: string): THREE.CanvasTexture {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 384;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return new THREE.CanvasTexture(canvas);
-    }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = 'rgba(9, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(126, 209, 255, 0.95)';
-    ctx.lineWidth = 6;
-
-    const padding = 22;
-    const radius = 26;
-    const width = canvas.width - padding * 2;
-    const height = canvas.height - padding * 2;
-
-    ctx.beginPath();
-    ctx.moveTo(padding + radius, padding);
-    ctx.lineTo(padding + width - radius, padding);
-    ctx.quadraticCurveTo(padding + width, padding, padding + width, padding + radius);
-    ctx.lineTo(padding + width, padding + height - radius);
-    ctx.quadraticCurveTo(padding + width, padding + height, padding + width - radius, padding + height);
-    ctx.lineTo(padding + radius, padding + height);
-    ctx.quadraticCurveTo(padding, padding + height, padding, padding + height - radius);
-    ctx.lineTo(padding, padding + radius);
-    ctx.quadraticCurveTo(padding, padding, padding + radius, padding);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.fillStyle = '#96d7ff';
-    ctx.font = '600 46px Inter, sans-serif';
-    ctx.fillText(subtitle, 64, 120);
-
-    ctx.fillStyle = '#eaf7ff';
-    ctx.font = '700 64px Inter, sans-serif';
-    ctx.fillText(title, 64, 220);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    return texture;
   }
 
   private applyPendingNavigationTarget(): void {
@@ -537,26 +357,16 @@ export class SpaceSceneRuntime {
       return;
     }
 
-    const card = this.infoCards.find((entry) => {
-      const itemMatches = entry.item.id === target.itemId || entry.item.slug === target.itemId;
-      const subcategoryMatches =
-        target.subcategoryId === undefined || target.subcategoryId === entry.subcategoryId;
-      return itemMatches && subcategoryMatches;
-    });
-
-    if (card) {
-      this.openInfoCard(card);
+    const selection = this.infoCardRings.findSelectionByTarget(target.itemId, target.subcategoryId);
+    if (selection) {
+      this.openInfoCard(selection);
     }
 
     this.pendingNavigationTarget = null;
   }
 
-  private openInfoCard(card: InfoCardMesh): void {
-    this.onInfoItemSelectionChange({
-      categoryId: card.categoryId,
-      subcategoryId: card.subcategoryId,
-      item: card.item,
-    });
+  private openInfoCard(selection: InformationItemSelection): void {
+    this.onInfoItemSelectionChange(selection);
   }
 
   private animate = (): void => {
@@ -604,54 +414,12 @@ export class SpaceSceneRuntime {
     this.camera.position.lerp(this.desiredCameraPosition, 0.08);
     this.camera.lookAt(this.cameraLookAt);
 
-    this.updateInfoCardsLayout();
+    this.infoCardRings.update(dt, this.camera, this.selectedIndex !== null);
 
     this.composer.render();
 
     this.animationId = requestAnimationFrame(this.animate);
   };
-
-  private updateInfoCardsLayout(): void {
-    if (this.selectedIndex === null || this.infoCards.length === 0) {
-      return;
-    }
-
-    const selectedModel = this.loadedModels[this.selectedIndex];
-    if (!selectedModel) {
-      return;
-    }
-
-    const modelPosition = selectedModel.holder.position.clone();
-    const offsetDirection = modelPosition.clone().sub(this.camera.position).normalize();
-    const anchorPosition = modelPosition
-      .add(offsetDirection.multiplyScalar(6.1))
-      .add(new THREE.Vector3(0, 3.2, 0));
-
-    this.infoCardsGroup.position.lerp(anchorPosition, 0.16);
-    const lookTarget = this.camera.position.clone();
-    lookTarget.y = this.infoCardsGroup.position.y;
-    this.infoCardsGroup.lookAt(lookTarget);
-
-    const introDistance = 11;
-
-    for (const ring of this.infoRings) {
-      ring.introProgress = damp(ring.introProgress, 1, 0.04);
-      const entryOffset = (1 - ring.introProgress) * introDistance * ring.entrySide;
-      ring.group.position.set(entryOffset, ring.rowOffsetY, 0);
-    }
-
-    for (const card of this.infoCards) {
-      const ring = this.infoRings[card.ringIndex];
-      if (!ring) {
-        continue;
-      }
-
-      const x = Math.cos(card.angle) * ring.rowRadius;
-      const z = Math.sin(card.angle) * ring.rowRadius;
-      card.mesh.position.lerp(new THREE.Vector3(x, 0, z), 0.22);
-      card.mesh.lookAt(this.camera.position);
-    }
-  }
 
   private getFocusTarget(): FocusTarget | null {
     if (this.selectedIndex === null) {
@@ -712,7 +480,7 @@ export class SpaceSceneRuntime {
 
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
     const intersections = this.raycaster.intersectObjects(
-      [this.infoCardsGroup, this.ringGroup],
+      [this.infoCardRings.group, this.ringGroup],
       true,
     );
 
@@ -722,17 +490,14 @@ export class SpaceSceneRuntime {
     }
 
     for (const hit of intersections) {
+      const cardSelection = this.infoCardRings.getSelectionByObject(hit.object);
+      if (cardSelection) {
+        this.openInfoCard(cardSelection);
+        return;
+      }
+
       let current: THREE.Object3D | null = hit.object;
       while (current) {
-        if (current.userData.infoCard === true) {
-          const index = current.userData.infoCardIndex as number;
-          const card = this.infoCards[index];
-          if (card) {
-            this.openInfoCard(card);
-            return;
-          }
-        }
-
         if (typeof current.userData.modelIndex === 'number') {
           this.setSelection(current.userData.modelIndex as number);
           return;
