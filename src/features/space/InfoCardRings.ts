@@ -5,21 +5,14 @@ import type {
   InformationSceneCategory,
 } from '../information/models';
 import { InfoCard3D } from './InfoCard3D';
-
-type InfoRing = {
-  group: THREE.Group;
-  rowRadius: number;
-  rowOffsetY: number;
-};
-
-const TWO_PI = Math.PI * 2;
+import { InfoCardRingRow } from './InfoCardRingRow';
 
 // Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
   readonly group = new THREE.Group();
 
   private infoCards: InfoCard3D[] = [];
-  private infoRings: InfoRing[] = [];
+  private infoRows: InfoCardRingRow[] = [];
   private spinPhase = 0;
 
   private readonly cameraForward = new THREE.Vector3();
@@ -36,61 +29,39 @@ export class InfoCardRings {
 
     const rowSpacing = 1.35;
     const minRadius = 2.5;
+    let pickIndex = 0;
 
     category.subcategories.forEach((subcategory, rowIndex) => {
       if (subcategory.items.length === 0) {
         return;
       }
 
-      // Each subcategory becomes one ring row.
-      const ringGroup = new THREE.Group();
       const rowRadius = minRadius + rowIndex * 1.4;
       const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
-      this.group.add(ringGroup);
-
-      const ringIndex = this.infoRings.length;
-      this.infoRings.push({
-        group: ringGroup,
+      const row = new InfoCardRingRow({
+        categoryId: category.id,
+        subcategory,
+        ringIndex: this.infoRows.length,
         rowRadius,
         rowOffsetY,
       });
 
-      subcategory.items.forEach((item, itemIndex) => {
-        // Items are distributed evenly around their row ring.
-        const card = new InfoCard3D({
-          categoryId: category.id,
-          subcategoryId: subcategory.id,
-          subcategoryLabel: subcategory.label,
-          item,
-          ringIndex,
-          angle: subcategory.items.length <= 1 ? 0 : (itemIndex / subcategory.items.length) * TWO_PI,
-        });
-
-        card.setPickIndex(this.infoCards.length);
-        ringGroup.add(card.mesh);
-        this.infoCards.push(card);
-      });
+      pickIndex = row.setPickIndices(pickIndex);
+      row.appendCardsTo(this.infoCards);
+      this.infoRows.push(row);
+      this.group.add(row.group);
     });
   }
 
   clear(): void {
     // Dispose card GPU resources first, then remove groups.
-    for (const card of this.infoCards) {
-      const ring = this.infoRings[card.ringIndex];
-      if (ring) {
-        ring.group.remove(card.mesh);
-      } else {
-        this.group.remove(card.mesh);
-      }
-      card.dispose();
-    }
-
-    for (const ring of this.infoRings) {
-      this.group.remove(ring.group);
+    for (const row of this.infoRows) {
+      row.dispose();
+      this.group.remove(row.group);
     }
 
     this.infoCards = [];
-    this.infoRings = [];
+    this.infoRows = [];
     this.spinPhase = 0;
   }
 
@@ -104,7 +75,7 @@ export class InfoCardRings {
     }
 
     // Global spin phase is shared so all rows rotate together.
-    this.spinPhase += dt * 0.01;
+    this.spinPhase += dt * 0.1;
 
     // Anchor the full card system in front of the camera and face it toward the camera.
     camera.getWorldDirection(this.cameraForward);
@@ -114,21 +85,9 @@ export class InfoCardRings {
       .add(this.anchorOffset);
     this.group.lookAt(camera.position);
 
-    for (const ring of this.infoRings) {
-      // Row height stays fixed; only yaw rotates each ring.
-      ring.group.position.set(0, ring.rowOffsetY, 0);
-      ring.group.rotation.y = this.spinPhase;
-    }
-
-    for (const card of this.infoCards) {
-      const ring = this.infoRings[card.ringIndex];
-      if (!ring) {
-        continue;
-      }
-
-      // Card local position is ring-based; facing is camera-based.
-      card.setLocalRingPosition(ring.rowRadius);
-      card.face(camera.position);
+    for (const row of this.infoRows) {
+      // Row-level update rotates the ring and reorients cards to the row's forward target.
+      row.update(this.spinPhase);
     }
   }
 
