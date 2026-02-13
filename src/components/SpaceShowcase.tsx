@@ -10,7 +10,7 @@ import type {
   SceneNavigationTarget,
 } from '../features/information/models';
 import { startAmbientHum, type AmbientHumController } from '../features/space/ambientHum';
-import { SpaceSceneRuntime } from '../features/space/SpaceSceneRuntime';
+import { SpaceSceneRuntime } from '../features/space/runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../features/space/spaceModels';
 
 declare global {
