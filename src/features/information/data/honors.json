@@ -1,0 +1,26 @@
+{
+  "awards": [
+    {
+      "id": "award-hackathon-finalist",
+      "slug": "hackathon-finalist",
+      "title": "Hackathon Finalist",
+      "summary": "Reached final round with a product prototype.",
+      "details": "Delivered working demo, architecture rationale, and roadmap presentation.",
+      "skills": [1, 2, 3],
+      "date": "2025-06-10",
+      "links": {}
+    }
+  ],
+  "honors": [
+    {
+      "id": "honor-academic-merit",
+      "slug": "academic-merit",
+      "title": "Academic Merit Recognition",
+      "summary": "Recognized for consistent academic performance.",
+      "details": "Awarded for high grades and active participation in technical projects.",
+      "skills": [1],
+      "date": "2024-12-01",
+      "links": {}
+    }
+  ]
+}

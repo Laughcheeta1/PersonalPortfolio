@@ -1,0 +1,32 @@
+{
+  "personalProjects": [
+    {
+      "id": "project-portfolio-3d",
+      "slug": "3d-portfolio",
+      "title": "Interactive 3D Portfolio",
+      "summary": "A 3D-first portfolio with structured information navigation.",
+      "details": "Built with a custom Three.js runtime and typed information models for long-term expansion.",
+      "architectureExplanation": "Scene runtime, information adapter, and deterministic navigation commands.",
+      "technologies": ["TypeScript", "Three.js", "Vite", "React"],
+      "skills": [1, 2, 3],
+      "links": {
+        "repoUrl": "https://github.com/"
+      }
+    }
+  ],
+  "workProjects": [
+    {
+      "id": "project-container-management",
+      "slug": "container-management-app",
+      "title": "Container Management App",
+      "summary": "Management tool for container operations and reporting.",
+      "details": "Implemented data flow, role-based actions, and monitoring dashboards.",
+      "architectureExplanation": "Modular frontend with API-oriented backend and persistent storage.",
+      "technologies": ["React", "Node.js", "MongoDB"],
+      "skills": [2, 3],
+      "links": {
+        "repoUrl": "https://github.com/"
+      }
+    }
+  ]
+}

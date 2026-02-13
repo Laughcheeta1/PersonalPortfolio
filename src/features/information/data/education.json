@@ -1,0 +1,30 @@
+{
+  "universityEducations": [
+    {
+      "id": "edu-eia-cs",
+      "slug": "eia-computer-science",
+      "title": "Computer Science Degree",
+      "summary": "Undergraduate studies with focus on software engineering.",
+      "details": "Coursework in algorithms, systems, architecture, and project leadership.",
+      "institution": "EIA University",
+      "degree": "Computer Science",
+      "startDate": "2022-01-01",
+      "endDate": "2026-12-01",
+      "skills": [1, 2, 3],
+      "links": {}
+    }
+  ],
+  "courseEducations": [
+    {
+      "id": "course-system-design",
+      "slug": "system-design-fundamentals",
+      "title": "System Design Fundamentals",
+      "summary": "Practical distributed systems and architecture design.",
+      "details": "Covered scalability patterns, consistency tradeoffs, and reliability practices.",
+      "provider": "Online Learning",
+      "completionDate": "2025-09-01",
+      "skills": [1, 3],
+      "links": {}
+    }
+  ]
+}

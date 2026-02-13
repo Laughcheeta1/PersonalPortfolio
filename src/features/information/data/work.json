@@ -1,0 +1,71 @@
+{
+  "companies": [
+    {
+      "id": "company-example",
+      "slug": "example-company",
+      "title": "Backend Developer",
+      "summary": "Built internal APIs and improved deployment reliability.",
+      "details": "I worked on service endpoints, schema changes, and CI/CD pipelines.",
+      "companyName": "Example Company",
+      "startDate": "2024-01-01",
+      "endDate": "",
+      "roles": [
+        {
+          "id": "role-backend-dev",
+          "slug": "backend-developer-role",
+          "title": "Backend Developer",
+          "summary": "Designed and shipped backend features.",
+          "details": "Implemented REST APIs, validation layers, and monitoring.",
+          "startDate": "2024-01-01",
+          "endDate": "",
+          "skills": [3],
+          "links": {},
+          "achievements": [
+            {
+              "id": "achieve-api-latency",
+              "slug": "api-latency-improvement",
+              "title": "Reduced API latency",
+              "summary": "Lowered P95 latency for high-traffic endpoints.",
+              "details": "Optimized queries and added caching for repeated requests.",
+              "skills": [3],
+              "date": "2024-07-12",
+              "links": {}
+            }
+          ]
+        }
+      ],
+      "skills": [3],
+      "links": {}
+    }
+  ],
+  "entrepreneurship": [
+    {
+      "id": "entrepreneurship-jobly",
+      "slug": "jobly-startup",
+      "title": "Co-founder / Engineer",
+      "summary": "Built the technical foundation for an early-stage startup.",
+      "details": "Defined architecture, MVP milestones, and product iterations.",
+      "ventureName": "Jobly",
+      "startDate": "2025-01-01",
+      "endDate": "",
+      "skills": [1, 2, 3],
+      "links": {}
+    }
+  ],
+  "independentWork": [
+    {
+      "id": "independent-containers-app",
+      "slug": "containers-app",
+      "title": "Container Management Platform",
+      "summary": "Delivered a custom app for operations workflows.",
+      "details": "Gathered requirements, designed data model, and implemented full stack solution.",
+      "clientOrProductName": "Containers App",
+      "startDate": "2024-03-01",
+      "endDate": "2024-08-01",
+      "skills": [2, 3],
+      "links": {
+        "repoUrl": "https://github.com/"
+      }
+    }
+  ]
+}
