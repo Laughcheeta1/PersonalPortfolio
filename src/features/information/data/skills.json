@@ -19,5 +19,26 @@
     "name": "Node.js",
     "category": "Backend",
     "summary": "Server-side JavaScript for APIs and distributed systems."
+  },
+  "4": {
+    "id": 3,
+    "slug": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "summary": "Server-side JavaScript for APIs and distributed systems."
+  },
+  "5": {
+    "id": 3,
+    "slug": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "summary": "Server-side JavaScript for APIs and distributed systems."
+  },
+  "6": {
+    "id": 3,
+    "slug": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "summary": "Server-side JavaScript for APIs and distributed systems."
   }
 }

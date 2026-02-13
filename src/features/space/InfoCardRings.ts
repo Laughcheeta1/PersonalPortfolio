@@ -23,6 +23,8 @@ type FocusOrbitCircle = {
 const RING_CHASE_SPEED = 3.2;
 // Ring radius is a multiple of the camera orbit radius.
 const RING_RADIUS_MULTIPLIER = 1.5;
+const FOCUSED_ORBIT_RADIUS = 7.4;
+const SEMICIRCLE_RADIUS_MULTIPLIER = 2;
 
 // Manages all 3D card rows for the currently selected category.
 // - Rebuilds rows when category changes.
@@ -59,8 +61,8 @@ export class InfoCardRings {
 
     // Vertical distance between subcategory rows.
     const rowSpacing = 1.35;
-    // Base ring radius for first row.
-    const minRadius = 2.5;
+    // Base semicircle radius: 2x focused camera orbit radius.
+    const minRadius = FOCUSED_ORBIT_RADIUS * SEMICIRCLE_RADIUS_MULTIPLIER;
     // Global pick index across all cards.
     let pickIndex = 0;
 

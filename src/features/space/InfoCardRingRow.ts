@@ -60,8 +60,13 @@ export class InfoCardRingRow {
         angle,
       });
 
-      // Place and orient once in row-local space.
-      card.setLocalRingPosition(this.rowRadius);
+      // Place cards on a semicircle whose center is on the camera-side of this row.
+      // Local +Z points toward camera side because parent group looks at camera.
+      // Circle center: (0, 0, rowRadius)
+      // Arc points: x = cos(a) * r, z = r - sin(a) * r, with a in [0, PI].
+      const x = Math.cos(angle) * this.rowRadius;
+      const z = this.rowRadius - Math.sin(angle) * this.rowRadius;
+      card.mesh.position.set(x, 0, z);
       this.group.add(card.mesh);
       this.cards.push(card);
     });

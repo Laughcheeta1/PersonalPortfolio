@@ -26,7 +26,7 @@ const SpaceShowcase = () => {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedInfoItem, setSelectedInfoItem] = useState<InformationItemSelection | null>(null);
-  const [isAudioOn, setIsAudioOn] = useState(true);
+  const [isAudioOn, setIsAudioOn] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
