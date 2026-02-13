@@ -1,25 +1,95 @@
 {
   "awards": [
     {
-      "id": "award-hackathon-finalist",
-      "slug": "hackathon-finalist",
-      "title": "Hackathon Finalist",
-      "summary": "Reached final round with a product prototype.",
-      "details": "Delivered working demo, architecture rationale, and roadmap presentation.",
-      "skills": [1, 2, 3],
-      "date": "2025-06-10",
+      "id": "award-sistecredito-hackathon-mentor-judge-4th",
+      "slug": "sistecredito-hackathon-mentor-judge-4th",
+      "title": "Mentor and Judge — Sistecredito’s Fourth Hackathon",
+      "summary": "Selected as mentor and judge for Sistecredito’s fourth hackathon.",
+      "details": "Supported teams and evaluated projects during the event.",
+      "skills": [29, 30, 34, 27],
+      "date": "2025-03-01",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-1st-3rd",
+      "slug": "sistecredito-hackathon-first-place-third",
+      "title": "First Place — Sistecredito’s Third Hackathon",
+      "summary": "Won first place at Sistecredito’s third hackathon.",
+      "details": "Delivered a competitive solution under hackathon constraints.",
+      "skills": [24, 22, 29, 30],
+      "date": "2024-11-01",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-1st-2nd",
+      "slug": "sistecredito-hackathon-first-place-second",
+      "title": "First Place — Sistecredito’s Second Hackathon",
+      "summary": "Won first place at Sistecredito’s second hackathon.",
+      "details": "Built and presented a winning project as part of a team.",
+      "skills": [24, 29, 30],
+      "date": "2024-08-01",
+      "links": {}
+    },
+    {
+      "id": "award-isa-intercolombia-hackathon-1st",
+      "slug": "isa-intercolombia-hackathon-first-place",
+      "title": "First Place — ISA Intercolombia’s Hackathon",
+      "summary": "Won first place at ISA Intercolombia’s hackathon.",
+      "details": "Built and delivered a high-impact project within limited time.",
+      "skills": [24, 29, 30],
+      "date": "2024-05-01",
       "links": {}
     }
   ],
   "honors": [
     {
-      "id": "honor-academic-merit",
-      "slug": "academic-merit",
-      "title": "Academic Merit Recognition",
-      "summary": "Recognized for consistent academic performance.",
-      "details": "Awarded for high grades and active participation in technical projects.",
-      "skills": [1],
-      "date": "2024-12-01",
+      "id": "honor-icpc-represented-eia-2022",
+      "slug": "icpc-represented-eia-2022",
+      "title": "ICPC Regional Participant (EIA University Representative) — 2022",
+      "summary": "Represented EIA University in ICPC competitions.",
+      "details": "Participation representing EIA University (one of three representations listed).",
+      "skills": [5, 24, 29],
+      "date": "2022-01-01",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2023",
+      "slug": "icpc-represented-eia-2023",
+      "title": "ICPC Regional Participant (EIA University Representative) — 2023",
+      "summary": "Represented EIA University in ICPC competitions.",
+      "details": "Participation representing EIA University (one of three representations listed).",
+      "skills": [5, 24, 29],
+      "date": "2023-01-01",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2024",
+      "slug": "icpc-represented-eia-2024",
+      "title": "ICPC Regional Participant (EIA University Representative) — 2024",
+      "summary": "Represented EIA University in ICPC competitions.",
+      "details": "Participation representing EIA University (one of three representations listed).",
+      "skills": [5, 24, 29],
+      "date": "2024-01-01",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2022-10",
+      "slug": "eia-deans-list-oct-2022",
+      "title": "Dean’s List — First Semester",
+      "summary": "Recognized for academic performance (Dean’s List).",
+      "details": "EIA University Dean’s List recognition (October 2022).",
+      "skills": [29],
+      "date": "2022-10-01",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2023-02",
+      "slug": "eia-deans-list-feb-2023",
+      "title": "Dean’s List — Second Semester",
+      "summary": "Recognized for academic performance (Dean’s List).",
+      "details": "EIA University Dean’s List recognition (February 2023).",
+      "skills": [29],
+      "date": "2023-02-01",
       "links": {}
     }
   ]

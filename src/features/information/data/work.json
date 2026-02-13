@@ -1,71 +1,106 @@
 {
   "companies": [
     {
-      "id": "company-example",
-      "slug": "example-company",
-      "title": "Backend Developer",
-      "summary": "Built internal APIs and improved deployment reliability.",
-      "details": "I worked on service endpoints, schema changes, and CI/CD pipelines.",
-      "companyName": "Example Company",
-      "startDate": "2024-01-01",
-      "endDate": "",
+      "id": "work-eia-selected-tutor-programming-fundamentals",
+      "slug": "eia-selected-tutor-programming-fundamentals",
+      "title": "University Selected Tutor — Programming Fundamentals",
+      "summary": "Taught programming fundamentals to first-semester students.",
+      "details": "Delivered lecture-style sessions covering programming fundamentals.",
+      "companyName": "EIA University",
+      "startDate": "2024-08-01",
+      "endDate": "2025-07-01",
       "roles": [
         {
-          "id": "role-backend-dev",
-          "slug": "backend-developer-role",
-          "title": "Backend Developer",
-          "summary": "Designed and shipped backend features.",
-          "details": "Implemented REST APIs, validation layers, and monitoring.",
-          "startDate": "2024-01-01",
-          "endDate": "",
-          "skills": [3],
+          "id": "role-eia-selected-tutor-programming-fundamentals",
+          "slug": "selected-tutor-programming-fundamentals",
+          "title": "University Selected Tutor — Programming Fundamentals",
+          "summary": "Lecture-style teaching assistant/tutor role for beginners.",
+          "details": "Taught first-semester students through structured lecture-style sessions.",
+          "startDate": "2024-08-01",
+          "endDate": "2025-07-01",
+          "skills": [31, 29, 30],
           "links": {},
-          "achievements": [
-            {
-              "id": "achieve-api-latency",
-              "slug": "api-latency-improvement",
-              "title": "Reduced API latency",
-              "summary": "Lowered P95 latency for high-traffic endpoints.",
-              "details": "Optimized queries and added caching for repeated requests.",
-              "skills": [3],
-              "date": "2024-07-12",
-              "links": {}
-            }
-          ]
+          "achievements": []
         }
       ],
-      "skills": [3],
+      "skills": [31, 29, 30],
       "links": {}
     }
   ],
   "entrepreneurship": [
     {
-      "id": "entrepreneurship-jobly",
-      "slug": "jobly-startup",
-      "title": "Co-founder / Engineer",
-      "summary": "Built the technical foundation for an early-stage startup.",
-      "details": "Defined architecture, MVP milestones, and product iterations.",
-      "ventureName": "Jobly",
-      "startDate": "2025-01-01",
-      "endDate": "",
-      "skills": [1, 2, 3],
+      "id": "work-elio-for-business",
+      "slug": "elio-for-business",
+      "title": "CTO & Cofounder",
+      "summary": "Led engineering strategy, architecture, and delivery for AI-driven sales automation.",
+      "details": "Built core systems including agent-driven sales automation, multiple database layers, and scalable cloud architecture; managed a team of 7 developers.",
+      "ventureName": "elio for business",
+      "startDate": "2025-06-01",
+      "endDate": null,
+      "skills": [20, 16, 7, 14, 15, 22, 23, 26, 27, 28, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-nao-aeronautics",
+      "slug": "nao-aeronautics-venture",
+      "title": "NAO Aeronautics (Venture)",
+      "summary": "Logistics startup concept focused on serving remote areas.",
+      "details": "Built business plan, process architecture, and prototype; executed extensive interview-driven discovery and iteration.",
+      "ventureName": "NAO Aeronautics",
+      "startDate": "2024-01-01",
+      "endDate": null,
+      "skills": [35, 32, 33, 30, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-vcow",
+      "slug": "vcow-venture",
+      "title": "VCOW (Venture)",
+      "summary": "Crowdfunding platform concept for cattle-raising projects (pivoted from vertical farming).",
+      "details": "Interview-driven validation (40+ farmers; 10+ investors after pivot) built for a CREATE-X course deliverable.",
+      "ventureName": "VCOW",
+      "startDate": "2024-10-01",
+      "endDate": null,
+      "skills": [35, 32, 33, 29, 30],
       "links": {}
     }
   ],
   "independentWork": [
     {
-      "id": "independent-containers-app",
-      "slug": "containers-app",
-      "title": "Container Management Platform",
-      "summary": "Delivered a custom app for operations workflows.",
-      "details": "Gathered requirements, designed data model, and implemented full stack solution.",
-      "clientOrProductName": "Containers App",
-      "startDate": "2024-03-01",
-      "endDate": "2024-08-01",
-      "skills": [2, 3],
-      "links": {
-        "repoUrl": "https://github.com/"
-      }
+      "id": "work-mc2-university-ambassador",
+      "slug": "mc2-university-ambassador",
+      "title": "University Ambassador",
+      "summary": "Built partnerships between mc2 and EIA University and organized a startup hackathon.",
+      "details": "Established connections/partnership with EIA University; organized a hackathon with 60+ participants and recruited judges while securing support and funding.",
+      "clientOrProductName": "mc2",
+      "startDate": "2025-03-01",
+      "endDate": null,
+      "skills": [29, 30, 34, 35],
+      "links": {}
+    },
+    {
+      "id": "work-eia-private-tutor-data-structures",
+      "slug": "eia-private-tutor-data-structures",
+      "title": "Private Tutor — Data Structures",
+      "summary": "Provided personalized tutoring for Data Structures.",
+      "details": "Tailored lesson plans to student learning preferences to improve comprehension and performance.",
+      "clientOrProductName": "EIA University (Private tutoring)",
+      "startDate": "2024-09-01",
+      "endDate": "2025-07-01",
+      "skills": [31, 29, 24],
+      "links": {}
+    },
+    {
+      "id": "ind-demo-investor-pitches",
+      "slug": "investor-and-demo-pitches",
+      "title": "Investor & Demo Pitches",
+      "summary": "Delivered multiple startup pitches and demo presentations across events and programs.",
+      "details": "Included Innovate EPM (Nov 2024; reached penultimate round), Conexión Entrepreneur Summit (Oct 2024), and a demo pitch at the end of mc2 Builder’s Program (May 2025) showcasing NAO Aeronautics progress.",
+      "clientOrProductName": "Multiple events and programs",
+      "startDate": "2024-10-01",
+      "endDate": "2025-05-01",
+      "skills": [30, 29, 35],
+      "links": {}
     }
   ]
 }
