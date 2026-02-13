@@ -1,32 +1,23 @@
+import trackUrl from '../../assets/audio/the_smoke_decides.mp3';
+
 export type AmbientHumController = {
   stop: () => void;
 };
 
 export function startAmbientHum(): AmbientHumController {
-  const context = new AudioContext();
-  const oscillator = context.createOscillator();
-  const filter = context.createBiquadFilter();
-  const gain = context.createGain();
+  const audio = new Audio(trackUrl);
+  audio.loop = true;
+  audio.preload = 'auto';
+  audio.volume = 0.14;
 
-  oscillator.type = 'sawtooth';
-  oscillator.frequency.value = 52;
-
-  filter.type = 'lowpass';
-  filter.frequency.value = 180;
-  filter.Q.value = 0.6;
-
-  gain.gain.value = 0.018;
-
-  oscillator.connect(filter);
-  filter.connect(gain);
-  gain.connect(context.destination);
-
-  oscillator.start();
+  void audio.play().catch(() => {
+    // Some browsers can still block playback depending on gesture timing.
+  });
 
   return {
     stop: () => {
-      oscillator.stop();
-      void context.close();
+      audio.pause();
+      audio.currentTime = 0;
     },
   };
 }
