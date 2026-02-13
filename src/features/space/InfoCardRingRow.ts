@@ -20,7 +20,8 @@ type InfoCardRingRowParams = {
   rowOffsetY: number;
 };
 
-const TWO_PI = Math.PI * 2;
+const ARC_SPAN = Math.PI;
+const ARC_START_ANGLE = 0;
 
 // Owns one subcategory ring.
 // Responsibilities:
@@ -43,18 +44,23 @@ export class InfoCardRingRow {
     this.rowOffsetY = params.rowOffsetY;
 
     const { categoryId, subcategory, ringIndex } = params;
-    // Evenly distribute items around a circle using angle = i / n * 2PI.
+    // Evenly distribute items around a semicircle arc.
     subcategory.items.forEach((item, itemIndex) => {
+      const itemCount = subcategory.items.length;
+      const angle =
+        itemCount <= 1
+          ? ARC_START_ANGLE + ARC_SPAN * 0.5
+          : ARC_START_ANGLE + (itemIndex / (itemCount - 1)) * ARC_SPAN;
       const card = new InfoCard3D({
         categoryId,
         subcategoryId: subcategory.id,
         subcategoryLabel: subcategory.label,
         item,
         ringIndex,
-        angle: subcategory.items.length <= 1 ? 0 : (itemIndex / subcategory.items.length) * TWO_PI,
+        angle,
       });
 
-      // Place card once in local row-space. Runtime only updates row transform after this.
+      // Place and orient once in row-local space.
       card.setLocalRingPosition(this.rowRadius);
       this.group.add(card.mesh);
       this.cards.push(card);
@@ -76,13 +82,11 @@ export class InfoCardRingRow {
     target.push(...this.cards);
   }
 
-  update(spinPhase: number, cameraPosition: THREE.Vector3): void {
+  update(cameraPosition: THREE.Vector3): void {
     // Position row at its fixed vertical lane.
     this.group.position.set(0, this.rowOffsetY, 0);
-    // Apply tiny row yaw for ambient motion.
-    this.group.rotation.y = spinPhase;
 
-    // Billboard each card so text remains readable from camera.
+    // Orient cards toward camera-side center.
     for (const card of this.cards) {
       card.face(cameraPosition);
     }

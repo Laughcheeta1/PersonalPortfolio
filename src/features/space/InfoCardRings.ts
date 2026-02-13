@@ -36,8 +36,6 @@ export class InfoCardRings {
   private infoCards: InfoCard3D[] = [];
   // One row per subcategory.
   private infoRows: InfoCardRingRow[] = [];
-  // Tiny spin value shared by all rows (visual movement).
-  private spinPhase = 0;
   // We use this once after rebuild so cards spawn behind camera first.
   private introPending = false;
   // Current world-orbit angle for this full card system.
@@ -108,7 +106,6 @@ export class InfoCardRings {
 
     this.infoCards = [];
     this.infoRows = [];
-    this.spinPhase = 0;
     this.introPending = false;
     this.ringAngle = 0;
   }
@@ -150,9 +147,6 @@ export class InfoCardRings {
       this.ringAngle += delta * chaseFactor;
       const ringAngle = this.ringAngle;
 
-      // Subtle row spin to avoid fully static look.
-      this.spinPhase += dt * 0.0001;
-
       // Position whole card system on a larger ring around same center.
       const ringRadius = Math.max(0.1, focusOrbit.radius * RING_RADIUS_MULTIPLIER);
       this.group.position.set(
@@ -171,14 +165,12 @@ export class InfoCardRings {
         .add(this.anchorOffset);
     }
 
-    // Orient full row-system toward camera.
+    // Keep arc container oriented toward camera side.
     this.group.lookAt(camera.position);
 
     for (const row of this.infoRows) {
-      // Row update handles:
-      // 1) local row transform,
-      // 2) card billboarding toward camera.
-      row.update(this.spinPhase, camera.position);
+      // Row update applies local lane transform and camera-facing card orientation.
+      row.update(camera.position);
     }
   }
 
