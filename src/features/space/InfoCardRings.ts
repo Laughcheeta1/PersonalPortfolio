@@ -15,6 +15,7 @@ type FocusOrbitCircle = {
 };
 
 const RING_CHASE_SPEED = 3.2;
+const RING_RADIUS_MULTIPLIER = 1.5;
 
 // Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
@@ -115,8 +116,8 @@ export class InfoCardRings {
 
       this.spinPhase += dt * 0.0001;
 
-      // Keep cards on the same orbit center/angle, but at double the camera orbit radius.
-      const ringRadius = Math.max(0.1, focusOrbit.radius * 2);
+      // Keep cards on the same orbit center/angle with a larger orbit radius multiplier.
+      const ringRadius = Math.max(0.1, focusOrbit.radius * RING_RADIUS_MULTIPLIER);
       this.group.position.set(
         focusOrbit.center.x + Math.sin(ringAngle) * ringRadius,
         focusOrbit.center.y + focusOrbit.orbitHeight * 0.5,
