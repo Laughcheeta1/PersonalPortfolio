@@ -428,7 +428,19 @@ export class SpaceSceneRuntime {
     this.camera.lookAt(this.cameraLookAt);
 
     // Delegate card transforms/rotation to the dedicated card-rings object.
-    this.infoCardRings.update(dt, this.camera, this.selectedIndex !== null);
+    this.infoCardRings.update(
+      dt,
+      this.camera,
+      this.selectedIndex !== null,
+      focusTarget
+        ? {
+            center: focusTarget.position,
+            radius: focusTarget.orbitRadius,
+            orbitHeight: focusTarget.orbitHeight,
+            orbitAngle,
+          }
+        : undefined,
+    );
 
     this.composer.render();
 

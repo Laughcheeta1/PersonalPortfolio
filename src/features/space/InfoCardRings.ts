@@ -7,6 +7,13 @@ import type {
 import { InfoCard3D } from './InfoCard3D';
 import { InfoCardRingRow } from './InfoCardRingRow';
 
+type FocusOrbitCircle = {
+  center: THREE.Vector3;
+  radius: number;
+  orbitHeight: number;
+  orbitAngle: number;
+};
+
 // Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
   readonly group = new THREE.Group();
@@ -16,7 +23,7 @@ export class InfoCardRings {
   private spinPhase = 0;
 
   private readonly cameraForward = new THREE.Vector3();
-  // Vertical lift applied to the whole card system relative to the camera anchor.
+  // Vertical lift applied to the whole card system relative to the orbit anchor.
   private readonly anchorOffset = new THREE.Vector3(0, 1.2, 0);
 
   rebuild(category: InformationSceneCategory | null): void {
@@ -69,7 +76,12 @@ export class InfoCardRings {
     this.clear();
   }
 
-  update(dt: number, camera: THREE.PerspectiveCamera, active: boolean): void {
+  update(
+    dt: number,
+    camera: THREE.PerspectiveCamera,
+    active: boolean,
+    focusOrbit?: FocusOrbitCircle,
+  ): void {
     if (!active || this.infoCards.length === 0) {
       return;
     }
@@ -77,12 +89,24 @@ export class InfoCardRings {
     // Global spin phase is shared so all rows rotate together.
     this.spinPhase += dt * 0.1;
 
-    // Anchor the full card system in front of the camera and face it toward the camera.
-    camera.getWorldDirection(this.cameraForward);
-    this.group.position
-      .copy(camera.position)
-      .addScaledVector(this.cameraForward, 10)
-      .add(this.anchorOffset);
+    if (focusOrbit) {
+      // Keep cards inside the same orbit circle as camera focus, between model-center and camera.
+      const innerRadius = Math.max(0.1, focusOrbit.radius * 0.62);
+      this.group.position.set(
+        focusOrbit.center.x + Math.sin(focusOrbit.orbitAngle) * innerRadius,
+        focusOrbit.center.y + focusOrbit.orbitHeight * 0.5,
+        focusOrbit.center.z + Math.cos(focusOrbit.orbitAngle) * innerRadius,
+      );
+      this.group.position.add(this.anchorOffset);
+    } else {
+      // Fallback anchor in front of camera when focus-circle data is unavailable.
+      camera.getWorldDirection(this.cameraForward);
+      this.group.position
+        .copy(camera.position)
+        .addScaledVector(this.cameraForward, 10)
+        .add(this.anchorOffset);
+    }
+
     this.group.lookAt(camera.position);
 
     for (const row of this.infoRows) {
