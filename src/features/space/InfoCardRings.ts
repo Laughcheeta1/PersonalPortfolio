@@ -6,15 +6,15 @@ import type {
 } from '../information/models';
 import { InfoCard3D } from './InfoCard3D';
 import { InfoCardRingRow } from './InfoCardRingRow';
+import { wrapToPi } from './math';
 
 type FocusOrbitCircle = {
   center: THREE.Vector3;
   radius: number;
   orbitHeight: number;
-  orbitAngle: number;
 };
 
-const INTRO_DURATION_SECONDS = 0.9;
+const RING_CHASE_SPEED = 3.2;
 
 // Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
@@ -24,11 +24,10 @@ export class InfoCardRings {
   private infoRows: InfoCardRingRow[] = [];
   private spinPhase = 0;
   private introPending = false;
-  private introActive = false;
-  private introElapsed = 0;
-  private introStartAngle = 0;
+  private ringAngle = 0;
 
   private readonly cameraForward = new THREE.Vector3();
+  private readonly centerToCamera = new THREE.Vector3();
   // Vertical lift applied to the whole card system relative to the orbit anchor.
   private readonly anchorOffset = new THREE.Vector3(0, 1.2, 0);
 
@@ -61,14 +60,13 @@ export class InfoCardRings {
 
       pickIndex = row.setPickIndices(pickIndex);
       row.appendCardsTo(this.infoCards);
-      this.infoRows.push(row);
-      this.group.add(row.group);
-    });
+    this.infoRows.push(row);
+    this.group.add(row.group);
+  });
 
-    this.introPending = this.infoCards.length > 0;
-    this.introActive = false;
-    this.introElapsed = 0;
-  }
+  this.introPending = this.infoCards.length > 0;
+  this.ringAngle = 0;
+}
 
   clear(): void {
     // Dispose card GPU resources first, then remove groups.
@@ -78,13 +76,11 @@ export class InfoCardRings {
     }
 
     this.infoCards = [];
-    this.infoRows = [];
-    this.spinPhase = 0;
-    this.introPending = false;
-    this.introActive = false;
-    this.introElapsed = 0;
-    this.introStartAngle = 0;
-  }
+  this.infoRows = [];
+  this.spinPhase = 0;
+  this.introPending = false;
+  this.ringAngle = 0;
+}
 
   dispose(): void {
     this.clear();
@@ -101,27 +97,23 @@ export class InfoCardRings {
     }
 
     if (focusOrbit) {
-      const oppositeAngle = focusOrbit.orbitAngle + Math.PI;
-      let ringAngle = oppositeAngle;
+      // Measure camera angle from the focused model center to avoid drift while camera lerps.
+      this.centerToCamera.subVectors(camera.position, focusOrbit.center);
+      const cameraAngle = Math.atan2(this.centerToCamera.x, this.centerToCamera.z);
+      const oppositeAngle = cameraAngle + Math.PI;
 
       if (this.introPending) {
         this.introPending = false;
-        this.introActive = true;
-        this.introElapsed = 0;
-        this.introStartAngle = focusOrbit.orbitAngle;
+        // Spawn at camera angle (behind the camera on this orbit), then start chasing opposite.
+        this.ringAngle = cameraAngle;
       }
 
-      if (this.introActive) {
-        this.introElapsed += dt;
-        this.spinPhase += dt * 0.4;
-        const progress = Math.min(this.introElapsed / INTRO_DURATION_SECONDS, 1);
-        const easedProgress = 1 - (1 - progress) ** 3;
-        ringAngle = this.introStartAngle + Math.PI * easedProgress;
+      const delta = wrapToPi(oppositeAngle - this.ringAngle);
+      const chaseFactor = Math.min(1, dt * RING_CHASE_SPEED);
+      this.ringAngle += delta * chaseFactor;
+      const ringAngle = this.ringAngle;
 
-        if (progress >= 1) {
-          this.introActive = false;
-        }
-      }
+      this.spinPhase += dt * 0.0001;
 
       // Keep cards on the same orbit center/angle, but at double the camera orbit radius.
       const ringRadius = Math.max(0.1, focusOrbit.radius * 2);
@@ -143,8 +135,8 @@ export class InfoCardRings {
     this.group.lookAt(camera.position);
 
     for (const row of this.infoRows) {
-      // Row-level update rotates the ring and reorients cards to the row's forward target.
-      row.update(this.spinPhase);
+      // Row-level update rotates the ring while cards keep facing the camera.
+      row.update(this.spinPhase, camera.position);
     }
   }
 

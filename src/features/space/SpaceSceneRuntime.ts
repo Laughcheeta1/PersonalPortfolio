@@ -437,7 +437,6 @@ export class SpaceSceneRuntime {
             center: focusTarget.position,
             radius: focusTarget.orbitRadius,
             orbitHeight: focusTarget.orbitHeight,
-            orbitAngle,
           }
         : undefined,
     );

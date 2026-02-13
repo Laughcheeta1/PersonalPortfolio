@@ -23,13 +23,10 @@ export class InfoCardRingRow {
   readonly rowOffsetY: number;
 
   private readonly cards: InfoCard3D[] = [];
-  private readonly lookTargetLocal: THREE.Vector3;
-  private readonly lookTargetWorld = new THREE.Vector3();
 
   constructor(params: InfoCardRingRowParams) {
     this.rowRadius = params.rowRadius;
     this.rowOffsetY = params.rowOffsetY;
-    this.lookTargetLocal = new THREE.Vector3(0, 0, this.rowRadius);
 
     const { categoryId, subcategory, ringIndex } = params;
     subcategory.items.forEach((item, itemIndex) => {
@@ -61,16 +58,12 @@ export class InfoCardRingRow {
     target.push(...this.cards);
   }
 
-  update(spinPhase: number): void {
+  update(spinPhase: number, cameraPosition: THREE.Vector3): void {
     this.group.position.set(0, this.rowOffsetY, 0);
     this.group.rotation.y = spinPhase;
 
-    // "Forward" ring target: center -> +Z circumference intersection.
-    this.lookTargetWorld.copy(this.lookTargetLocal);
-    this.group.localToWorld(this.lookTargetWorld);
-
     for (const card of this.cards) {
-      card.face(this.lookTargetWorld);
+      card.face(cameraPosition);
     }
   }
 
