@@ -14,6 +14,8 @@ type FocusOrbitCircle = {
   orbitAngle: number;
 };
 
+const INTRO_DURATION_SECONDS = 0.9;
+
 // Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
   readonly group = new THREE.Group();
@@ -21,6 +23,10 @@ export class InfoCardRings {
   private infoCards: InfoCard3D[] = [];
   private infoRows: InfoCardRingRow[] = [];
   private spinPhase = 0;
+  private introPending = false;
+  private introActive = false;
+  private introElapsed = 0;
+  private introStartAngle = 0;
 
   private readonly cameraForward = new THREE.Vector3();
   // Vertical lift applied to the whole card system relative to the orbit anchor.
@@ -58,6 +64,10 @@ export class InfoCardRings {
       this.infoRows.push(row);
       this.group.add(row.group);
     });
+
+    this.introPending = this.infoCards.length > 0;
+    this.introActive = false;
+    this.introElapsed = 0;
   }
 
   clear(): void {
@@ -70,6 +80,10 @@ export class InfoCardRings {
     this.infoCards = [];
     this.infoRows = [];
     this.spinPhase = 0;
+    this.introPending = false;
+    this.introActive = false;
+    this.introElapsed = 0;
+    this.introStartAngle = 0;
   }
 
   dispose(): void {
@@ -86,16 +100,35 @@ export class InfoCardRings {
       return;
     }
 
-    // Global spin phase is shared so all rows rotate together.
-    this.spinPhase += dt * 0.1;
-
     if (focusOrbit) {
-      // Keep cards inside the same orbit circle as camera focus, between model-center and camera.
-      const innerRadius = Math.max(0.1, focusOrbit.radius * 0.62);
+      const oppositeAngle = focusOrbit.orbitAngle + Math.PI;
+      let ringAngle = oppositeAngle;
+
+      if (this.introPending) {
+        this.introPending = false;
+        this.introActive = true;
+        this.introElapsed = 0;
+        this.introStartAngle = focusOrbit.orbitAngle;
+      }
+
+      if (this.introActive) {
+        this.introElapsed += dt;
+        this.spinPhase += dt * 0.4;
+        const progress = Math.min(this.introElapsed / INTRO_DURATION_SECONDS, 1);
+        const easedProgress = 1 - (1 - progress) ** 3;
+        ringAngle = this.introStartAngle + Math.PI * easedProgress;
+
+        if (progress >= 1) {
+          this.introActive = false;
+        }
+      }
+
+      // Keep cards on the same orbit center/angle, but at double the camera orbit radius.
+      const ringRadius = Math.max(0.1, focusOrbit.radius * 2);
       this.group.position.set(
-        focusOrbit.center.x + Math.sin(focusOrbit.orbitAngle) * innerRadius,
+        focusOrbit.center.x + Math.sin(ringAngle) * ringRadius,
         focusOrbit.center.y + focusOrbit.orbitHeight * 0.5,
-        focusOrbit.center.z + Math.cos(focusOrbit.orbitAngle) * innerRadius,
+        focusOrbit.center.z + Math.cos(ringAngle) * ringRadius,
       );
       this.group.position.add(this.anchorOffset);
     } else {
