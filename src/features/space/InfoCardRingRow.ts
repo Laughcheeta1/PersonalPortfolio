@@ -18,10 +18,11 @@ type InfoCardRingRowParams = {
   rowRadius: number;
   // Vertical offset for this row relative to root card group.
   rowOffsetY: number;
+  // Visible arc span in radians, centered toward the camera side.
+  arcSpan: number;
 };
 
-const ARC_SPAN = Math.PI;
-const ARC_START_ANGLE = 0;
+const HALF_PI = Math.PI * 0.5;
 
 // Owns one subcategory ring.
 // Responsibilities:
@@ -38,19 +39,17 @@ export class InfoCardRingRow {
 
   // Cards owned by this row.
   private readonly cards: InfoCard3D[] = [];
+  private arcSpan: number;
 
   constructor(params: InfoCardRingRowParams) {
     this.rowRadius = params.rowRadius;
     this.rowOffsetY = params.rowOffsetY;
+    this.arcSpan = params.arcSpan;
 
     const { categoryId, subcategory, ringIndex } = params;
     // Evenly distribute items around a semicircle arc.
     subcategory.items.forEach((item, itemIndex) => {
-      const itemCount = subcategory.items.length;
-      const angle =
-        itemCount <= 1
-          ? ARC_START_ANGLE + ARC_SPAN * 0.5
-          : ARC_START_ANGLE + (itemIndex / (itemCount - 1)) * ARC_SPAN;
+      const angle = this.getCardAngle(itemIndex, subcategory.items.length);
       const card = new InfoCard3D({
         categoryId,
         subcategoryId: subcategory.id,
@@ -70,6 +69,15 @@ export class InfoCardRingRow {
       this.group.add(card.mesh);
       this.cards.push(card);
     });
+  }
+
+  setArcSpan(arcSpan: number): void {
+    if (Math.abs(this.arcSpan - arcSpan) < 0.0001) {
+      return;
+    }
+
+    this.arcSpan = arcSpan;
+    this.layoutCards();
   }
 
   setPickIndices(startIndex: number): number {
@@ -103,5 +111,24 @@ export class InfoCardRingRow {
       this.group.remove(card.mesh);
       card.dispose();
     }
+  }
+
+  private layoutCards(): void {
+    const total = this.cards.length;
+    for (let index = 0; index < total; index += 1) {
+      const angle = this.getCardAngle(index, total);
+      const x = Math.cos(angle) * this.rowRadius;
+      const z = this.rowRadius - Math.sin(angle) * this.rowRadius;
+      this.cards[index].mesh.position.set(x, 0, z);
+    }
+  }
+
+  private getCardAngle(itemIndex: number, itemCount: number): number {
+    if (itemCount <= 1) {
+      return HALF_PI;
+    }
+
+    const start = HALF_PI - this.arcSpan * 0.5;
+    return start + (itemIndex / (itemCount - 1)) * this.arcSpan;
   }
 }

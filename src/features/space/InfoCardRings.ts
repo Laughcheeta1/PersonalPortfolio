@@ -1,6 +1,7 @@
 import * as THREE from 'three/src/Three.js';
 
 import type {
+  InformationSceneItem,
   InformationItemSelection,
   InformationSceneCategory,
 } from '../information/models';
@@ -25,6 +26,11 @@ const RING_CHASE_SPEED = 3.2;
 const RING_RADIUS_MULTIPLIER = 1.5;
 const FOCUSED_ORBIT_RADIUS = 7.4;
 const SEMICIRCLE_RADIUS_MULTIPLIER = 2;
+const MAX_SEMICIRCLE_SPAN = Math.PI;
+const VISIBLE_ARC_FRACTION = 0.92;
+const MIN_VISIBLE_ARC_SPAN = 1.0;
+const MIN_CARD_CENTER_SPACING = 2.6;
+const OVERFLOW_RING_RADIUS_STEP = 1.8;
 
 // Manages all 3D card rows for the currently selected category.
 // - Rebuilds rows when category changes.
@@ -38,10 +44,12 @@ export class InfoCardRings {
   private infoCards: InfoCard3D[] = [];
   // One row per subcategory.
   private infoRows: InfoCardRingRow[] = [];
+  private activeCategory: InformationSceneCategory | null = null;
   // We use this once after rebuild so cards spawn behind camera first.
   private introPending = false;
   // Current world-orbit angle for this full card system.
   private ringAngle = 0;
+  private currentArcSpan = MAX_SEMICIRCLE_SPAN;
 
   // Reused vectors prevent extra allocations every frame.
   private readonly cameraForward = new THREE.Vector3();
@@ -49,46 +57,82 @@ export class InfoCardRings {
   // Vertical lift applied to the whole card system relative to its anchor.
   private readonly anchorOffset = new THREE.Vector3(0, 1.2, 0);
 
-  rebuild(category: InformationSceneCategory | null): void {
+  rebuild(category: InformationSceneCategory | null, arcSpan = this.currentArcSpan): void {
     // Rebuild from scratch whenever selected category changes.
     // This keeps state simple and avoids subtle diff-update bugs.
     this.clear();
+    this.activeCategory = category;
 
     // If nothing is selected (or category has no rows), there is nothing to draw.
     if (!category || category.subcategories.length === 0) {
       return;
     }
 
-    // Vertical distance between subcategory rows.
+    // Vertical distance between generated rings.
     const rowSpacing = 1.35;
-    // Base semicircle radius: 2x focused camera orbit radius.
-    const minRadius = FOCUSED_ORBIT_RADIUS * SEMICIRCLE_RADIUS_MULTIPLIER;
+    // Base semicircle radius (primary ring per subcategory).
+    const baseRadius = FOCUSED_ORBIT_RADIUS * SEMICIRCLE_RADIUS_MULTIPLIER;
     // Global pick index across all cards.
     let pickIndex = 0;
+    this.currentArcSpan = arcSpan;
 
-    category.subcategories.forEach((subcategory, rowIndex) => {
+    const rowPlans: Array<{
+      categoryId: InformationSceneCategory['id'];
+      subcategoryId: string;
+      subcategoryLabel: string;
+      items: InformationSceneItem[];
+      rowRadius: number;
+    }> = [];
+
+    category.subcategories.forEach((subcategory) => {
       // Skip empty rows.
       if (subcategory.items.length === 0) {
         return;
       }
 
-      // Row radius grows for each row so rings are nested.
-      const rowRadius = minRadius + rowIndex * 1.4;
-      // Centers all rows vertically around y=0.
-      const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
+      // Split large subcategories into multiple rings when one ring would cause overlap.
+      // Each additional ring for the same subcategory increases radius.
+      let cursor = 0;
+      let overflowRing = 0;
+      while (cursor < subcategory.items.length) {
+        const rowRadius = baseRadius + overflowRing * OVERFLOW_RING_RADIUS_STEP;
+        const maxCardsInRing = Math.max(
+          1,
+          Math.floor((this.currentArcSpan * rowRadius) / MIN_CARD_CENTER_SPACING) + 1,
+        );
+        const nextCursor = Math.min(cursor + maxCardsInRing, subcategory.items.length);
 
-      // Create one row object that will own all cards for this subcategory.
+        rowPlans.push({
+          categoryId: category.id,
+          subcategoryId: subcategory.id,
+          subcategoryLabel: subcategory.label,
+          items: subcategory.items.slice(cursor, nextCursor),
+          rowRadius,
+        });
+
+        cursor = nextCursor;
+        overflowRing += 1;
+      }
+    });
+
+    const totalRows = rowPlans.length;
+    rowPlans.forEach((plan, rowIndex) => {
+      // Centers all generated rows vertically around y=0.
+      const rowOffsetY = ((totalRows - 1) / 2 - rowIndex) * rowSpacing;
       const row = new InfoCardRingRow({
-        categoryId: category.id,
-        subcategory,
+        categoryId: plan.categoryId,
+        subcategory: {
+          id: plan.subcategoryId,
+          label: plan.subcategoryLabel,
+          items: plan.items,
+        },
         ringIndex: this.infoRows.length,
-        rowRadius,
+        rowRadius: plan.rowRadius,
         rowOffsetY,
+        arcSpan: this.currentArcSpan,
       });
 
-      // Assign contiguous pick ids so raycast can recover exact card.
       pickIndex = row.setPickIndices(pickIndex);
-      // Keep flat references for quick target/pick lookup.
       row.appendCardsTo(this.infoCards);
       this.infoRows.push(row);
       this.group.add(row.group);
@@ -108,6 +152,7 @@ export class InfoCardRings {
 
     this.infoCards = [];
     this.infoRows = [];
+    this.activeCategory = null;
     this.introPending = false;
     this.ringAngle = 0;
   }
@@ -129,6 +174,19 @@ export class InfoCardRings {
     }
 
     if (focusOrbit) {
+      const visibleArcSpan = this.computeVisibleArcSpan(camera);
+      if (Math.abs(visibleArcSpan - this.currentArcSpan) > 0.02) {
+        if (this.activeCategory) {
+          // Reflow rows so overflow-splitting is recalculated for new visible span.
+          this.rebuild(this.activeCategory, visibleArcSpan);
+        } else {
+          this.currentArcSpan = visibleArcSpan;
+          for (const row of this.infoRows) {
+            row.setArcSpan(this.currentArcSpan);
+          }
+        }
+      }
+
       // Compute camera angle around selected model center.
       // atan2(x, z) returns angle around vertical axis in this coordinate setup.
       this.centerToCamera.subVectors(camera.position, focusOrbit.center);
@@ -174,6 +232,13 @@ export class InfoCardRings {
       // Row update applies local lane transform and camera-facing card orientation.
       row.update(camera.position);
     }
+  }
+
+  private computeVisibleArcSpan(camera: THREE.PerspectiveCamera): number {
+    const verticalFovRad = THREE.MathUtils.degToRad(camera.fov);
+    const horizontalFovRad = 2 * Math.atan(Math.tan(verticalFovRad * 0.5) * camera.aspect);
+    const usable = horizontalFovRad * VISIBLE_ARC_FRACTION;
+    return THREE.MathUtils.clamp(usable, MIN_VISIBLE_ARC_SPAN, MAX_SEMICIRCLE_SPAN);
   }
 
   getSelectionByObject(object: THREE.Object3D): InformationItemSelection | null {
