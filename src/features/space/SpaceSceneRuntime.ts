@@ -37,6 +37,7 @@ type LoadedModel = {
 
 const TWO_PI = Math.PI * 2;
 
+// Owns the full 3D scene lifecycle: setup, animation, input, selection, and disposal.
 export class SpaceSceneRuntime {
   private readonly container: HTMLDivElement;
   private readonly models: SpaceModelItem[];
@@ -53,6 +54,7 @@ export class SpaceSceneRuntime {
   private readonly raycaster = new THREE.Raycaster();
   private readonly pointerNdc = new THREE.Vector2();
   private readonly ringGroup = new THREE.Group();
+  // Child object that owns mini-card creation, layout, rotation, and picking metadata.
   private readonly infoCardRings = new InfoCardRings();
   private readonly loadedModels: LoadedModel[] = [];
 
@@ -141,6 +143,7 @@ export class SpaceSceneRuntime {
   }
 
   async start(): Promise<void> {
+    // Environment and models are loaded first so the first frame is fully initialized.
     await this.loadEnvironment();
     await this.createModelRing();
     this.updateModelHighlight();
@@ -190,6 +193,7 @@ export class SpaceSceneRuntime {
       return;
     }
 
+    // Changing selection updates both model highlight and info cards context.
     this.selectedIndex = index;
     this.updateModelHighlight();
     this.rebuildInfoCards();
@@ -199,6 +203,7 @@ export class SpaceSceneRuntime {
   }
 
   navigateTo(target: SceneNavigationTarget): void {
+    // Normalizes flexible navigation input (ids/slugs) into a concrete category/item target.
     const normalized = resolveNavigationTarget(this.categories, target);
     if (!normalized) {
       return;
@@ -259,6 +264,7 @@ export class SpaceSceneRuntime {
   }
 
   private async createModelRing(): Promise<void> {
+    // Each model is loaded, normalized to a common size, and placed on the circular ring.
     for (let index = 0; index < this.models.length; index += 1) {
       const gltf = await this.loader.loadAsync(this.models[index].url);
       if (this.disposed) {
@@ -294,6 +300,7 @@ export class SpaceSceneRuntime {
   }
 
   private normalizeModelSize(root: THREE.Object3D): void {
+    // Scale by the largest dimension so all assets feel visually comparable.
     const bbox = new THREE.Box3().setFromObject(root);
     const size = bbox.getSize(new THREE.Vector3());
     const largestDimension = Math.max(size.x, size.y, size.z) || 1;
@@ -329,6 +336,7 @@ export class SpaceSceneRuntime {
   }
 
   private rebuildInfoCards(): void {
+    // Cards are scoped to the currently selected model/category.
     this.infoCardRings.rebuild(this.getSelectedCategory());
     this.applyPendingNavigationTarget();
   }
@@ -357,6 +365,7 @@ export class SpaceSceneRuntime {
       return;
     }
 
+    // If a target item was requested before cards were ready, apply it now.
     const selection = this.infoCardRings.findSelectionByTarget(target.itemId, target.subcategoryId);
     if (selection) {
       this.openInfoCard(selection);
@@ -376,10 +385,12 @@ export class SpaceSceneRuntime {
 
     const dt = Math.min(this.clock.getDelta(), 0.06);
 
+    // "Idle mode": camera keeps rotating while no model is focused.
     if (this.selectedIndex === null) {
       this.autoYaw += this.autoRotateSpeed * dt;
     }
 
+    // Soft snapping keeps the idle camera roughly aligned with model angles.
     if (!this.dragging && this.selectedIndex === null) {
       const combinedYaw = this.autoYaw + this.userYawTarget;
       const snapAngle = Math.round(combinedYaw / this.angleStep) * this.angleStep;
@@ -390,11 +401,13 @@ export class SpaceSceneRuntime {
       }
     }
 
+    // Damp pointer yaw to avoid abrupt motion when dragging.
     this.userYawCurrent = damp(this.userYawCurrent, this.userYawTarget, Math.min(0.12 + dt * 2, 0.22));
 
     const orbitAngle = this.autoYaw + this.userYawCurrent;
     const focusTarget = this.getFocusTarget();
 
+    // Focus mode or idle mode choose different orbit targets.
     if (focusTarget) {
       this.desiredCameraPosition.set(
         focusTarget.position.x + Math.sin(orbitAngle) * focusTarget.orbitRadius,
@@ -414,6 +427,7 @@ export class SpaceSceneRuntime {
     this.camera.position.lerp(this.desiredCameraPosition, 0.08);
     this.camera.lookAt(this.cameraLookAt);
 
+    // Delegate card transforms/rotation to the dedicated card-rings object.
     this.infoCardRings.update(dt, this.camera, this.selectedIndex !== null);
 
     this.composer.render();
@@ -478,6 +492,7 @@ export class SpaceSceneRuntime {
     this.pointerNdc.x = ((event.clientX - bounds.left) / bounds.width) * 2 - 1;
     this.pointerNdc.y = -((event.clientY - bounds.top) / bounds.height) * 2 + 1;
 
+    // Single raycast handles both card clicks and model clicks.
     this.raycaster.setFromCamera(this.pointerNdc, this.camera);
     const intersections = this.raycaster.intersectObjects(
       [this.infoCardRings.group, this.ringGroup],
@@ -490,6 +505,7 @@ export class SpaceSceneRuntime {
     }
 
     for (const hit of intersections) {
+      // Cards have priority over models when both are under the pointer.
       const cardSelection = this.infoCardRings.getSelectionByObject(hit.object);
       if (cardSelection) {
         this.openInfoCard(cardSelection);

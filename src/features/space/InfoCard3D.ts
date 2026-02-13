@@ -15,6 +15,7 @@ type InfoCard3DParams = {
   angle: number;
 };
 
+// Represents one physical 3D info card (mesh + metadata + disposal helpers).
 export class InfoCard3D {
   readonly mesh: THREE.Mesh;
   readonly categoryId: InformationSceneCategory['id'];
@@ -30,6 +31,7 @@ export class InfoCard3D {
     this.ringIndex = params.ringIndex;
     this.angle = params.angle;
 
+    // Card geometry + materials are assembled once; transforms are updated per-frame externally.
     const geometry = new THREE.BoxGeometry(2.2, 0.92, 0.5);
     const texture = this.createCardTexture(params.item.title, params.subcategoryLabel);
     const frontMaterial = new THREE.MeshStandardMaterial({
@@ -58,24 +60,29 @@ export class InfoCard3D {
       frontMaterial,
       backMaterial,
     ]);
+    // Marker used by raycast selection logic in InfoCardRings.
     this.mesh.userData.infoCard = true;
   }
 
   setPickIndex(index: number): void {
+    // Stable index pointer so ray hits can map back to the owning InfoCard3D.
     this.mesh.userData.infoCardIndex = index;
   }
 
   setLocalRingPosition(rowRadius: number): void {
+    // Position on a flat XZ ring using the precomputed item angle.
     const x = Math.cos(this.angle) * rowRadius;
     const z = Math.sin(this.angle) * rowRadius;
     this.mesh.position.set(x, 0, z);
   }
 
   face(cameraPosition: THREE.Vector3): void {
+    // Billboard-style orientation so card front always points at the camera.
     this.mesh.lookAt(cameraPosition);
   }
 
   toSelection(): InformationItemSelection {
+    // Shared selection payload consumed by UI panel and navigation.
     return {
       categoryId: this.categoryId,
       subcategoryId: this.subcategoryId,
@@ -84,6 +91,7 @@ export class InfoCard3D {
   }
 
   dispose(): void {
+    // Explicit disposal prevents texture/material leaks when cards are rebuilt.
     const material = this.mesh.material;
     this.mesh.geometry.dispose();
 

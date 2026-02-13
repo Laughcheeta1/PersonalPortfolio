@@ -14,6 +14,7 @@ type InfoRing = {
 
 const TWO_PI = Math.PI * 2;
 
+// Manages all mini-card rings for the currently focused category.
 export class InfoCardRings {
   readonly group = new THREE.Group();
 
@@ -22,9 +23,11 @@ export class InfoCardRings {
   private spinPhase = 0;
 
   private readonly cameraForward = new THREE.Vector3();
+  // Vertical lift applied to the whole card system relative to the camera anchor.
   private readonly anchorOffset = new THREE.Vector3(0, 1.2, 0);
 
   rebuild(category: InformationSceneCategory | null): void {
+    // Full rebuild is simpler and safer than incremental patching when category changes.
     this.clear();
 
     if (!category || category.subcategories.length === 0) {
@@ -39,6 +42,7 @@ export class InfoCardRings {
         return;
       }
 
+      // Each subcategory becomes one ring row.
       const ringGroup = new THREE.Group();
       const rowRadius = minRadius + rowIndex * 1.4;
       const rowOffsetY = ((category.subcategories.length - 1) / 2 - rowIndex) * rowSpacing;
@@ -52,6 +56,7 @@ export class InfoCardRings {
       });
 
       subcategory.items.forEach((item, itemIndex) => {
+        // Items are distributed evenly around their row ring.
         const card = new InfoCard3D({
           categoryId: category.id,
           subcategoryId: subcategory.id,
@@ -69,6 +74,7 @@ export class InfoCardRings {
   }
 
   clear(): void {
+    // Dispose card GPU resources first, then remove groups.
     for (const card of this.infoCards) {
       const ring = this.infoRings[card.ringIndex];
       if (ring) {
@@ -97,16 +103,19 @@ export class InfoCardRings {
       return;
     }
 
-    this.spinPhase += dt * 2.0;
+    // Global spin phase is shared so all rows rotate together.
+    this.spinPhase += dt * 0.01;
 
+    // Anchor the full card system in front of the camera and face it toward the camera.
     camera.getWorldDirection(this.cameraForward);
     this.group.position
       .copy(camera.position)
-      .addScaledVector(this.cameraForward, -10)
+      .addScaledVector(this.cameraForward, 10)
       .add(this.anchorOffset);
     this.group.lookAt(camera.position);
 
     for (const ring of this.infoRings) {
+      // Row height stays fixed; only yaw rotates each ring.
       ring.group.position.set(0, ring.rowOffsetY, 0);
       ring.group.rotation.y = this.spinPhase;
     }
@@ -117,12 +126,14 @@ export class InfoCardRings {
         continue;
       }
 
+      // Card local position is ring-based; facing is camera-based.
       card.setLocalRingPosition(ring.rowRadius);
       card.face(camera.position);
     }
   }
 
   getSelectionByObject(object: THREE.Object3D): InformationItemSelection | null {
+    // Walk parent chain to support ray hits on nested mesh parts.
     let current: THREE.Object3D | null = object;
     while (current) {
       if (current.userData.infoCard === true) {
@@ -145,6 +156,7 @@ export class InfoCardRings {
     itemId: string,
     subcategoryId?: string,
   ): InformationItemSelection | null {
+    // Supports both stable ids and human-friendly slugs.
     const card = this.infoCards.find((entry) => {
       const itemMatches = entry.item.id === itemId || entry.item.slug === itemId;
       const subcategoryMatches =
