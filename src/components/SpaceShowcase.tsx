@@ -28,7 +28,10 @@ const SpaceShowcase = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedInfoItem, setSelectedInfoItem] = useState<InformationItemSelection | null>(null);
   const [isAudioOn, setIsAudioOn] = useState(false);
-  const [cardDesignIndex, setCardDesignIndex] = useState(0);
+  const [cardDesignIndex, setCardDesignIndex] = useState(() => {
+    const defaultStyle = CARD_DESIGN_OPTIONS.find((entry) => entry.id === 'comic-pop-2');
+    return defaultStyle?.index ?? 0;
+  });
 
   useEffect(() => {
     const container = containerRef.current;
