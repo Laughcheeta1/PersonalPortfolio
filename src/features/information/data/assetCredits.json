@@ -1,0 +1,48 @@
+{
+  "music": [
+    {
+      "name": "Backgroun Music",
+      "author": "DistroKid",
+      "sourceUrl": "https://www.youtube.com/watch?v=fQUzYyLSJBI&list=RDfQUzYyLSJBI&start_radio=1"
+    }
+  ],
+  "hdri": [
+    {
+      "name": "Background",
+      "author": "Sergej Majboroda and Jarod Guest",
+      "sourceUrl": "https://polyhaven.com/a/sunflowers_puresky"
+    }
+  ],
+  "models": [
+    {
+      "name": "Golden Retriever",
+      "author": "David Wigforss",
+      "sourceUrl": "https://sketchfab.com/3d-models/golden-retriever-sitting-58088fde80bb449c9da4e595ef8ea0d6"
+    },
+    {
+      "name": "Cosmonaut on a rocket",
+      "author": "Yury Misiyuk",
+      "sourceUrl": "https://sketchfab.com/3d-models/cosmonaut-on-a-rocket-e93cbbdb9a2144fb9f63d062566f3e63"
+    },
+    {
+      "name": "Artificial Neural Network",
+      "author": "M.E",
+      "sourceUrl": "https://sketchfab.com/3d-models/artificial-neural-network-ann-8400016f745643a4b25a57dd0bde04ab"
+    },
+    {
+      "name": "F1 Car",
+      "author": "amogusstrikesback2",
+      "sourceUrl": "https://sketchfab.com/3d-models/nixon-special-burnout-revenge-sd-5fc2869531bc452da9a4765ca689f921"
+    },
+    {
+      "name": "Earth With Skeleton Hands",
+      "author": "Toni Garcia Vilche",
+      "sourceUrl": "https://sketchfab.com/3d-models/death-earth-cacc56967965467fbb2f644c4611c6f6"
+    },
+    {
+      "name": "House",
+      "author": "farhad.Guli",
+      "sourceUrl": "https://sketchfab.com/3d-models/smurf-castle-db99c62f73e04147967cc6e79a9deae7"
+    }
+  ]
+}

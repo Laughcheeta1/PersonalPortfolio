@@ -10,7 +10,7 @@ import { InfoCardRings } from '../InfoCardRings';
 import { ModelRingManager } from './ModelRingManager';
 import { OrbitCameraController } from './OrbitCameraController';
 import { pickSceneObject } from './picking';
-import type { RuntimeOptions } from './types';
+import type { RuntimeLoadingState, RuntimeOptions } from './types';
 import type { InformationItemSelection, SceneNavigationTarget } from '../../information/models';
 
 // Orchestrates high-level runtime flow while delegated modules own specific logic.
@@ -20,6 +20,7 @@ export class SpaceSceneRuntime {
   private readonly categories: RuntimeOptions['categories'];
   private readonly onSelectionChange: RuntimeOptions['onSelectionChange'];
   private readonly onInfoItemSelectionChange: RuntimeOptions['onInfoItemSelectionChange'];
+  private readonly onLoadingStateChange: RuntimeOptions['onLoadingStateChange'];
 
   private readonly scene = new THREE.Scene();
   private readonly camera: THREE.PerspectiveCamera;
@@ -54,6 +55,7 @@ export class SpaceSceneRuntime {
     this.categories = options.categories;
     this.onSelectionChange = options.onSelectionChange;
     this.onInfoItemSelectionChange = options.onInfoItemSelectionChange;
+    this.onLoadingStateChange = options.onLoadingStateChange;
 
     this.camera = new THREE.PerspectiveCamera(
       50,
@@ -103,12 +105,22 @@ export class SpaceSceneRuntime {
   }
 
   async start(): Promise<void> {
+    this.emitLoadingState({ active: true, progress: 0.03, label: 'Preparing renderer...' });
     await this.loadEnvironment();
-    await this.modelRing.load(this.models, () => this.disposed);
+    this.emitLoadingState({ active: true, progress: 0.12, label: 'Environment ready. Loading models...' });
+    await this.modelRing.load(this.models, () => this.disposed, (loadedCount, totalCount, modelName) => {
+      const progress = 0.12 + (loadedCount / Math.max(totalCount, 1)) * 0.88;
+      this.emitLoadingState({
+        active: true,
+        progress,
+        label: `Loading model ${loadedCount}/${totalCount}: ${modelName}`,
+      });
+    });
     if (this.disposed) {
       return;
     }
     this.modelRing.highlightSelection(this.selectedIndex, this.bloomPass);
+    this.emitLoadingState({ active: false, progress: 1, label: 'Scene ready' });
     this.animate();
   }
 
@@ -188,6 +200,13 @@ export class SpaceSceneRuntime {
     this.scene.environment = texture;
     this.scene.environmentIntensity = 0.35;
     this.environmentTexture = texture;
+  }
+
+  private emitLoadingState(state: RuntimeLoadingState): void {
+    this.onLoadingStateChange({
+      ...state,
+      progress: Math.min(1, Math.max(0, state.progress)),
+    });
   }
 
   private rebuildInfoCards(): void {

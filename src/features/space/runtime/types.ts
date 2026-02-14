@@ -6,6 +6,12 @@ import type {
 } from '../../information/models';
 import type { SpaceModelItem } from '../spaceModels';
 
+export type RuntimeLoadingState = {
+  active: boolean;
+  progress: number;
+  label: string;
+};
+
 // Input contract used by the runtime constructor.
 // This keeps runtime decoupled from React by receiving plain callbacks/data.
 export type RuntimeOptions = {
@@ -19,6 +25,8 @@ export type RuntimeOptions = {
   onSelectionChange: (index: number | null) => void;
   // Callback to open/close info panel when card selection changes.
   onInfoItemSelectionChange: (selection: InformationItemSelection | null) => void;
+  // Callback to expose scene startup loading state to host UI.
+  onLoadingStateChange: (state: RuntimeLoadingState) => void;
 };
 
 // Camera orbit target used during focused mode.

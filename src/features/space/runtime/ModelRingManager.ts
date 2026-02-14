@@ -39,7 +39,11 @@ export class ModelRingManager {
 
   // Loads and positions all models in the circular ring.
   // `isDisposed` lets runtime abort cleanly if user navigates away mid-load.
-  async load(models: SpaceModelItem[], isDisposed: () => boolean): Promise<void> {
+  async load(
+    models: SpaceModelItem[],
+    isDisposed: () => boolean,
+    onProgress: (loadedCount: number, totalCount: number, modelName: string) => void,
+  ): Promise<void> {
     for (let index = 0; index < models.length; index += 1) {
       const gltf = await this.loader.loadAsync(models[index].url);
       if (isDisposed()) {
@@ -84,6 +88,7 @@ export class ModelRingManager {
       this.titleSprites.push(titleSprite);
       this.group.add(holder);
       this.loadedModels.push({ holder, meshes });
+      onProgress(index + 1, models.length, models[index].name);
     }
   }
 
