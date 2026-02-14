@@ -10,6 +10,7 @@ import type {
   SceneNavigationTarget,
 } from '../features/information/models';
 import { startAmbientHum, type AmbientHumController } from '../features/space/ambientHum';
+import { CARD_DESIGN_COUNT, CARD_DESIGN_OPTIONS } from '../features/space/InfoCard3D';
 import { SpaceSceneRuntime } from '../features/space/runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../features/space/spaceModels';
 
@@ -27,6 +28,7 @@ const SpaceShowcase = () => {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedInfoItem, setSelectedInfoItem] = useState<InformationItemSelection | null>(null);
   const [isAudioOn, setIsAudioOn] = useState(false);
+  const [cardDesignIndex, setCardDesignIndex] = useState(0);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -76,7 +78,13 @@ const SpaceShowcase = () => {
     };
   }, [isAudioOn]);
 
+  useEffect(() => {
+    runtimeRef.current?.setCardDesignIndex(cardDesignIndex);
+  }, [cardDesignIndex]);
+
   const selectedName = selectedIndex === null ? '' : SPACE_MODELS[selectedIndex]?.name ?? '';
+  const selectedCardDesignLabel = CARD_DESIGN_OPTIONS[cardDesignIndex]?.label ?? 'Unknown';
+  const selectedCardDesignFamily = CARD_DESIGN_OPTIONS[cardDesignIndex]?.family ?? '';
 
   return (
     <section className="space-page">
@@ -104,6 +112,40 @@ const SpaceShowcase = () => {
           >
             Jump to Work
           </button>
+        </div>
+
+        <div className="card-design-picker" aria-label="Temporary card design selector">
+          <span>
+            Card Design ({cardDesignIndex + 1}/{CARD_DESIGN_COUNT}): {selectedCardDesignLabel}
+            {selectedCardDesignFamily ? ` - ${selectedCardDesignFamily}` : ''}
+          </span>
+          <div className="card-design-buttons">
+            <button
+              type="button"
+              onClick={() =>
+                setCardDesignIndex((prev) => (prev - 1 + CARD_DESIGN_COUNT) % CARD_DESIGN_COUNT)
+              }
+            >
+              Previous style
+            </button>
+            <button
+              type="button"
+              onClick={() => setCardDesignIndex((prev) => (prev + 1) % CARD_DESIGN_COUNT)}
+            >
+              Next style
+            </button>
+            <select
+              aria-label="Select card style"
+              value={cardDesignIndex}
+              onChange={(event) => setCardDesignIndex(Number(event.target.value))}
+            >
+              {CARD_DESIGN_OPTIONS.map((design) => (
+                <option key={`card-design-${design.id}`} value={design.index}>
+                  {design.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 

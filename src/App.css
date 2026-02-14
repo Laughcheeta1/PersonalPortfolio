@@ -42,6 +42,45 @@
   gap: 0.5rem;
 }
 
+.card-design-picker {
+  margin-top: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.card-design-picker span {
+  color: rgba(228, 237, 255, 0.95);
+  font-size: 0.88rem;
+}
+
+.card-design-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.card-design-buttons button {
+  min-width: 2.3rem;
+  border: 1px solid rgba(126, 209, 255, 0.5);
+  border-radius: 0.55rem;
+  padding: 0.3rem 0.52rem;
+  color: #cce9ff;
+  background: rgba(16, 35, 55, 0.72);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.card-design-buttons select {
+  min-width: min(20rem, 100%);
+  border: 1px solid rgba(126, 209, 255, 0.5);
+  border-radius: 0.55rem;
+  padding: 0.3rem 0.52rem;
+  color: #e8f7ff;
+  background: rgba(16, 35, 55, 0.9);
+  font-size: 0.82rem;
+}
+
 .space-controls button {
   border: 1px solid rgba(126, 209, 255, 0.7);
   border-radius: 0.7rem;
