@@ -23,6 +23,7 @@ type InfoCardRingRowParams = {
 };
 
 const HALF_PI = Math.PI * 0.5;
+const CARD_CENTER_SPACING = 2.6;
 
 // Owns one subcategory ring.
 // Responsibilities:
@@ -128,7 +129,12 @@ export class InfoCardRingRow {
       return HALF_PI;
     }
 
-    const start = HALF_PI - this.arcSpan * 0.5;
-    return start + (itemIndex / (itemCount - 1)) * this.arcSpan;
+    // Keep smaller sets near the center and only expand outward as needed.
+    const desiredAngleGap = CARD_CENTER_SPACING / Math.max(this.rowRadius, 0.001);
+    const desiredSpan = desiredAngleGap * (itemCount - 1);
+    const effectiveSpan = Math.min(this.arcSpan, desiredSpan);
+
+    const start = HALF_PI - effectiveSpan * 0.5;
+    return start + (itemIndex / (itemCount - 1)) * effectiveSpan;
   }
 }

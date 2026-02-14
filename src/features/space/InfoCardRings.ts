@@ -55,7 +55,7 @@ export class InfoCardRings {
   private readonly cameraForward = new THREE.Vector3();
   private readonly centerToCamera = new THREE.Vector3();
   // Vertical lift applied to the whole card system relative to its anchor.
-  private readonly anchorOffset = new THREE.Vector3(0, 0.96, 0);
+  private readonly anchorOffset = new THREE.Vector3(0, 0.864, 0);
 
   rebuild(category: InformationSceneCategory | null, arcSpan = this.currentArcSpan): void {
     // Rebuild from scratch whenever selected category changes.
