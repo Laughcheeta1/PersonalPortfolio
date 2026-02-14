@@ -1,73 +1,105 @@
-# React + TypeScript + Vite
+# PersonalPortfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interactive 3D portfolio built with React, TypeScript, Vite, and Three.js.
 
-Currently, two official plugins are available:
+The app renders a 3D scene with category models, card rings, and detail panels so visitors can explore work, projects, education, skills, and more.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Highlights
 
-## React Compiler
+- 3D portfolio scene powered by Three.js
+- Category-driven information architecture loaded from local JSON files
+- Runtime loading overlay with progress and mobile landscape recommendation
+- In-scene selection + side panels for detailed content
+- Asset credits panel and ambient music toggle
+- Chatbot-friendly navigation bridge via `window.portfolioNavigateTo(...)`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- React 19
+- TypeScript
+- Vite
+- Three.js
+- ESLint
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js 20+ (recommended)
+- npm or Bun
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Install
+
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+or
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun install
 ```
+
+### Run in development
+
+```bash
+npm run dev
+```
+
+### Build for production
+
+```bash
+npm run build
+```
+
+### Preview production build
+
+```bash
+npm run preview
+```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+## Project Structure
+
+- `src/components/SpaceShowcase.tsx`: React host for the 3D scene, loading UI, panels, and toggles
+- `src/features/space/runtime/SpaceSceneRuntime.ts`: scene runtime orchestration (camera, loading, model focus, events)
+- `src/features/space/runtime/ModelRingManager.ts`: 3D model loading and ring placement
+- `src/features/information/data/*.json`: portfolio content source files
+- `src/features/information/index.ts`: typed category/profile assembly from JSON data
+- `src/features/information/navigation.ts`: category/subcategory/item navigation resolution
+- `src/App.css`: app styling and responsive behavior
+- `docs/information-scene-architecture.md`: architecture and navigation notes
+
+## Content Management
+
+To update portfolio content:
+
+1. Edit the JSON files in `src/features/information/data/`.
+2. Keep item identifiers (`id`, `slug`) stable and unique.
+3. Verify mapping/category behavior in `src/features/information/index.ts`.
+
+## Programmatic Navigation
+
+The app exposes this browser API for external navigation:
+
+```ts
+window.portfolioNavigateTo?.({ categoryId: 'work' });
+window.portfolioNavigateTo?.({ categoryId: 'work', subcategoryId: 'companies' });
+window.portfolioNavigateTo?.({
+  categoryId: 'work',
+  subcategoryId: 'companies',
+  itemId: 'company-example',
+});
+```
+
+For deeper details, see `docs/information-scene-architecture.md`.
+
+## Notes
+
+- 3D assets and audio are stored under `src/assets/`.
+- This repository is currently configured as a frontend-only Vite application.
