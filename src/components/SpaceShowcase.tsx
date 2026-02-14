@@ -26,7 +26,7 @@ const SpaceShowcase = () => {
 
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedInfoItem, setSelectedInfoItem] = useState<InformationItemSelection | null>(null);
-  const [isAudioOn, setIsAudioOn] = useState(false);
+  const [isAudioOn, setIsAudioOn] = useState(true);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -83,32 +83,15 @@ const SpaceShowcase = () => {
     <section className="space-page">
       <div ref={containerRef} className="space-canvas" aria-label="Interactive 3D portfolio scene" />
 
-      <div className="space-hud">
-        <h1>3D Portfolio Ring</h1>
-        <p>Drag to orbit, click a model to focus, click a card to open full details.</p>
-
-        <div className="space-controls">
-          <button type="button" onClick={() => setIsAudioOn((prev) => !prev)}>
-            {isAudioOn ? 'Disable ambient hum' : 'Enable ambient hum'}
-          </button>
-          <button type="button" onClick={() => runtimeRef.current?.setSelection(null)}>
-            Reset camera focus
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              runtimeRef.current?.navigateTo({
-                categoryId: 'work',
-                subcategoryId: 'companies',
-              })
-            }
-          >
-            Jump to Work
-          </button>
-        </div>
-      </div>
-
       <div className={`focus-label ${selectedName ? 'show' : ''}`}>{selectedName}</div>
+
+      <button
+        type="button"
+        className="ambient-audio-toggle"
+        onClick={() => setIsAudioOn((prev) => !prev)}
+      >
+        {isAudioOn ? 'Music: On' : 'Music: Off'}
+      </button>
 
       {selectedInfoItem ? (
         <aside className="info-detail-panel">
