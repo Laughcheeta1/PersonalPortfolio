@@ -6,7 +6,7 @@
       "title": "First Place — Sistecredito’s Third Hackathon",
       "summary": "Won first place at Sistecredito’s third hackathon.",
       "details": "We won first place at Sistecredito’s third Hackathon with EIA University by building a smart product management solution for retailers.\nThe system predicts product demand with LSTM models and includes a NestJS + MongoDB backend (deployed on AWS) and a Next.js frontend (on Vercel).\nIt helps retailers keep optimal stock levels and introduces the vision of automated, proactive ordering.",
-      "skills": [24, 22, 29, 30],
+      "skills": [24, 29, 30],
       "date": "2024-11-01",
       "links": {}
     },
@@ -48,7 +48,7 @@
       "title": "Mentor and Judge — Sistecredito’s Fourth Hackathon",
       "summary": "Selected as mentor and judge for Sistecredito’s fourth hackathon.",
       "details": "The hackathon was about AI agents used as debt negotiators.",
-      "skills": [29, 30, 34, 27],
+      "skills": [29, 30, 27],
       "date": "2025-03",
       "links": {}
     },
@@ -58,7 +58,7 @@
       "title": "Regional ICPC EIA Representative — 2024",
       "summary": "Represented EIA University in ICPC and team advanced to the regional round.",
       "details": "",
-      "skills": [5, 24, 29],
+      "skills": [24, 29],
       "date": "2024",
       "links": {}
     },
@@ -68,7 +68,7 @@
       "title": "Local ICPC EIA Representative — 2023",
       "summary": "Represented EIA University in ICPC.",
       "details": "",
-      "skills": [5, 24, 29],
+      "skills": [24, 29],
       "date": "2023",
       "links": {}
     },
@@ -78,7 +78,7 @@
       "title": "Local ICPC EIA Representative — 2022",
       "summary": "Represented EIA University in ICPC.",
       "details": "",
-      "skills": [5, 24, 29],
+      "skills": [24, 29],
       "date": "2022",
       "links": {}
     },

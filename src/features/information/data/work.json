@@ -35,7 +35,7 @@
       "ventureName": "elio for business",
       "startDate": "2025-06-01",
       "endDate": null,
-      "skills": [20, 16, 7, 14, 15, 22, 23, 26, 27, 28, 29],
+      "skills": [20, 15, 23, 26, 27, 29],
       "links": {}
     },
     {
@@ -47,7 +47,7 @@
       "ventureName": "NAO Aeronautics",
       "startDate": "2024-01-01",
       "endDate": null,
-      "skills": [35, 32, 33, 30, 29],
+      "skills": [35, 32, 30, 29],
       "links": {}
     },
     {
@@ -59,7 +59,7 @@
       "ventureName": "VCOW",
       "startDate": "2024-10-01",
       "endDate": null,
-      "skills": [35, 32, 33, 29, 30],
+      "skills": [35, 32, 29, 30],
       "links": {}
     }
   ],
@@ -73,7 +73,7 @@
       "clientOrProductName": "mc2",
       "startDate": "2025-03-01",
       "endDate": null,
-      "skills": [29, 30, 34, 35],
+      "skills": [29, 30, 35],
       "links": {}
     },
     {

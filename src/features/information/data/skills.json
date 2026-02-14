@@ -6,33 +6,12 @@
     "category": "language",
     "summary": "Primary language used for backend development and agent/workflow automation."
   },
-  "2": {
-    "id": 2,
-    "slug": "java",
-    "name": "Java",
-    "category": "language",
-    "summary": "Used for backend development (including Spring Boot microservices)."
-  },
-  "3": {
-    "id": 3,
-    "slug": "javascript",
-    "name": "JavaScript",
-    "category": "language",
-    "summary": "Used across frontend and backend ecosystems."
-  },
   "4": {
     "id": 4,
     "slug": "typescript",
     "name": "TypeScript",
     "category": "language",
     "summary": "Used for typed JS development (notably with NestJS/React tooling)."
-  },
-  "5": {
-    "id": 5,
-    "slug": "cpp",
-    "name": "C++",
-    "category": "language",
-    "summary": "Competitive programming / systems-oriented programming language."
   },
   "6": {
     "id": 6,
@@ -41,75 +20,12 @@
     "category": "language",
     "summary": "Query language for relational databases and analytics."
   },
-  "7": {
-    "id": 7,
-    "slug": "fastapi",
-    "name": "FastAPI",
-    "category": "framework",
-    "summary": "Python backend framework used for building APIs and services."
-  },
-  "8": {
-    "id": 8,
-    "slug": "django",
-    "name": "Django",
-    "category": "framework",
-    "summary": "Python web framework."
-  },
-  "9": {
-    "id": 9,
-    "slug": "spring-boot",
-    "name": "Spring Boot",
-    "category": "framework",
-    "summary": "Java framework used to build backend microservices."
-  },
-  "10": {
-    "id": 10,
-    "slug": "nestjs",
-    "name": "NestJS",
-    "category": "framework",
-    "summary": "Node/TypeScript framework used to build backend services."
-  },
-  "11": {
-    "id": 11,
-    "slug": "nextjs",
-    "name": "Next.js",
-    "category": "framework",
-    "summary": "React framework used for web apps (SSR/SSG)."
-  },
-  "12": {
-    "id": 12,
-    "slug": "react",
-    "name": "React",
-    "category": "framework",
-    "summary": "Frontend library used to build user interfaces."
-  },
-  "13": {
-    "id": 13,
-    "slug": "vite",
-    "name": "Vite",
-    "category": "tool",
-    "summary": "Frontend tooling for fast development and builds."
-  },
-  "14": {
-    "id": 14,
-    "slug": "graphql",
-    "name": "GraphQL",
-    "category": "tool",
-    "summary": "API query language used for typed client-server interaction."
-  },
   "15": {
     "id": 15,
     "slug": "docker",
     "name": "Docker",
     "category": "tool",
     "summary": "Containerization for reproducible builds and deployments."
-  },
-  "16": {
-    "id": 16,
-    "slug": "postgresql",
-    "name": "PostgreSQL",
-    "category": "database",
-    "summary": "Relational database used for transactional data."
   },
   "17": {
     "id": 17,
@@ -118,19 +34,12 @@
     "category": "database",
     "summary": "Document database used in microservice-based systems."
   },
-  "18": {
-    "id": 18,
-    "slug": "sql-server",
-    "name": "SQL Server",
-    "category": "database",
-    "summary": "Relational database engine."
-  },
-  "19": {
-    "id": 19,
-    "slug": "supabase",
-    "name": "Supabase",
-    "category": "tool",
-    "summary": "Backend platform used for Postgres hosting and app services."
+  "26": {
+    "id": 26,
+    "slug": "agent-development",
+    "name": "AI Agent Development",
+    "category": "ai",
+    "summary": "Developing agents to automate workflows (messaging, negotiation, CRM, quoting, payments)."
   },
   "20": {
     "id": 20,
@@ -146,13 +55,6 @@
     "category": "cloud",
     "summary": "Cloud platform experience."
   },
-  "22": {
-    "id": 22,
-    "slug": "microservices",
-    "name": "Microservices",
-    "category": "architecture",
-    "summary": "Designing and building systems as independently deployable services."
-  },
   "23": {
     "id": 23,
     "slug": "software-architecture",
@@ -167,33 +69,12 @@
     "category": "architecture",
     "summary": "Designing system components, tradeoffs, and scalability/reliability patterns."
   },
-  "25": {
-    "id": 25,
-    "slug": "vector-databases",
-    "name": "Vector Databases",
-    "category": "data",
-    "summary": "Building/using vector storage as part of modern AI-ready data stacks."
-  },
-  "26": {
-    "id": 26,
-    "slug": "agent-development",
-    "name": "AI Agent Development",
-    "category": "ai",
-    "summary": "Developing agents to automate workflows (messaging, negotiation, CRM, quoting, payments)."
-  },
   "27": {
     "id": 27,
     "slug": "leadership",
     "name": "Leadership",
     "category": "soft-skill",
     "summary": "Leading teams and technical direction."
-  },
-  "28": {
-    "id": 28,
-    "slug": "team-management",
-    "name": "Team Management",
-    "category": "soft-skill",
-    "summary": "Managing developers, mentoring, and improving workflows."
   },
   "29": {
     "id": 29,
@@ -223,20 +104,6 @@
     "category": "startup",
     "summary": "Validating product ideas via interviews, iteration, and market discovery."
   },
-  "33": {
-    "id": 33,
-    "slug": "customer-development",
-    "name": "Customer Development",
-    "category": "startup",
-    "summary": "Customer discovery, early adopter identification, and learning cycles."
-  },
-  "34": {
-    "id": 34,
-    "slug": "event-planning",
-    "name": "Event Planning",
-    "category": "soft-skill",
-    "summary": "Organizing events including hackathons with logistics and stakeholder coordination."
-  },
   "35": {
     "id": 35,
     "slug": "entrepreneurship",
@@ -244,18 +111,4 @@
     "category": "startup",
     "summary": "Building ventures, pitches, and product iteration from early stages."
   },
-  "36": {
-    "id": 36,
-    "slug": "data-analytics",
-    "name": "Data Analytics",
-    "category": "data",
-    "summary": "Working with data analysis concepts and tools (diploma-level training)."
-  },
-  "37": {
-    "id": 37,
-    "slug": "machine-learning",
-    "name": "Machine Learning",
-    "category": "ai",
-    "summary": "Foundational ML training (supervised learning; CS50 AI exposure)."
-  }
 }

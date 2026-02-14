@@ -10,7 +10,7 @@
       "degree": "Systems Engineering and Computing",
       "startDate": "2022-01-01",
       "endDate": "2026-11-01",
-      "skills": [24, 23, 22, 29],
+      "skills": [24, 23, 29],
       "links": {}
     }
   ],
@@ -23,7 +23,7 @@
       "details": "Course completed through SoftServe (March 2025 – July 2025).",
       "provider": "SoftServe",
       "completionDate": "2025-07-01",
-      "skills": [1, 7, 24],
+      "skills": [1, 24],
       "links": {}
     },
     {
@@ -34,7 +34,7 @@
       "details": "Course by Stanford University & DeepLearning.AI (January 2025).",
       "provider": "Stanford University & DeepLearning.AI",
       "completionDate": "2025-01-01",
-      "skills": [37, 1, 36],
+      "skills": [1],
       "links": {}
     },
     {
@@ -45,7 +45,7 @@
       "details": "This course covers the fundamentals of AI, from the basics of probability and statistics to advanced topics like machine learning, deep learning and LLMs.",
       "provider": "Harvard University",
       "completionDate": "2024-07",
-      "skills": [24, 37, 3, 1],
+      "skills": [24, 1],
       "links": {}
     },
     {
@@ -56,7 +56,7 @@
       "details": "This course covers the basics of computer science, from the basics of programming to advanced topics like algorithms and data structures.",
       "provider": "Harvard University",
       "completionDate": "2024-06",
-      "skills": [24, 37, 3, 1],
+      "skills": [24, 1],
       "links": {}
     },
     {
@@ -67,7 +67,7 @@
       "details": "Diploma completed at EIA University (August 2023 – November 2023).",
       "provider": "EIA University",
       "completionDate": "2023-11-01",
-      "skills": [36, 6, 16],
+      "skills": [6],
       "links": {}
     },
     {
@@ -78,7 +78,7 @@
       "details": "In this course you are provided with all the resources and knowledge necessary to build a startup from scratch.",
       "provider": "mc2",
       "completionDate": "2025-05",
-      "skills": [35, 32, 33, 30, 29],
+      "skills": [35, 32, 30, 29],
       "links": {}
     }
   ]
