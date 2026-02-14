@@ -76,7 +76,7 @@ function category(
 }
 
 export const sceneInformationCategories: InformationSceneCategory[] = [
-  category('work', 'Work', 0, [
+  category('work', 'Work', 5, [
     {
       id: 'companies',
       label: 'Companies',
@@ -143,7 +143,7 @@ export const sceneInformationCategories: InformationSceneCategory[] = [
       })),
     },
   ]),
-  category('personal', 'Personal', 5, [
+  category('personal', 'Personal', 0, [
     {
       id: 'profile',
       label: 'Profile',
