@@ -24,7 +24,9 @@
       "provider": "SoftServe",
       "completionDate": "2025-07-01",
       "skills": [1, 24],
-      "links": {}
+      "links": {
+        "externalUrl": "https://career.softserveinc.com/en-us/certification/verification"
+      }
     },
     {
       "id": "course-stanford-ml-regression-classification",
@@ -35,7 +37,9 @@
       "provider": "Stanford University & DeepLearning.AI",
       "completionDate": "2025-01-01",
       "skills": [1],
-      "links": {}
+      "links": {
+        "externalUrl": "https://www.coursera.org/account/accomplishments/verify/PQ8KNO22EI1O"
+      }
     },
     {
       "id": "course-harvard-cs50ai",
@@ -46,7 +50,9 @@
       "provider": "Harvard University",
       "completionDate": "2024-07",
       "skills": [24, 1],
-      "links": {}
+      "links": {
+        "externalUrl": "https://certificates.cs50.io/c0ec4251-a812-4952-b65a-36ca53c8211f.pdf?size=letter"
+      }
     },
     {
       "id": "course-harvard-cs50x",
@@ -57,7 +63,9 @@
       "provider": "Harvard University",
       "completionDate": "2024-06",
       "skills": [24, 1],
-      "links": {}
+      "links": {
+        "externalUrl": "https://certificates.cs50.io/88848e26-785b-454f-80f3-5d3fe1dde262.pdf?size=letter"
+      }
     },
     {
       "id": "course-eia-data-analytics-diploma",
@@ -68,18 +76,23 @@
       "provider": "EIA University",
       "completionDate": "2023-11-01",
       "skills": [6],
-      "links": {}
+      "links": {
+        "externalUrl": "https://wallet.xertify.co/certificates/F5A51F73A001?r=1",
+
+      }
     },
     {
       "id": "course-mc2-builders-program",
       "slug": "mc2-builders-program",
-      "title": "Builders Program",
+      "title": "mc2 Builders Program",
       "summary": "Long-term startup building program with demos and iteration.",
       "details": "In this course you are provided with all the resources and knowledge necessary to build a startup from scratch.",
       "provider": "mc2",
       "completionDate": "2025-05",
       "skills": [35, 32, 30, 29],
-      "links": {}
+      "links": {
+        "externalUrl": "https://mc2.builders/"
+      }
     }
   ]
 }
