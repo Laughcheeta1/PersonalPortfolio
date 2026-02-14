@@ -1,31 +1,21 @@
 {
   "awards": [
     {
-      "id": "award-sistecredito-hackathon-mentor-judge-4th",
-      "slug": "sistecredito-hackathon-mentor-judge-4th",
-      "title": "Mentor and Judge — Sistecredito’s Fourth Hackathon",
-      "summary": "Selected as mentor and judge for Sistecredito’s fourth hackathon.",
-      "details": "Supported teams and evaluated projects during the event.",
-      "skills": [29, 30, 34, 27],
-      "date": "2025-03-01",
-      "links": {}
-    },
-    {
       "id": "award-sistecredito-hackathon-1st-3rd",
-      "slug": "sistecredito-hackathon-first-place-third",
+      "slug": "sistecredito-hackathon-third-version-first-place",
       "title": "First Place — Sistecredito’s Third Hackathon",
       "summary": "Won first place at Sistecredito’s third hackathon.",
-      "details": "Delivered a competitive solution under hackathon constraints.",
+      "details": "We won first place at Sistecredito’s third Hackathon with EIA University by building a smart product management solution for retailers.\nThe system predicts product demand with LSTM models and includes a NestJS + MongoDB backend (deployed on AWS) and a Next.js frontend (on Vercel).\nIt helps retailers keep optimal stock levels and introduces the vision of automated, proactive ordering.",
       "skills": [24, 22, 29, 30],
       "date": "2024-11-01",
       "links": {}
     },
     {
       "id": "award-sistecredito-hackathon-1st-2nd",
-      "slug": "sistecredito-hackathon-first-place-second",
+      "slug": "sistecredito-hackathon-second-version-first-place",
       "title": "First Place — Sistecredito’s Second Hackathon",
       "summary": "Won first place at Sistecredito’s second hackathon.",
-      "details": "Built and presented a winning project as part of a team.",
+      "details": "We won first place at a Sistecredito hackathon by designing a fraud-detection system for 1.7M labeled transactions.\nOur approach proposed a multi-model architecture tailored to individual spending habits, favoring unsupervised methods due to data imbalance and real-world constraints.\nAlthough key data insights limited full implementation, we delivered strong analysis and a supervised model to demonstrate the solution.",
       "skills": [24, 29, 30],
       "date": "2024-08-01",
       "links": {}
@@ -35,7 +25,7 @@
       "slug": "isa-intercolombia-hackathon-first-place",
       "title": "First Place — ISA Intercolombia’s Hackathon",
       "summary": "Won first place at ISA Intercolombia’s hackathon.",
-      "details": "Built and delivered a high-impact project within limited time.",
+      "details": "We tackled ISA’s unpredictable powerline failures by reframing the problem as a logistics and optimization challenge.\nOur concept predicted failure risks, optimized service center locations, routing, and stock allocation using data-driven models.\nThough limited by hackathon constraints, the solution showed how predictive analytics could transform infrastructure maintenance.",
       "skills": [24, 29, 30],
       "date": "2024-05-01",
       "links": {}
@@ -43,53 +33,73 @@
   ],
   "honors": [
     {
-      "id": "honor-icpc-represented-eia-2022",
-      "slug": "icpc-represented-eia-2022",
-      "title": "ICPC Regional Participant (EIA University Representative) — 2022",
-      "summary": "Represented EIA University in ICPC competitions.",
-      "details": "Participation representing EIA University (one of three representations listed).",
-      "skills": [5, 24, 29],
-      "date": "2022-01-01",
+      "id": "leadership-recognition-eia-university",
+      "slug": "leadership-recognition-eia-university",
+      "title": "Recognition of Leadership — EIA University",
+      "summary": "Recognized for being the representative of the undergraduate program in systems and computer engineering.",
+      "details": "",
+      "skills": [],
+      "date": "2026-02-12",
       "links": {}
     },
     {
-      "id": "honor-icpc-represented-eia-2023",
-      "slug": "icpc-represented-eia-2023",
-      "title": "ICPC Regional Participant (EIA University Representative) — 2023",
-      "summary": "Represented EIA University in ICPC competitions.",
-      "details": "Participation representing EIA University (one of three representations listed).",
-      "skills": [5, 24, 29],
-      "date": "2023-01-01",
+      "id": "award-sistecredito-hackathon-mentor-judge-4th",
+      "slug": "sistecredito-hackathon-mentor-judge-4th",
+      "title": "Mentor and Judge — Sistecredito’s Fourth Hackathon",
+      "summary": "Selected as mentor and judge for Sistecredito’s fourth hackathon.",
+      "details": "The hackathon was about AI agents used as debt negotiators.",
+      "skills": [29, 30, 34, 27],
+      "date": "2025-03",
       "links": {}
     },
     {
       "id": "honor-icpc-represented-eia-2024",
       "slug": "icpc-represented-eia-2024",
-      "title": "ICPC Regional Participant (EIA University Representative) — 2024",
-      "summary": "Represented EIA University in ICPC competitions.",
-      "details": "Participation representing EIA University (one of three representations listed).",
+      "title": "Regional ICPC EIA Representative — 2024",
+      "summary": "Represented EIA University in ICPC and team advanced to the regional round.",
+      "details": "",
       "skills": [5, 24, 29],
-      "date": "2024-01-01",
+      "date": "2024",
       "links": {}
     },
     {
-      "id": "honor-eia-deans-list-2022-10",
-      "slug": "eia-deans-list-oct-2022",
-      "title": "Dean’s List — First Semester",
-      "summary": "Recognized for academic performance (Dean’s List).",
-      "details": "EIA University Dean’s List recognition (October 2022).",
-      "skills": [29],
-      "date": "2022-10-01",
+      "id": "honor-icpc-represented-eia-2023",
+      "slug": "icpc-represented-eia-2023",
+      "title": "Local ICPC EIA Representative — 2023",
+      "summary": "Represented EIA University in ICPC.",
+      "details": "",
+      "skills": [5, 24, 29],
+      "date": "2023",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2022",
+      "slug": "icpc-represented-eia-2022",
+      "title": "Local ICPC EIA Representative — 2022",
+      "summary": "Represented EIA University in ICPC.",
+      "details": "",
+      "skills": [5, 24, 29],
+      "date": "2022",
       "links": {}
     },
     {
       "id": "honor-eia-deans-list-2023-02",
       "slug": "eia-deans-list-feb-2023",
       "title": "Dean’s List — Second Semester",
-      "summary": "Recognized for academic performance (Dean’s List).",
-      "details": "EIA University Dean’s List recognition (February 2023).",
+      "summary": "Recognized for academic performance in second semester of university.",
+      "details": "",
       "skills": [29],
       "date": "2023-02-01",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2022-10",
+      "slug": "eia-deans-list-oct-2022",
+      "title": "Dean’s List — First Semester",
+      "summary": "Recognized for academic performance in first semester of university.",
+      "details": "",
+      "skills": [29],
+      "date": "2022-10-01",
       "links": {}
     }
   ]
