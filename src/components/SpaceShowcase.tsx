@@ -48,6 +48,7 @@ const SpaceShowcase = () => {
     }
 
     runtimeRef.current = runtime;
+    runtime.setCardDesignIndex(0);
     void runtime.start();
 
     window.portfolioNavigateTo = (target: SceneNavigationTarget) => {

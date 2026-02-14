@@ -5,7 +5,7 @@ import type {
   InformationItemSelection,
   InformationSceneCategory,
 } from '../information/models';
-import { InfoCard3D } from './InfoCard3D';
+import { CARD_DESIGN_COUNT, InfoCard3D } from './InfoCard3D';
 import { InfoCardRingRow } from './InfoCardRingRow';
 import { wrapToPi } from './math';
 
@@ -50,6 +50,7 @@ export class InfoCardRings {
   // Current world-orbit angle for this full card system.
   private ringAngle = 0;
   private currentArcSpan = MAX_SEMICIRCLE_SPAN;
+  private cardDesignIndex = 0;
 
   // Reused vectors prevent extra allocations every frame.
   private readonly cameraForward = new THREE.Vector3();
@@ -130,6 +131,7 @@ export class InfoCardRings {
         rowRadius: plan.rowRadius,
         rowOffsetY,
         arcSpan: this.currentArcSpan,
+        cardDesignIndex: this.cardDesignIndex,
       });
 
       pickIndex = row.setPickIndices(pickIndex);
@@ -160,6 +162,11 @@ export class InfoCardRings {
   dispose(): void {
     // Public dispose for runtime cleanup.
     this.clear();
+  }
+
+  setCardDesignIndex(nextIndex: number): void {
+    const clamped = THREE.MathUtils.clamp(Math.floor(nextIndex), 0, CARD_DESIGN_COUNT - 1);
+    this.cardDesignIndex = clamped;
   }
 
   update(

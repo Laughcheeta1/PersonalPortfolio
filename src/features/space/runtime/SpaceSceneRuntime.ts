@@ -143,6 +143,11 @@ export class SpaceSceneRuntime {
     this.onInfoItemSelectionChange(null);
   }
 
+  setCardDesignIndex(index: number): void {
+    this.infoCardRings.setCardDesignIndex(index);
+    this.rebuildInfoCards();
+  }
+
   navigateTo(target: SceneNavigationTarget): void {
     const normalized = resolveNavigationTarget(this.categories, target);
     if (!normalized) {
