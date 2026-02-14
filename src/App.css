@@ -138,6 +138,28 @@
   padding: 0.9rem 0.95rem;
   background: linear-gradient(135deg, #ff7fb9 0%, #ffcf4d 100%);
   box-shadow: 0 0.6rem 2rem rgba(21, 8, 42, 0.45);
+  scrollbar-width: auto;
+  scrollbar-color: #23e5f1 #2c1354;
+}
+
+.asset-credits-panel::-webkit-scrollbar {
+  width: 0.88rem;
+}
+
+.asset-credits-panel::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #2c1354;
+  border: 2px solid #1a0f36;
+}
+
+.asset-credits-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, #23e5f1 0%, #56ff9f 100%);
+  border: 2px solid #1a0f36;
+}
+
+.asset-credits-panel::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #5af0fb 0%, #8cffbc 100%);
 }
 
 .asset-credits-topline {
