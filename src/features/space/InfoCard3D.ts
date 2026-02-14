@@ -7,6 +7,7 @@ import type {
 } from '../information/models';
 
 type HorizontalAlign = 'left' | 'center';
+const MAX_TITLE_CHARACTERS = 88;
 
 // Required data for creating one visible 3D card.
 type InfoCard3DParams = {
@@ -485,13 +486,13 @@ export class InfoCard3D {
 
     ctx.fillStyle = design.titleColor;
     ctx.font = design.titleFont;
-    this.drawWrappedText(ctx, title, {
-      x: canvas.width * 0.5,
-      y: design.titleY - 40,
+    this.drawCenteredWrappedText(ctx, title, {
+      centerX: canvas.width * 0.5,
+      centerY: canvas.height * 0.53,
       maxWidth: design.maxTextWidth,
       lineHeight: design.lineHeight,
       maxLines: design.maxLines,
-      align: 'center',
+      maxChars: MAX_TITLE_CHARACTERS,
     });
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -999,61 +1000,98 @@ export class InfoCard3D {
     ctx.closePath();
   }
 
-  private drawWrappedText(
+  private drawCenteredWrappedText(
     ctx: CanvasRenderingContext2D,
     text: string,
     options: {
-      x: number;
-      y: number;
+      centerX: number;
+      centerY: number;
       maxWidth: number;
       lineHeight: number;
       maxLines: number;
-      align: HorizontalAlign;
+      maxChars: number;
     },
   ): void {
-    const words = text.trim().split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
+    const lines = this.buildWrappedLines(
+      ctx,
+      text,
+      options.maxWidth,
+      options.maxLines,
+      options.maxChars,
+    );
+    if (lines.length === 0) {
       return;
     }
 
+    const yStart = options.centerY - ((lines.length - 1) * options.lineHeight) * 0.5;
+
+    ctx.save();
+    ctx.textBaseline = 'middle';
+    for (let index = 0; index < lines.length; index += 1) {
+      const y = yStart + index * options.lineHeight;
+      const value = lines[index];
+      const width = ctx.measureText(value).width;
+      ctx.fillText(value, options.centerX - width * 0.5, y);
+    }
+    ctx.restore();
+  }
+
+  private buildWrappedLines(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number,
+    maxLines: number,
+    maxChars: number,
+  ): string[] {
+    const compact = text.trim().replace(/\s+/g, ' ');
+    if (compact.length === 0) {
+      return [];
+    }
+
+    const charsCapped = compact.length > maxChars;
+    const limitedText = charsCapped ? compact.slice(0, maxChars).trimEnd() : compact;
+    const words = limitedText.split(' ').filter(Boolean);
     const lines: string[] = [];
     let current = '';
 
-    for (const word of words) {
+    for (let index = 0; index < words.length; index += 1) {
+      const word = words[index];
       const candidate = current ? `${current} ${word}` : word;
-      if (ctx.measureText(candidate).width <= options.maxWidth) {
+
+      if (ctx.measureText(candidate).width <= maxWidth) {
         current = candidate;
         continue;
       }
 
-      if (current) {
+      if (!current) {
+        lines.push(this.trimTextToWidth(ctx, word, maxWidth));
+      } else {
         lines.push(current);
+        current = word;
       }
-      current = word;
+
+      if (lines.length === maxLines) {
+        lines[maxLines - 1] = this.trimTextToWidth(ctx, `${lines[maxLines - 1]}...`, maxWidth);
+        return lines;
+      }
     }
 
     if (current) {
       lines.push(current);
     }
 
-    const limitedLines = lines.slice(0, options.maxLines);
-    const wasTruncated = lines.length > options.maxLines;
-
-    if (wasTruncated && limitedLines.length > 0) {
-      const lastIndex = limitedLines.length - 1;
-      limitedLines[lastIndex] = this.trimTextToWidth(ctx, `${limitedLines[lastIndex]}...`, options.maxWidth);
+    if (lines.length > maxLines) {
+      const limitedLines = lines.slice(0, maxLines);
+      limitedLines[maxLines - 1] = this.trimTextToWidth(ctx, `${limitedLines[maxLines - 1]}...`, maxWidth);
+      return limitedLines;
     }
 
-    for (let index = 0; index < limitedLines.length; index += 1) {
-      const value = limitedLines[index];
-      const y = options.y + index * options.lineHeight;
-      if (options.align === 'center') {
-        const width = ctx.measureText(value).width;
-        ctx.fillText(value, options.x - width * 0.5, y);
-      } else {
-        ctx.fillText(value, options.x, y);
-      }
+    if (charsCapped && lines.length > 0) {
+      const last = lines.length - 1;
+      lines[last] = this.trimTextToWidth(ctx, `${lines[last]}...`, maxWidth);
     }
+
+    return lines;
   }
 
   private trimTextToWidth(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
