@@ -23,7 +23,7 @@ type FocusOrbitCircle = {
 // Controls how quickly ring angle catches up to the desired opposite angle.
 const RING_CHASE_SPEED = 3.2;
 // Ring radius is a multiple of the camera orbit radius.
-const RING_RADIUS_MULTIPLIER = 1.5;
+const RING_RADIUS_MULTIPLIER = 1.2;
 const FOCUSED_ORBIT_RADIUS = 7.4;
 const SEMICIRCLE_RADIUS_MULTIPLIER = 2;
 const MAX_SEMICIRCLE_SPAN = Math.PI;
