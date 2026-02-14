@@ -77,6 +77,25 @@ const SpaceShowcase = () => {
     };
   }, [isAudioOn]);
 
+  useEffect(() => {
+    const unlockAudio = () => {
+      if (!isAudioOn) {
+        return;
+      }
+      humRef.current?.ensurePlaying();
+    };
+
+    window.addEventListener('pointerdown', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+
+    return () => {
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, [isAudioOn]);
+
   const selectedName = selectedIndex === null ? '' : SPACE_MODELS[selectedIndex]?.name ?? '';
 
   return (
