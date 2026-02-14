@@ -54,6 +54,17 @@
       "technologies": ["Three.js", "React", "LLMs", "Vite"],
       "skills": [12, 13, 23, 24, 29],
       "links": {}
+    },
+    {
+      "id": "proj-eia-university-hackathon",
+      "slug": "eia-university-hackathon",
+      "title": "EIA University Hackathon",
+      "summary": "Organized hackathon at EIA University with the sponsorship of mc2.",
+      "details": "The hackathon was about building a startup business model + a MVP of the product.",
+      "architectureExplanation": "",
+      "technologies": [],
+      "skills": [],
+      "links": {}
     }
   ],
   "workProjects": [

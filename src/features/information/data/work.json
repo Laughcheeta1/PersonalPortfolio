@@ -7,23 +7,21 @@
       "summary": "Taught programming fundamentals to first-semester students.",
       "details": "Delivered lecture-style sessions covering programming fundamentals.",
       "companyName": "EIA University",
-      "startDate": "2024-08-01",
-      "endDate": "2025-07-01",
-      "roles": [
-        {
-          "id": "role-eia-selected-tutor-programming-fundamentals",
-          "slug": "selected-tutor-programming-fundamentals",
-          "title": "University Selected Tutor — Programming Fundamentals",
-          "summary": "Lecture-style teaching assistant/tutor role for beginners.",
-          "details": "Taught first-semester students through structured lecture-style sessions.",
-          "startDate": "2024-08-01",
-          "endDate": "2025-07-01",
-          "skills": [31, 29, 30],
-          "links": {},
-          "achievements": []
-        }
-      ],
+      "startDate": "2024-08",
+      "endDate": "2025-07",
       "skills": [31, 29, 30],
+      "links": {}
+    },
+    {
+      "id": "work-telepatia-ai-engineer",
+      "slug": "telepatia-ai-engineer",
+      "title": "AI Engineer - Telepatia",
+      "summary": "Engineered AI solutions for Telepatia's products.",
+      "details": "Developed and maintained AI agents for Telepatia's products.",
+      "companyName": "Telepatia",
+      "startDate": "2025-08-11",
+      "endDate": "2026-02-09",
+      "skills": [],
       "links": {}
     }
   ],
