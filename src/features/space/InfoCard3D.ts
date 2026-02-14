@@ -486,12 +486,12 @@ export class InfoCard3D {
     ctx.fillStyle = design.titleColor;
     ctx.font = design.titleFont;
     this.drawWrappedText(ctx, title, {
-      x: design.titleX,
+      x: canvas.width * 0.5,
       y: design.titleY - 40,
       maxWidth: design.maxTextWidth,
       lineHeight: design.lineHeight,
       maxLines: design.maxLines,
-      align: design.titleAlign,
+      align: 'center',
     });
 
     const texture = new THREE.CanvasTexture(canvas);
