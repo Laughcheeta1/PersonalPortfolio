@@ -92,7 +92,10 @@ export class SpaceSceneRuntime {
       snapStrength: 0.042,
     });
 
-    this.modelRing = new ModelRingManager(options.models.length, 22, 3.8);
+    const categoryLabelsByModelIndex = options.models.map((_, modelIndex) => {
+      return this.categories.find((category) => category.modelIndex === modelIndex)?.label ?? '';
+    });
+    this.modelRing = new ModelRingManager(options.models.length, 22, 3.8, categoryLabelsByModelIndex);
     this.scene.add(this.modelRing.group);
     this.scene.add(this.infoCardRings.group);
     this.setupLights();
@@ -247,6 +250,7 @@ export class SpaceSceneRuntime {
           }
         : undefined,
     );
+    this.modelRing.updateCategoryTitleVisibility(this.selectedIndex === null);
 
     this.composer.render();
     this.animationId = requestAnimationFrame(this.animate);
