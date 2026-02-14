@@ -45,8 +45,8 @@ export class InfoCard3D {
     this.angle = params.angle;
 
     // Build a small box so card has thickness (not a flat plane).
-    // Width=2.2, Height=0.92, Depth=0.5 in scene units.
-    const geometry = new THREE.BoxGeometry(2.2, 0.92, 0.5);
+    // Width=2.2, Height=1.08, Depth=0.5 in scene units.
+    const geometry = new THREE.BoxGeometry(2.2, 1.08, 0.5);
 
     // Generate texture in canvas at runtime.
     // This lets us render item title text without external image assets.
@@ -142,7 +142,7 @@ export class InfoCard3D {
     // Use offscreen canvas to paint title/subtitle into a texture.
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
-    canvas.height = 384;
+    canvas.height = 512;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -179,12 +179,18 @@ export class InfoCard3D {
     // Subtitle (subcategory label).
     ctx.fillStyle = '#96d7ff';
     ctx.font = '600 46px Inter, sans-serif';
-    ctx.fillText(subtitle, 64, 120);
+    ctx.fillText(subtitle, 64, 130);
 
-    // Main title (item title).
+    // Main title (item title). Wrap to multiple lines when needed.
     ctx.fillStyle = '#eaf7ff';
     ctx.font = '700 64px Inter, sans-serif';
-    ctx.fillText(title, 64, 220);
+    this.drawWrappedText(ctx, title, {
+      x: 64,
+      y: 240,
+      maxWidth: canvas.width - 128,
+      lineHeight: 74,
+      maxLines: 3,
+    });
 
     // Convert canvas into GPU texture.
     const texture = new THREE.CanvasTexture(canvas);
@@ -192,5 +198,52 @@ export class InfoCard3D {
     // Use sRGB so colors match CSS/expected UI color space.
     texture.colorSpace = THREE.SRGBColorSpace;
     return texture;
+  }
+
+  private drawWrappedText(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    options: { x: number; y: number; maxWidth: number; lineHeight: number; maxLines: number },
+  ): void {
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) {
+      return;
+    }
+
+    const lines: string[] = [];
+    let current = '';
+
+    for (const word of words) {
+      const candidate = current ? `${current} ${word}` : word;
+      if (ctx.measureText(candidate).width <= options.maxWidth) {
+        current = candidate;
+        continue;
+      }
+
+      if (current) {
+        lines.push(current);
+      }
+      current = word;
+    }
+
+    if (current) {
+      lines.push(current);
+    }
+
+    const limitedLines = lines.slice(0, options.maxLines);
+    const wasTruncated = lines.length > options.maxLines;
+
+    if (wasTruncated && limitedLines.length > 0) {
+      const lastLineIndex = limitedLines.length - 1;
+      let lastLine = limitedLines[lastLineIndex];
+      while (lastLine.length > 0 && ctx.measureText(`${lastLine}...`).width > options.maxWidth) {
+        lastLine = lastLine.slice(0, -1);
+      }
+      limitedLines[lastLineIndex] = `${lastLine}...`;
+    }
+
+    for (let index = 0; index < limitedLines.length; index += 1) {
+      ctx.fillText(limitedLines[index], options.x, options.y + index * options.lineHeight);
+    }
   }
 }
