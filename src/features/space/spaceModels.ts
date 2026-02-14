@@ -1,8 +1,8 @@
-import castleOnHillsUrl from '../../assets/3d/castle_on_hills.glb';
+import goldenRetrieverSittingUrl from '../../assets/3d/golden_retriever_sitting.glb';
 import cosmonautOnRocketUrl from '../../assets/3d/cosmonaut_on_a_rocket.glb';
-import lowPolyRatUrl from '../../assets/3d/low-poly_rat.glb';
+import annModelUrl from '../../assets/3d/artificial_neural_network_ann.glb';
+import deathEarthUrl from '../../assets/3d/death_earth.glb';
 import nixonCarUrl from '../../assets/3d/nixon_special_burnout_revenge_sd.glb';
-import planetUrl from '../../assets/3d/planet.glb';
 import smurfCastleUrl from '../../assets/3d/smurf_castle.glb';
 
 // Minimal model descriptor used by runtime loader.
@@ -17,10 +17,10 @@ export type SpaceModelItem = {
 // - index in this array determines ring position
 // - index is also mapped from information categories via modelIndex
 export const SPACE_MODELS: SpaceModelItem[] = [
-  { name: 'Castle On Hills', url: castleOnHillsUrl },
+  { name: 'Golden Retriever Sitting', url: goldenRetrieverSittingUrl },
   { name: 'Cosmonaut On A Rocket', url: cosmonautOnRocketUrl },
-  { name: 'Low Poly Rat', url: lowPolyRatUrl },
+  { name: 'Artificial Neural Network', url: annModelUrl },
   { name: 'Nixon Burnout Car', url: nixonCarUrl },
-  { name: 'Planet', url: planetUrl },
+  { name: 'Death Earth', url: deathEarthUrl },
   { name: 'Smurf Castle', url: smurfCastleUrl },
 ];
