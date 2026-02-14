@@ -105,7 +105,7 @@
       "id": "proj-employee-coordinate-colsubsidio",
       "slug": "employee-coordinate-colsubsidio",
       "title": "Coordinate Solution for a Corporation - Telepatia",
-      "summary": "A coorporation accidentally blocked access to Telepatia's product, so I coordinated all the neccesary people in colsubsidio to solve the problem in a single day",
+      "summary": "A coorporation accidentally blocked access to Telepatia's product, so I coordinated all the neccesary people in the corporation to solve the problem in a single day",
       "details": "This included coordinating multiple directives, technicians and doctors to solve the problem.",
       "architectureExplanation": "",
       "technologies": ["Java", "Spring Boot"],

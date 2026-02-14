@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import {
   normalizeNavigationTarget,
   sceneInformationCategories,
   validateSceneCategoryMappings,
 } from '../features/information';
+import { getSafeExternalHref } from '../features/information/urlSafety';
 import type {
   InformationItemSelection,
   SceneNavigationTarget,
@@ -49,6 +50,23 @@ const SpaceShowcase = () => {
   };
 
   const assetCredits = assetCreditsJson as AssetCreditsConfig;
+  const renderExternalLink = (
+    href: string | undefined,
+    children: ReactNode,
+    key: string,
+    className?: string,
+  ) => {
+    const safeHref = getSafeExternalHref(href);
+    if (!safeHref) {
+      return null;
+    }
+
+    return (
+      <a key={key} href={safeHref} target="_blank" rel="noopener noreferrer" className={className}>
+        {children}
+      </a>
+    );
+  };
 
   useEffect(() => {
     const container = containerRef.current;
@@ -125,14 +143,15 @@ const SpaceShowcase = () => {
       humRef.current?.ensurePlaying();
     };
 
-    window.addEventListener('pointerdown', unlockAudio);
+    const passiveOptions: AddEventListenerOptions = { passive: true };
+    window.addEventListener('pointerdown', unlockAudio, passiveOptions);
     window.addEventListener('keydown', unlockAudio);
-    window.addEventListener('touchstart', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio, passiveOptions);
 
     return () => {
-      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('pointerdown', unlockAudio, passiveOptions);
       window.removeEventListener('keydown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio, passiveOptions);
     };
   }, [isAudioOn]);
 
@@ -191,9 +210,11 @@ const SpaceShowcase = () => {
           <div className="asset-credits-links">
             {assetCredits.music.map((credit) =>
               credit.sourceUrl ? (
-                <a key={`music-${credit.name}`} href={credit.sourceUrl} target="_blank" rel="noreferrer">
-                  {credit.name} - {credit.author ?? 'Unknown'}
-                </a>
+                renderExternalLink(
+                  credit.sourceUrl,
+                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
+                  `music-${credit.name}`,
+                )
               ) : (
                 <p key={`music-${credit.name}`}>
                   {credit.name} - {credit.author ?? 'Unknown'}
@@ -204,19 +225,37 @@ const SpaceShowcase = () => {
           </div>
           <p><strong>HDRI:</strong></p>
           <div className="asset-credits-links">
-            {assetCredits.hdri.map((credit) => (
-              <a key={`hdri-${credit.name}`} href={credit.sourceUrl ?? '#'} target="_blank" rel="noreferrer">
-                {credit.name} - {credit.author ?? 'Unknown'}
-              </a>
-            ))}
+            {assetCredits.hdri.map((credit) =>
+              credit.sourceUrl ? (
+                renderExternalLink(
+                  credit.sourceUrl,
+                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
+                  `hdri-${credit.name}`,
+                )
+              ) : (
+                <p key={`hdri-${credit.name}`}>
+                  {credit.name} - {credit.author ?? 'Unknown'}
+                  {credit.notes ? ` (${credit.notes})` : ''}
+                </p>
+              ),
+            )}
           </div>
           <p><strong>3D Models:</strong></p>
           <div className="asset-credits-links">
-            {assetCredits.models.map((credit) => (
-              <a key={credit.sourceUrl} href={credit.sourceUrl} target="_blank" rel="noreferrer">
-                {credit.name} - {credit.author ?? 'Unknown'}
-              </a>
-            ))}
+            {assetCredits.models.map((credit) =>
+              credit.sourceUrl ? (
+                renderExternalLink(
+                  credit.sourceUrl,
+                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
+                  `model-${credit.name}`,
+                )
+              ) : (
+                <p key={`model-${credit.name}`}>
+                  {credit.name} - {credit.author ?? 'Unknown'}
+                  {credit.notes ? ` (${credit.notes})` : ''}
+                </p>
+              ),
+            )}
           </div>
         </aside>
       ) : null}
@@ -239,19 +278,25 @@ const SpaceShowcase = () => {
           {selectedInfoItem.item.links ? (
             <div className="info-links">
               {selectedInfoItem.item.links.repoUrl ? (
-                <a href={selectedInfoItem.item.links.repoUrl} target="_blank" rel="noreferrer">
-                  Repository
-                </a>
+                renderExternalLink(
+                  selectedInfoItem.item.links.repoUrl,
+                  'Repository',
+                  'info-repository-link',
+                )
               ) : null}
               {selectedInfoItem.item.links.liveUrl ? (
-                <a href={selectedInfoItem.item.links.liveUrl} target="_blank" rel="noreferrer">
-                  Live Demo
-                </a>
+                renderExternalLink(
+                  selectedInfoItem.item.links.liveUrl,
+                  'Live Demo',
+                  'info-live-link',
+                )
               ) : null}
               {selectedInfoItem.item.links.externalUrl ? (
-                <a href={selectedInfoItem.item.links.externalUrl} target="_blank" rel="noreferrer">
-                  External Link
-                </a>
+                renderExternalLink(
+                  selectedInfoItem.item.links.externalUrl,
+                  'External Link',
+                  'info-external-link',
+                )
               ) : null}
             </div>
           ) : null}
