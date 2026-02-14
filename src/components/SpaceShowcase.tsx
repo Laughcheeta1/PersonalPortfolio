@@ -35,6 +35,8 @@ const SpaceShowcase = () => {
     label: 'Preparing scene...',
   });
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isPortraitViewport, setIsPortraitViewport] = useState(false);
 
   type AssetCreditItem = {
     name: string;
@@ -67,6 +69,25 @@ const SpaceShowcase = () => {
       </a>
     );
   };
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
+    const portraitQuery = window.matchMedia('(orientation: portrait)');
+
+    const syncViewportHints = () => {
+      setIsMobileViewport(mobileQuery.matches);
+      setIsPortraitViewport(portraitQuery.matches);
+    };
+
+    syncViewportHints();
+    mobileQuery.addEventListener('change', syncViewportHints);
+    portraitQuery.addEventListener('change', syncViewportHints);
+
+    return () => {
+      mobileQuery.removeEventListener('change', syncViewportHints);
+      portraitQuery.removeEventListener('change', syncViewportHints);
+    };
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -168,6 +189,13 @@ const SpaceShowcase = () => {
           <div className="loading-card">
             <p className="loading-title">Loading 3D Portfolio</p>
             <p className="loading-label">{loadingState.label}</p>
+            {isMobileViewport ? (
+              <p className="loading-mobile-tip">
+                {isPortraitViewport
+                  ? 'For the best experience, rotate your phone to landscape.'
+                  : 'Landscape mode gives the best viewing experience on mobile.'}
+              </p>
+            ) : null}
             <div className="loading-track" aria-hidden="true">
               <div
                 className="loading-fill"
