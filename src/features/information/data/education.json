@@ -4,8 +4,8 @@
       "id": "edu-eia-systems-engineering",
       "slug": "eia-systems-engineering-computing",
       "title": "Systems Engineering and Computing",
-      "summary": "Undergraduate program (Eighth semester out of ten).",
-      "details": "EIA University — Eighth Semester (Out of Ten). GPA: 4.45.",
+      "summary": "Systems Engineering and Computing undergraduate program (Ninth semester out of ten).",
+      "details": "GPA: 4.45.",
       "institution": "EIA University",
       "degree": "Systems Engineering and Computing",
       "startDate": "2022-01-01",
@@ -27,28 +27,6 @@
       "links": {}
     },
     {
-      "id": "course-eia-data-analytics-diploma",
-      "slug": "eia-data-analytics-diploma",
-      "title": "Data Analytics Diploma",
-      "summary": "Structured training in data analytics fundamentals.",
-      "details": "Diploma completed at EIA University (August 2023 – November 2023).",
-      "provider": "EIA University",
-      "completionDate": "2023-11-01",
-      "skills": [36, 6, 16],
-      "links": {}
-    },
-    {
-      "id": "course-harvard-cs50x-cs50ai",
-      "slug": "harvard-cs50x-cs50ai",
-      "title": "CS50x & CS50 AI",
-      "summary": "Foundational CS and introductory AI coursework.",
-      "details": "Completed through Harvard University (June 2024 – July 2024).",
-      "provider": "Harvard University",
-      "completionDate": "2024-07-01",
-      "skills": [24, 37, 3, 1],
-      "links": {}
-    },
-    {
       "id": "course-stanford-ml-regression-classification",
       "slug": "supervised-ml-regression-classification",
       "title": "Supervised Machine Learning: Regression and Classification",
@@ -60,13 +38,46 @@
       "links": {}
     },
     {
+      "id": "course-harvard-cs50ai",
+      "slug": "harvard-cs50ai",
+      "title": "CS50 AI",
+      "summary": "Introductory AI coursework.",
+      "details": "This course covers the fundamentals of AI, from the basics of probability and statistics to advanced topics like machine learning, deep learning and LLMs.",
+      "provider": "Harvard University",
+      "completionDate": "2024-07",
+      "skills": [24, 37, 3, 1],
+      "links": {}
+    },
+    {
+      "id": "course-harvard-cs50x",
+      "slug": "harvard-cs50x",
+      "title": "CS50x",
+      "summary": "Foundational CS introductory course.",
+      "details": "This course covers the basics of computer science, from the basics of programming to advanced topics like algorithms and data structures.",
+      "provider": "Harvard University",
+      "completionDate": "2024-06",
+      "skills": [24, 37, 3, 1],
+      "links": {}
+    },
+    {
+      "id": "course-eia-data-analytics-diploma",
+      "slug": "eia-data-analytics-diploma",
+      "title": "Data Analytics Diploma",
+      "summary": "Structured training in data analytics fundamentals.",
+      "details": "Diploma completed at EIA University (August 2023 – November 2023).",
+      "provider": "EIA University",
+      "completionDate": "2023-11-01",
+      "skills": [36, 6, 16],
+      "links": {}
+    },
+    {
       "id": "course-mc2-builders-program",
       "slug": "mc2-builders-program",
       "title": "Builders Program",
       "summary": "Long-term startup building program with demos and iteration.",
-      "details": "mc2 Builders Program (February 2024 – May 2025).",
+      "details": "In this course you are provided with all the resources and knowledge necessary to build a startup from scratch.",
       "provider": "mc2",
-      "completionDate": "2025-05-01",
+      "completionDate": "2025-05",
       "skills": [35, 32, 33, 30, 29],
       "links": {}
     }
