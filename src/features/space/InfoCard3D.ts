@@ -6,36 +6,89 @@ import type {
   InformationSceneItem,
 } from '../information/models';
 
-// Required data for creating one visible 3D card.
+const MAX_TITLE_CHARACTERS = 88;
+
 type InfoCard3DParams = {
-  // Category id (e.g. "work").
   categoryId: InformationSceneCategory['id'];
-  // Subcategory id (e.g. "companies").
   subcategoryId: string;
-  // Human-readable subcategory text rendered on card texture.
   subcategoryLabel: string;
-  // Scene item whose title/summary/details the card represents.
   item: InformationSceneItem;
-  // Parent row index. Useful for manager bookkeeping.
   ringIndex: number;
-  // Angular position around the row ring in radians.
   angle: number;
+  designIndex: number;
 };
 
-// Represents one physical 3D info card:
-// - Mesh and materials
-// - Metadata for selection
-// - Texture generation
-// - Disposal helpers for GPU resources
+type CardDesign = {
+  id: 'comic-pop-2' | 'comic-pop-2-no-box';
+  label: string;
+  family: 'Comic Pop';
+  sideColor: string;
+  backColor: string;
+  panelFrom: string;
+  panelTo: string;
+  borderColor: string;
+  titleColor: string;
+  titleFont: string;
+  maxTextWidth: number;
+  lineHeight: number;
+  maxLines: number;
+  panelPadding: number;
+  panelRadius: number;
+};
+
+const CARD_DESIGNS: CardDesign[] = [
+  {
+    id: 'comic-pop-2',
+    label: 'Comic Pop II',
+    family: 'Comic Pop',
+    sideColor: '#4a1f46',
+    backColor: '#351630',
+    panelFrom: '#ff7fb9',
+    panelTo: '#ffcf4d',
+    borderColor: '#2c1354',
+    titleColor: '#1b0f36',
+    titleFont: '900 60px Tahoma, sans-serif',
+    maxTextWidth: 760,
+    lineHeight: 70,
+    maxLines: 3,
+    panelPadding: 26,
+    panelRadius: 30,
+  },
+  {
+    id: 'comic-pop-2-no-box',
+    label: 'Comic Pop II (No Box)',
+    family: 'Comic Pop',
+    sideColor: '#4a1f46',
+    backColor: '#351630',
+    panelFrom: '#ff7fb9',
+    panelTo: '#ffcf4d',
+    borderColor: '#2c1354',
+    titleColor: '#1b0f36',
+    titleFont: '900 60px Tahoma, sans-serif',
+    maxTextWidth: 760,
+    lineHeight: 70,
+    maxLines: 3,
+    panelPadding: 26,
+    panelRadius: 30,
+  },
+];
+
+export const CARD_DESIGN_OPTIONS = CARD_DESIGNS.map((design, index) => ({
+  index,
+  id: design.id,
+  label: design.label,
+  family: design.family,
+}));
+export const CARD_DESIGN_COUNT = CARD_DESIGNS.length;
+
 export class InfoCard3D {
-  // The actual renderable object added to a Three.js group.
   readonly mesh: THREE.Mesh;
-  // Metadata used when selecting/opening details in UI.
   readonly categoryId: InformationSceneCategory['id'];
   readonly subcategoryId: string;
   readonly item: InformationSceneItem;
   readonly ringIndex: number;
   readonly angle: number;
+  readonly designIndex: number;
 
   constructor(params: InfoCard3DParams) {
     this.categoryId = params.categoryId;
@@ -43,16 +96,13 @@ export class InfoCard3D {
     this.item = params.item;
     this.ringIndex = params.ringIndex;
     this.angle = params.angle;
+    this.designIndex = this.normalizeDesignIndex(params.designIndex);
 
-    // Build a small box so card has thickness (not a flat plane).
-    // Width=2.2, Height=1.08, Depth=0.5 in scene units.
     const geometry = new THREE.BoxGeometry(2.2, 1.08, 0.5);
+    const design = CARD_DESIGNS[this.designIndex];
 
-    // Generate texture in canvas at runtime.
-    // This lets us render item title text without external image assets.
-    const texture = this.createCardTexture(params.item.title, params.subcategoryLabel);
+    const texture = this.createCardTexture(params.item.title, design);
 
-    // Front face material uses generated texture.
     const frontMaterial = new THREE.MeshStandardMaterial({
       map: texture,
       transparent: true,
@@ -61,19 +111,17 @@ export class InfoCard3D {
       metalness: 0.08,
     });
 
-    // Side and back are plain materials for depth and contrast.
     const sideMaterial = new THREE.MeshStandardMaterial({
-      color: '#102139',
+      color: design.sideColor,
       roughness: 0.55,
       metalness: 0.15,
     });
     const backMaterial = new THREE.MeshStandardMaterial({
-      color: '#0a162a',
+      color: design.backColor,
       roughness: 0.6,
       metalness: 0.05,
     });
 
-    // BoxGeometry with 6 materials: +x, -x, +y, -y, +z(front), -z(back).
     this.mesh = new THREE.Mesh(geometry, [
       sideMaterial,
       sideMaterial,
@@ -83,30 +131,24 @@ export class InfoCard3D {
       backMaterial,
     ]);
 
-    // Mark mesh so raycast system can identify this as an info-card hit.
     this.mesh.userData.infoCard = true;
   }
 
   setPickIndex(index: number): void {
-    // Raycast returns a mesh; we store index so manager can resolve to InfoCard3D quickly.
     this.mesh.userData.infoCardIndex = index;
   }
 
   setLocalRingPosition(rowRadius: number): void {
-    // Convert polar coordinate (radius + angle) to XZ Cartesian.
-    // Cards are positioned in row-local space.
     const x = Math.cos(this.angle) * rowRadius;
     const z = Math.sin(this.angle) * rowRadius;
     this.mesh.position.set(x, 0, z);
   }
 
   face(cameraPosition: THREE.Vector3): void {
-    // Rotate card so +Z face points toward camera position (billboarding).
     this.mesh.lookAt(cameraPosition);
   }
 
   toSelection(): InformationItemSelection {
-    // Convert card metadata to shared payload shape used by React details panel.
     return {
       categoryId: this.categoryId,
       subcategoryId: this.subcategoryId,
@@ -115,8 +157,6 @@ export class InfoCard3D {
   }
 
   dispose(): void {
-    // Three.js does not auto-free GPU resources.
-    // We must dispose geometry, materials, and textures explicitly.
     const material = this.mesh.material;
     this.mesh.geometry.dispose();
 
@@ -138,112 +178,228 @@ export class InfoCard3D {
     material.dispose();
   }
 
-  private createCardTexture(title: string, subtitle: string): THREE.CanvasTexture {
-    // Use offscreen canvas to paint title/subtitle into a texture.
+  private createCardTexture(title: string, design: CardDesign): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 512;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      // Extremely rare fallback when 2D context cannot be created.
       return new THREE.CanvasTexture(canvas);
     }
 
-    // Clear previous content and draw rounded background panel.
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'rgba(9, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(126, 209, 255, 0.95)';
+    const panelGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    panelGradient.addColorStop(0, design.panelFrom);
+    panelGradient.addColorStop(1, design.panelTo);
+
+    ctx.fillStyle = panelGradient;
+    ctx.strokeStyle = design.borderColor;
     ctx.lineWidth = 6;
 
-    const padding = 22;
-    const radius = 26;
+    const padding = design.panelPadding;
+    const radius = design.panelRadius;
     const width = canvas.width - padding * 2;
     const height = canvas.height - padding * 2;
 
-    ctx.beginPath();
-    ctx.moveTo(padding + radius, padding);
-    ctx.lineTo(padding + width - radius, padding);
-    ctx.quadraticCurveTo(padding + width, padding, padding + width, padding + radius);
-    ctx.lineTo(padding + width, padding + height - radius);
-    ctx.quadraticCurveTo(padding + width, padding + height, padding + width - radius, padding + height);
-    ctx.lineTo(padding + radius, padding + height);
-    ctx.quadraticCurveTo(padding, padding + height, padding, padding + height - radius);
-    ctx.lineTo(padding, padding + radius);
-    ctx.quadraticCurveTo(padding, padding, padding + radius, padding);
-    ctx.closePath();
+    this.drawRoundedRect(ctx, padding, padding, width, height, radius);
     ctx.fill();
     ctx.stroke();
 
-    // Subtitle (subcategory label).
-    ctx.fillStyle = '#96d7ff';
-    ctx.font = '600 46px Inter, sans-serif';
-    ctx.fillText(subtitle, 64, 130);
+    this.decorateDesign(ctx, design.id, canvas.width, canvas.height, padding);
 
-    // Main title (item title). Wrap to multiple lines when needed.
-    ctx.fillStyle = '#eaf7ff';
-    ctx.font = '700 64px Inter, sans-serif';
-    this.drawWrappedText(ctx, title, {
-      x: 64,
-      y: 240,
-      maxWidth: canvas.width - 128,
-      lineHeight: 74,
-      maxLines: 3,
+    ctx.fillStyle = design.titleColor;
+    ctx.font = design.titleFont;
+    this.drawCenteredWrappedText(ctx, title, {
+      centerX: canvas.width * 0.5,
+      centerY: canvas.height * 0.53,
+      maxWidth: design.maxTextWidth,
+      lineHeight: design.lineHeight,
+      maxLines: design.maxLines,
+      maxChars: MAX_TITLE_CHARACTERS,
     });
 
-    // Convert canvas into GPU texture.
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
-    // Use sRGB so colors match CSS/expected UI color space.
     texture.colorSpace = THREE.SRGBColorSpace;
     return texture;
   }
 
-  private drawWrappedText(
+  private decorateDesign(
+    ctx: CanvasRenderingContext2D,
+    designId: CardDesign['id'],
+    width: number,
+    height: number,
+    padding: number,
+  ): void {
+    ctx.save();
+    ctx.strokeStyle = '#141414';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(padding + 12, padding + 12, width - (padding + 12) * 2, height - (padding + 12) * 2);
+
+    if (designId === 'comic-pop-2') {
+      ctx.fillStyle = '#ffffffdd';
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 4;
+      this.drawRoundedRect(ctx, 88, 68, 260, 76, 28);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  private drawRoundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number,
+  ): void {
+    const r = Math.max(0, Math.min(radius, Math.min(width, height) * 0.5));
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  private drawCenteredWrappedText(
     ctx: CanvasRenderingContext2D,
     text: string,
-    options: { x: number; y: number; maxWidth: number; lineHeight: number; maxLines: number },
+    options: {
+      centerX: number;
+      centerY: number;
+      maxWidth: number;
+      lineHeight: number;
+      maxLines: number;
+      maxChars: number;
+    },
   ): void {
-    const words = text.trim().split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
+    const lines = this.buildWrappedLines(
+      ctx,
+      text,
+      options.maxWidth,
+      options.maxLines,
+      options.maxChars,
+    );
+    if (lines.length === 0) {
       return;
     }
 
+    const yStart = options.centerY - ((lines.length - 1) * options.lineHeight) * 0.5;
+
+    ctx.save();
+    ctx.textBaseline = 'middle';
+    for (let index = 0; index < lines.length; index += 1) {
+      const y = yStart + index * options.lineHeight;
+      const value = lines[index];
+      const width = ctx.measureText(value).width;
+      ctx.fillText(value, options.centerX - width * 0.5, y);
+    }
+    ctx.restore();
+  }
+
+  private buildWrappedLines(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number,
+    maxLines: number,
+    maxChars: number,
+  ): string[] {
+    const compact = text.trim().replace(/\s+/g, ' ');
+    if (compact.length === 0) {
+      return [];
+    }
+
+    const charsCapped = compact.length > maxChars;
+    const limitedText = charsCapped ? compact.slice(0, maxChars).trimEnd() : compact;
+    const words = limitedText.split(' ').filter(Boolean);
     const lines: string[] = [];
     let current = '';
 
-    for (const word of words) {
+    for (let index = 0; index < words.length; index += 1) {
+      const word = words[index];
       const candidate = current ? `${current} ${word}` : word;
-      if (ctx.measureText(candidate).width <= options.maxWidth) {
+
+      if (ctx.measureText(candidate).width <= maxWidth) {
         current = candidate;
         continue;
       }
 
-      if (current) {
+      if (!current) {
+        lines.push(this.trimTextToWidth(ctx, word, maxWidth));
+      } else {
         lines.push(current);
+        current = word;
       }
-      current = word;
+
+      if (lines.length === maxLines) {
+        lines[maxLines - 1] = this.trimTextToWidth(ctx, `${lines[maxLines - 1]}...`, maxWidth);
+        return lines;
+      }
     }
 
     if (current) {
       lines.push(current);
     }
 
-    const limitedLines = lines.slice(0, options.maxLines);
-    const wasTruncated = lines.length > options.maxLines;
+    if (lines.length > maxLines) {
+      const limitedLines = lines.slice(0, maxLines);
+      limitedLines[maxLines - 1] = this.trimTextToWidth(ctx, `${limitedLines[maxLines - 1]}...`, maxWidth);
+      return limitedLines;
+    }
 
-    if (wasTruncated && limitedLines.length > 0) {
-      const lastLineIndex = limitedLines.length - 1;
-      let lastLine = limitedLines[lastLineIndex];
-      while (lastLine.length > 0 && ctx.measureText(`${lastLine}...`).width > options.maxWidth) {
-        lastLine = lastLine.slice(0, -1);
+    if (charsCapped && lines.length > 0) {
+      const last = lines.length - 1;
+      lines[last] = this.trimTextToWidth(ctx, `${lines[last]}...`, maxWidth);
+    }
+
+    return lines;
+  }
+
+  private trimTextToWidth(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+    if (ctx.measureText(text).width <= maxWidth) {
+      return text;
+    }
+
+    let value = text;
+    while (value.length > 0 && ctx.measureText(value).width > maxWidth) {
+      value = value.slice(0, -1);
+    }
+
+    if (text.endsWith('...') && !value.endsWith('...')) {
+      let base = value;
+      while (base.length > 0 && ctx.measureText(`${base}...`).width > maxWidth) {
+        base = base.slice(0, -1);
       }
-      limitedLines[lastLineIndex] = `${lastLine}...`;
+      return `${base}...`;
     }
 
-    for (let index = 0; index < limitedLines.length; index += 1) {
-      ctx.fillText(limitedLines[index], options.x, options.y + index * options.lineHeight);
+    return value;
+  }
+
+  private normalizeDesignIndex(index: number): number {
+    if (!Number.isFinite(index)) {
+      return 0;
     }
+
+    const normalized = Math.floor(index);
+    if (normalized < 0) {
+      return 0;
+    }
+    if (normalized >= CARD_DESIGNS.length) {
+      return CARD_DESIGNS.length - 1;
+    }
+
+    return normalized;
   }
 }

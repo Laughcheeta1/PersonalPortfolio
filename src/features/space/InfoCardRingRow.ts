@@ -20,6 +20,8 @@ type InfoCardRingRowParams = {
   rowOffsetY: number;
   // Visible arc span in radians, centered toward the camera side.
   arcSpan: number;
+  // Temporary visual variant for card rendering.
+  cardDesignIndex: number;
 };
 
 const HALF_PI = Math.PI * 0.5;
@@ -47,7 +49,7 @@ export class InfoCardRingRow {
     this.rowOffsetY = params.rowOffsetY;
     this.arcSpan = params.arcSpan;
 
-    const { categoryId, subcategory, ringIndex } = params;
+    const { categoryId, subcategory, ringIndex, cardDesignIndex } = params;
     // Evenly distribute items around a semicircle arc.
     subcategory.items.forEach((item, itemIndex) => {
       const angle = this.getCardAngle(itemIndex, subcategory.items.length);
@@ -58,6 +60,7 @@ export class InfoCardRingRow {
         item,
         ringIndex,
         angle,
+        designIndex: cardDesignIndex,
       });
 
       // Place cards on a semicircle whose center is on the camera-side of this row.

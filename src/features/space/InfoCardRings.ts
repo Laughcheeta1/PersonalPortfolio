@@ -5,7 +5,7 @@ import type {
   InformationItemSelection,
   InformationSceneCategory,
 } from '../information/models';
-import { InfoCard3D } from './InfoCard3D';
+import { CARD_DESIGN_COUNT, InfoCard3D } from './InfoCard3D';
 import { InfoCardRingRow } from './InfoCardRingRow';
 import { wrapToPi } from './math';
 
@@ -23,7 +23,7 @@ type FocusOrbitCircle = {
 // Controls how quickly ring angle catches up to the desired opposite angle.
 const RING_CHASE_SPEED = 3.2;
 // Ring radius is a multiple of the camera orbit radius.
-const RING_RADIUS_MULTIPLIER = 1.5;
+const RING_RADIUS_MULTIPLIER = 1.2;
 const FOCUSED_ORBIT_RADIUS = 7.4;
 const SEMICIRCLE_RADIUS_MULTIPLIER = 2;
 const MAX_SEMICIRCLE_SPAN = Math.PI;
@@ -50,12 +50,13 @@ export class InfoCardRings {
   // Current world-orbit angle for this full card system.
   private ringAngle = 0;
   private currentArcSpan = MAX_SEMICIRCLE_SPAN;
+  private cardDesignIndex = 0;
 
   // Reused vectors prevent extra allocations every frame.
   private readonly cameraForward = new THREE.Vector3();
   private readonly centerToCamera = new THREE.Vector3();
   // Vertical lift applied to the whole card system relative to its anchor.
-  private readonly anchorOffset = new THREE.Vector3(0, 0.864, 0);
+  private readonly anchorOffset = new THREE.Vector3(0, 0.69984, 0);
 
   rebuild(category: InformationSceneCategory | null, arcSpan = this.currentArcSpan): void {
     // Rebuild from scratch whenever selected category changes.
@@ -130,6 +131,7 @@ export class InfoCardRings {
         rowRadius: plan.rowRadius,
         rowOffsetY,
         arcSpan: this.currentArcSpan,
+        cardDesignIndex: this.cardDesignIndex,
       });
 
       pickIndex = row.setPickIndices(pickIndex);
@@ -160,6 +162,11 @@ export class InfoCardRings {
   dispose(): void {
     // Public dispose for runtime cleanup.
     this.clear();
+  }
+
+  setCardDesignIndex(nextIndex: number): void {
+    const clamped = THREE.MathUtils.clamp(Math.floor(nextIndex), 0, CARD_DESIGN_COUNT - 1);
+    this.cardDesignIndex = clamped;
   }
 
   update(

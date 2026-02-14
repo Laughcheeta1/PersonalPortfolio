@@ -1,0 +1,71 @@
+name: Deploy Personal Portfolio
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["master"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download repo
+        uses: actions/checkout@v4
+      
+      - name: Install bun
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+      
+      - name: Add bun to path
+        run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+      - name: Cache Bun downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Cache Vite cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+          key: ${{ runner.os }}-vite-${{ hashFiles('vite.config.*', 'package.json', '**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-
+
+      - name: Build the project
+        run: bun run build
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+  
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v4

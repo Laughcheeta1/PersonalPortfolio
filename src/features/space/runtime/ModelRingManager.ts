@@ -16,17 +16,25 @@ export class ModelRingManager {
   // Layout and sizing config.
   private readonly ringRadius: number;
   private readonly targetModelSize: number;
+  private readonly categoryLabelsByModelIndex: string[];
   // Angle between neighboring model slots in ring.
   private readonly angleStep: number;
   // GLTF loader reused for all assets.
   private readonly loader = new GLTFLoader();
   // Cache of loaded models for fast highlight and focus computations.
   private readonly loadedModels: LoadedModel[] = [];
+  private readonly titleSprites: THREE.Sprite[] = [];
 
-  constructor(modelCount: number, ringRadius: number, targetModelSize: number) {
+  constructor(
+    modelCount: number,
+    ringRadius: number,
+    targetModelSize: number,
+    categoryLabelsByModelIndex: string[],
+  ) {
     this.ringRadius = ringRadius;
     this.targetModelSize = targetModelSize;
     this.angleStep = TWO_PI / modelCount;
+    this.categoryLabelsByModelIndex = categoryLabelsByModelIndex;
   }
 
   // Loads and positions all models in the circular ring.
@@ -69,8 +77,19 @@ export class ModelRingManager {
 
       // Attach loaded root and register in scene/cache.
       holder.add(root);
+      const categoryLabel = this.categoryLabelsByModelIndex[index] ?? models[index].name;
+      const titleSprite = this.createCategoryTitleSprite(categoryLabel);
+      titleSprite.position.set(0, this.targetModelSize * 0.95, 0);
+      holder.add(titleSprite);
+      this.titleSprites.push(titleSprite);
       this.group.add(holder);
       this.loadedModels.push({ holder, meshes });
+    }
+  }
+
+  updateCategoryTitleVisibility(visible: boolean): void {
+    for (const sprite of this.titleSprites) {
+      sprite.visible = visible;
     }
   }
 
@@ -170,6 +189,17 @@ export class ModelRingManager {
         material.dispose();
       }
     });
+
+    for (const sprite of this.titleSprites) {
+      const material = sprite.material;
+      if (!(material instanceof THREE.SpriteMaterial)) {
+        continue;
+      }
+      if (material.map) {
+        material.map.dispose();
+      }
+      material.dispose();
+    }
   }
 
   // Normalizes model scale so all imported assets look similar in scene.
@@ -184,5 +214,59 @@ export class ModelRingManager {
     const centeredBbox = new THREE.Box3().setFromObject(root);
     const center = centeredBbox.getCenter(new THREE.Vector3());
     root.position.sub(center);
+  }
+
+  private createCategoryTitleSprite(label: string): THREE.Sprite {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(6.6, 1.75, 1);
+      return sprite;
+    }
+
+    const text = label.toUpperCase();
+    ctx.font = '900 84px Tahoma, sans-serif';
+    ctx.fillStyle = '#ffcf4d';
+    ctx.strokeStyle = '#1b0f36';
+    ctx.lineWidth = 12;
+    ctx.textBaseline = 'middle';
+    const maxWidth = canvas.width - 120;
+    const trimmed = this.trimTextToWidth(ctx, text, maxWidth);
+    const textWidth = ctx.measureText(trimmed).width;
+    const x = canvas.width * 0.5 - textWidth * 0.5;
+    const y = canvas.height * 0.52;
+    ctx.strokeText(trimmed, x, y);
+    ctx.fillText(trimmed, x, y);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const material = new THREE.SpriteMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.98,
+      depthTest: true,
+      depthWrite: false,
+    });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(4.125, 1.09375, 1);
+    return sprite;
+  }
+
+  private trimTextToWidth(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string {
+    if (ctx.measureText(text).width <= maxWidth) {
+      return text;
+    }
+
+    let value = text;
+    while (value.length > 0 && ctx.measureText(`${value}...`).width > maxWidth) {
+      value = value.slice(0, -1);
+    }
+    return `${value}...`;
   }
 }
