@@ -58,6 +58,14 @@ function toSceneItems(
   }));
 }
 
+function toSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function category(
   id: CategoryId,
   label: string,
@@ -135,7 +143,45 @@ export const sceneInformationCategories: InformationSceneCategory[] = [
       })),
     },
   ]),
-  category('personal', 'Personal', 5, []),
+  category('personal', 'Personal', 5, [
+    {
+      id: 'profile',
+      label: 'Profile',
+      items: [
+        {
+          id: 'personal-profile',
+          slug: 'personal-profile',
+          title: 'Personal Profile',
+          summary: professionalProfile.personalInformation.summary,
+          details: professionalProfile.personalInformation.headline,
+          skills: [],
+          links: {
+            externalUrl: professionalProfile.personalInformation.linkedinUrl,
+          },
+        },
+      ],
+    },
+    {
+      id: 'hobbies',
+      label: 'Hobbies',
+      items: toSceneItems(professionalProfile.personalInformation.hobbies),
+    },
+    {
+      id: 'languages',
+      label: 'Languages',
+      items: professionalProfile.personalInformation.languagesSpoken.map((language) => {
+        const slug = toSlug(language);
+        return {
+          id: `language-${slug}`,
+          slug,
+          title: language,
+          summary: `I speak ${language}.`,
+          details: `${language} is one of my spoken languages.`,
+          skills: [],
+        };
+      }),
+    },
+  ]),
 ];
 
 export function findCategoryById(categoryId: CategoryId): InformationSceneCategory | undefined {
