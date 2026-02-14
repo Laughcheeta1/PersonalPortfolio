@@ -96,13 +96,16 @@ const SpaceShowcase = () => {
     };
   }, [isAudioOn]);
 
-  const selectedName = selectedIndex === null ? '' : SPACE_MODELS[selectedIndex]?.name ?? '';
+  const selectedCategoryLabel =
+    selectedIndex === null
+      ? ''
+      : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex)?.label ?? '';
 
   return (
     <section className="space-page">
       <div ref={containerRef} className="space-canvas" aria-label="Interactive 3D portfolio scene" />
 
-      <div className={`focus-label ${selectedName ? 'show' : ''}`}>{selectedName}</div>
+      <div className={`focus-label ${selectedCategoryLabel ? 'show' : ''}`}>{selectedCategoryLabel}</div>
 
       <button
         type="button"

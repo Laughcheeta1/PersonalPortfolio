@@ -20,12 +20,16 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 180ms ease, transform 180ms ease;
-  border: 1px solid rgba(143, 212, 255, 0.35);
+  border: 3px solid #2c1354;
   border-radius: 999px;
-  padding: 0.45rem 0.95rem;
-  background: rgba(7, 15, 28, 0.7);
-  color: #e4f3ff;
-  font-weight: 600;
+  padding: 0.42rem 1rem;
+  background: linear-gradient(135deg, #ff7fb9 0%, #ffcf4d 100%);
+  color: #1b0f36;
+  font-weight: 900;
+  font-size: 1.5rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  box-shadow: 0 0.35rem 1.4rem rgba(21, 8, 42, 0.35);
 }
 
 .focus-label.show {
