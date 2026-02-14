@@ -71,20 +71,21 @@ const SpaceShowcase = () => {
   };
 
   useEffect(() => {
-    const updateViewportHints = () => {
-      const isSmallScreen = window.matchMedia('(max-width: 900px)').matches;
-      const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
-      setIsMobileViewport(isSmallScreen || isCoarsePointer);
-      setIsPortraitViewport(window.matchMedia('(orientation: portrait)').matches);
+    const mobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
+    const portraitQuery = window.matchMedia('(orientation: portrait)');
+
+    const syncViewportHints = () => {
+      setIsMobileViewport(mobileQuery.matches);
+      setIsPortraitViewport(portraitQuery.matches);
     };
 
-    updateViewportHints();
-    window.addEventListener('resize', updateViewportHints);
-    window.addEventListener('orientationchange', updateViewportHints);
+    syncViewportHints();
+    mobileQuery.addEventListener('change', syncViewportHints);
+    portraitQuery.addEventListener('change', syncViewportHints);
 
     return () => {
-      window.removeEventListener('resize', updateViewportHints);
-      window.removeEventListener('orientationchange', updateViewportHints);
+      mobileQuery.removeEventListener('change', syncViewportHints);
+      portraitQuery.removeEventListener('change', syncViewportHints);
     };
   }, []);
 
