@@ -1,7 +1,23 @@
 // Base primitives
-export type ISODateString = string;
+type YearLike = `${number}`;
+
+// Supports:
+// - Year only: YYYY
+// - Year + month: YYYY-MM
+// - Full date: YYYY-MM-DD
+// Use isInformationDateString(...) to validate exact shape at runtime.
+export type InformationDateString =
+  | YearLike
+  | `${YearLike}-${number}`
+  | `${YearLike}-${number}-${number}`;
 export type SkillId = number;
 export type CategoryId = 'work' | 'education' | 'projects' | 'honors' | 'skills' | 'personal';
+
+const informationDatePattern = /^\d{4}(?:-\d{2}(?:-\d{2})?)?$/;
+
+export function isInformationDateString(value: string): value is InformationDateString {
+  return informationDatePattern.test(value);
+}
 
 export interface LinkSet {
   repoUrl?: string;
@@ -21,33 +37,33 @@ export interface BaseInformationEntry {
 
 // General things
 export interface Achievement extends BaseInformationEntry {
-  date?: ISODateString;
+  date?: InformationDateString | null;
 }
 
 // Work
 export interface WorkRole extends BaseInformationEntry {
-  startDate: ISODateString;
-  endDate?: ISODateString;
+  startDate: InformationDateString;
+  endDate?: InformationDateString | null;
   achievements: Achievement[];
 }
 
 export interface CompanyWorkExperienceEntry extends BaseInformationEntry {
   companyName: string;
-  startDate: ISODateString;
-  endDate?: ISODateString;
+  startDate: InformationDateString;
+  endDate?: InformationDateString | null;
   roles: WorkRole[];
 }
 
 export interface EntrepreneurshipExperienceEntry extends BaseInformationEntry {
   ventureName: string;
-  startDate: ISODateString;
-  endDate?: ISODateString;
+  startDate: InformationDateString;
+  endDate?: InformationDateString | null;
 }
 
 export interface IndependentWorkExperienceEntry extends BaseInformationEntry {
   clientOrProductName: string;
-  startDate: ISODateString;
-  endDate?: ISODateString;
+  startDate: InformationDateString;
+  endDate?: InformationDateString | null;
 }
 
 export interface WorkExperience {
@@ -60,13 +76,13 @@ export interface WorkExperience {
 export interface UniversityEducation extends BaseInformationEntry {
   institution: string;
   degree: string;
-  startDate: ISODateString;
-  endDate?: ISODateString;
+  startDate: InformationDateString;
+  endDate?: InformationDateString | null;
 }
 
 export interface CourseEducation extends BaseInformationEntry {
   provider: string;
-  completionDate: ISODateString;
+  completionDate: InformationDateString;
 }
 
 export interface Education {
