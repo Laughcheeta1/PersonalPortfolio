@@ -1,9 +1,55 @@
 {
-  "headline": "CTO & Cofounder | Systems Engineering & Computing student | Backend, Cloud, and AI Agents",
-  "summary": "CTO & Cofounder building scalable backend systems and AI-driven sales automation. Strong focus on system architecture, microservices, databases, and product validation through real customer development.",
+  "headline": "“I know of no better life purpose than to perish attempting the great and impossible” - Nietzsche",
+  "summary": "Highly curious, fast learner and a go-getter, Santiago thrives on asking questions and seeking meaningful answers. He is passionate about expanding his knowledge—not only in technology and academia but also in geopolitics, economics, and current events. His charisma and strong public speaking skills make him a natural leader, often taking the initiative in team settings. With a proactive mindset and extensive experience in team management, he excels at guiding teams toward success",
   "availability": "open_to_offers",
   "githubUrl": "https://laughcheeta1.github.io/PersonalPortfolio/",
   "linkedinUrl": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270",
-  "hobbies": [],
+  "hobbies": [
+    {
+      "id": "reading",
+      "slug": "reading",
+      "title": "Reading",
+      "summary": "I enjoy reading books and articles about technology.",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "gym",
+      "slug": "gym",
+      "title": "Gym Activities",
+      "summary": "I enjoy doing gym activities like lifting weights and running.",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "jiu-jitsu",
+      "slug": "jiu-jitsu",
+      "title": "Jiu-Jitsu",
+      "summary": "I enjoy doing jiu-jitsu as a hobby.",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "gifts-and-surprise-parties",
+      "slug": "gifts-and-surprise-parties",
+      "title": "Making Gifts and Surprise Parties",
+      "summary": "I enjoy making gifts and surprise parties for my friends and family.",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "motorcicle-driving",
+      "slug": "motorcicle-driving",
+      "title": "Motorcicle Driving",
+      "summary": "I enjoy driving motorcicles.",
+      "details": "",
+      "skills": [],
+      "links": {}
+    }
+  ],
   "languagesSpoken": ["Spanish", "English"]
 }
