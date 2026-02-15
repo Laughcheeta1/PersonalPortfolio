@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Personal portfolio chatbot Lambda stack
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+    Architectures:
+      - x86_64
+
+Resources:
+  ChatbotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: functions/chatbot/
+      Handler: app.lambda_handler
+      Description: Chatbot backend for the PersonalPortfolio frontend
+      Environment:
+        Variables:
+          APP_ENV: prod
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins:
+            - "*"
+          AllowMethods:
+            - POST
+            - OPTIONS
+          AllowHeaders:
+            - content-type
+
+Outputs:
+  ChatbotFunctionName:
+    Description: Name of the chatbot Lambda function
+    Value: !Ref ChatbotFunction
+
+  ChatbotFunctionUrl:
+    Description: Public URL for the chatbot Lambda function
+    Value: !GetAtt ChatbotFunctionUrl.FunctionUrl
