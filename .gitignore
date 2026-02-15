@@ -23,3 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 .vite/
+.env
+
+# Python / SAM
+__pycache__/
+*.pyc
+.venv/
+.aws-sam/
