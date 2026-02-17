@@ -6,10 +6,7 @@ on:
     branches: ["master"]
     paths:
       - "frontend/**"
-<<<<<<< HEAD
       - "lambdas/**"
-=======
->>>>>>> a0bdac05dd0628cc75d203906413b009224b4d11
       - ".github/workflows/deploy.yaml"
 
 permissions:
@@ -26,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-<<<<<<< HEAD
         working-directory: lambdas
 
     outputs:
@@ -72,8 +68,6 @@ jobs:
     needs: deploy-lambdas
     defaults:
       run:
-=======
->>>>>>> a0bdac05dd0628cc75d203906413b009224b4d11
         working-directory: frontend
     steps:
       - name: Download repo
