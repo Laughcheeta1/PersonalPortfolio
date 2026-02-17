@@ -1,41 +1,62 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Personal portfolio chatbot Lambda stack
+Description: Deploy the backend lambdas my personal portfolio project
+
+Parameters:
+  AWS_ROLE_ARN:
+    Type: String
+    NoEcho: true
+
+  LAMBDA_EXECUTION_ROLE_ARN:
+    Type: String
+    NoEcho: true
 
 Globals:
   Function:
-    Runtime: python3.12
-    Timeout: 30
+    Timeout: 50
     MemorySize: 256
+    Runtime: python3.13
     Architectures:
       - x86_64
+    Tracing: Active
 
 Resources:
-  ChatbotFunction:
+  portfolio-api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: portfolio-api
+      StageName: prod
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 2
+          ThrottlingBurstLimit: 5
+
+      Cors:
+        AllowOrigin: "'https://laughcheeta1.github.io/PersonalPortfolio/'"
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'content-type'"
+
+      EndpointConfiguration: REGIONAL
+      
+
+  chatbot_lambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: functions/chatbot/
+      FunctionName: chatbot_lambda
+      CodeUri: src/chatbot
       Handler: app.lambda_handler
-      Description: Chatbot backend for the PersonalPortfolio frontend
+      ReservedConcurrentExecutions: 5
+      Role: !Ref LAMBDA_EXECUTION_ROLE_ARN
+
       Environment:
         Variables:
-          APP_ENV: prod
-      FunctionUrlConfig:
-        AuthType: NONE
-        Cors:
-          AllowOrigins:
-            - "*"
-          AllowMethods:
-            - POST
-            - OPTIONS
-          AllowHeaders:
-            - content-type
+          GROQ_API_KEY: {{resolve:secretsmanager:GROQ_API_KEY:SecretString:GROQ_API_KEY}}
 
-Outputs:
-  ChatbotFunctionName:
-    Description: Name of the chatbot Lambda function
-    Value: !Ref ChatbotFunction
-
-  ChatbotFunctionUrl:
-    Description: Public URL for the chatbot Lambda function
-    Value: !GetAtt ChatbotFunctionUrl.FunctionUrl
+      Events:
+        ChatRoute:
+          Type: Api
+          Properties:
+            RestApiId: !Ref portfolio-api
+            Path: /chat
+            Method: POST
