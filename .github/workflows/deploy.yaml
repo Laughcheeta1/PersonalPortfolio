@@ -18,7 +18,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy-lambdas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lambdas
+
+    outputs:
+      api_url: ${{ steps.cfn.outputs.api_url }}
+    
+    steps:
+      - name: Download the repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Built the sam file
+        run: sam build
+
+
+  build-frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -64,8 +90,8 @@ jobs:
         with:
           path: frontend/dist
   
-  deploy:
-    needs: build
+  deploy-frontend:
+    needs: build-frontend
     runs-on: ubuntu-latest
     environment:
       name: github-pages

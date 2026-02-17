@@ -6,7 +6,7 @@ AWS SAM project for backend Lambda functions.
 
 - Function logical ID: `ChatbotFunction`
 - Handler: `functions/chatbot/app.lambda_handler`
-- Runtime: Python 3.12
+- Runtime: Python 3.13
 - Endpoint type: Lambda Function URL (public, CORS enabled)
 
 ## Local Commands
