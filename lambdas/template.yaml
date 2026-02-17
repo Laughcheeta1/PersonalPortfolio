@@ -3,10 +3,6 @@ Transform: AWS::Serverless-2016-10-31
 Description: Deploy the backend lambdas my personal portfolio project
 
 Parameters:
-  AWS_ROLE_ARN:
-    Type: String
-    NoEcho: true
-
   LAMBDA_EXECUTION_ROLE_ARN:
     Type: String
     NoEcho: true
@@ -60,3 +56,8 @@ Resources:
             RestApiId: !Ref portfolio-api
             Path: /chat
             Method: POST
+
+Outputs:
+  ApiUrl:
+    Description: "The api gateway endpoint url"
+    Value: !Sub "https://${portfolio-api}.execute-api.${AWS::Region}.amazonaws.com/prod/chat"

@@ -6,6 +6,7 @@ on:
     branches: ["master"]
     paths:
       - "frontend/**"
+      - "lambdas/**"
       - ".github/workflows/deploy.yaml"
 
 permissions:
@@ -43,20 +44,43 @@ jobs:
       - name: Built the sam file
         run: sam build
 
+      - name: Deploy Sam
+        run: |
+          sam deploy \
+            --stack-name ${{ secrets.SAM_STACK_NAME }} \
+            --resolve-s3 \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset \
+            --parameter-overrides LAMBDA_EXECUTION_ROLE_ARN=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
+
+      - name: Read Api Gateawy url
+        id: cfn
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name ${{ secrets.SAM_STACK_NAME }} \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --output text)
+          
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
   build-frontend:
     runs-on: ubuntu-latest
+    needs: deploy-lambdas
     defaults:
       run:
         working-directory: frontend
     steps:
       - name: Download repo
         uses: actions/checkout@v4
+
+      - name: Set the API_URL env for the front end
+        run: |
+          echo "VITE_API_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
       
       - name: Install bun
-        run: |
-          set -euo pipefail
-          curl -fsSL https://bun.sh/install | bash
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.9"
       
       - name: Add bun to path
         run: echo "$HOME/.bun/bin" >> $GITHUB_PATH
