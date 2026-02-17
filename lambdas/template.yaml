@@ -3,7 +3,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: Deploy the backend lambdas my personal portfolio project
 
 Parameters:
-  LAMBDA_EXECUTION_ROLE_ARN:
+  LambdaExecutionRoleArn:
     Type: String
     NoEcho: true
 
@@ -17,7 +17,7 @@ Globals:
     Tracing: Active
 
 Resources:
-  portfolio-api:
+  PortfolioApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: portfolio-api
@@ -36,28 +36,28 @@ Resources:
       EndpointConfiguration: REGIONAL
       
 
-  chatbot_lambda:
+  ChatbotLambda:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: chatbot_lambda
       CodeUri: src/chatbot
       Handler: app.lambda_handler
       ReservedConcurrentExecutions: 5
-      Role: !Ref LAMBDA_EXECUTION_ROLE_ARN
+      Role: !Ref LambdaExecutionRoleArn
 
       Environment:
         Variables:
-          GROQ_API_KEY: {{resolve:secretsmanager:GROQ_API_KEY:SecretString:GROQ_API_KEY}}
+          GROQ_API_KEY: "{{resolve:secretsmanager:GROQ_API_KEY:SecretString:GROQ_API_KEY}}"
 
       Events:
         ChatRoute:
           Type: Api
           Properties:
-            RestApiId: !Ref portfolio-api
+            RestApiId: !Ref PortfolioApi
             Path: /chat
             Method: POST
 
 Outputs:
   ApiUrl:
     Description: "The api gateway endpoint url"
-    Value: !Sub "https://${portfolio-api}.execute-api.${AWS::Region}.amazonaws.com/prod/chat"
+    Value: !Sub "https://${PortfolioApi}.execute-api.${AWS::Region}.amazonaws.com/prod/chat"
