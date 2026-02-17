@@ -230,7 +230,7 @@ export class ModelRingManager {
       const texture = new THREE.CanvasTexture(canvas);
       const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(6.6, 1.75, 1);
+      sprite.scale.set(13.2, 3.5, 1);
       return sprite;
     }
 
@@ -259,7 +259,7 @@ export class ModelRingManager {
       depthWrite: false,
     });
     const sprite = new THREE.Sprite(material);
-    sprite.scale.set(4.125, 1.09375, 1);
+    sprite.scale.set(8.25, 2.1875, 1);
     return sprite;
   }
 
