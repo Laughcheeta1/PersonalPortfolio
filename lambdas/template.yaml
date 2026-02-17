@@ -42,7 +42,7 @@ Resources:
       FunctionName: chatbot_lambda
       CodeUri: src/chatbot
       Handler: app.lambda_handler
-      ReservedConcurrentExecutions: 5
+      ReservedConcurrentExecutions: 10
       Role: !Ref LambdaExecutionRoleArn
 
       Environment:
