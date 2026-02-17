@@ -3,6 +3,13 @@ Transform: AWS::Serverless-2016-10-31
 Description: Deploy the backend lambdas my personal portfolio project
 
 Parameters:
+<<<<<<< HEAD
+=======
+  AWS_ROLE_ARN:
+    Type: String
+    NoEcho: true
+
+>>>>>>> a0bdac05dd0628cc75d203906413b009224b4d11
   LAMBDA_EXECUTION_ROLE_ARN:
     Type: String
     NoEcho: true
