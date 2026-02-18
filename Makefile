@@ -1,0 +1,2 @@
+dev:
+	nx dev PersonalPortfolio

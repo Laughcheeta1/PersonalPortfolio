@@ -1,0 +1,15 @@
+{
+    "name": "PersonalPortfolio",
+    "targets": {
+        "dev": {
+            "executor": "nx:run-commands",
+            "options": {
+                "parallel": true,
+                "commands": [
+                    { "command": "nx dev frontend" },
+                    { "command": "nx dev lambdas" }
+                ]
+            }
+        }
+    }
+}
