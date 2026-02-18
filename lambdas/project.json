@@ -8,10 +8,11 @@
             "outputs": ["{projectRoot}/.aws-sam"],
             "options": {
                 "cwd": "lambdas",
-                "command": "sam build"
+                "command": "sam build --cached"
             }
         },
         "dev": {
+            "dependsOn": ["build"],
             "executor": "nx:run-commands",
             "options": {
                 "cwd": "lambdas",

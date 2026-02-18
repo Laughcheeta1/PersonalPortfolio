@@ -6,7 +6,7 @@
         "build": {
             "executor": "nx:run-commands",
             "options": {
-                "cwd": "apps/frontend",
+                "cwd": "frontend",
                 "command": "bun run build"
             },
             "outputs": ["{projectRoot}/dist"]
@@ -14,14 +14,14 @@
         "dev": {
             "executor": "nx:run-commands",
             "options": {
-                "cwd": "apps/frontend",
+                "cwd": "frontend",
                 "command": "bun dev"
             }
         },
         "lint": {
             "executor": "nx:run-commands",
             "options": {
-                "cwd": "apps/frontend",
+                "cwd": "frontend",
                 "command": "bun run lint"
             }
         }
