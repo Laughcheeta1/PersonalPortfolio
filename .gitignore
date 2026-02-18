@@ -30,3 +30,7 @@ __pycache__/
 *.pyc
 .venv/
 .aws-sam/
+
+.nx/installation
+.nx/cache
+.nx/workspace-data
