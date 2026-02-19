@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   normalizeNavigationTarget,
@@ -97,6 +97,10 @@ export function useSpaceSceneRuntime() {
     };
   }, []);
 
+  const setPandaSpeaking = useCallback((speaking: boolean) => {
+    runtimeRef.current?.setPandaSpeaking(speaking);
+  }, []);
+
   const selectedCategoryLabel = useMemo(
     () =>
       selectedIndex === null
@@ -112,5 +116,6 @@ export function useSpaceSceneRuntime() {
     loadingState,
     selectedCategoryLabel,
     avatarAnchor,
+    setPandaSpeaking,
   };
 }

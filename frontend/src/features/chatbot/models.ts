@@ -19,9 +19,18 @@ export type ChatbotStructuredResponse = {
   response: ChatResponseAction[];
 };
 
+export type ChatbotTurnAction =
+  | {
+      type: 'movement';
+      categoryId: CategoryId;
+    }
+  | {
+      type: 'text';
+      message: string;
+    };
+
 export type ChatbotTurnResult = {
-  movementTargets: CategoryId[];
-  modelMessages: ConversationMessage[];
+  actions: ChatbotTurnAction[];
 };
 
 export type AvatarScreenAnchor = {

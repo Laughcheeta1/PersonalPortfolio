@@ -6,6 +6,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 import backgroundExrUrl from '../../../assets/exr/sunflowers_puresky_1k.exr';
 import pandaNotSpeakingUrl from '../../../assets/images/Panda_monk_not_speaking.png';
+import pandaSpeakingUrl from '../../../assets/images/Panda_monk_speaking.png';
 import { PandaMonkAvatar } from '../../chatbot/scene/PandaMonkAvatar';
 import { resolveNavigationTarget } from '../../information/navigation';
 import { InfoCardRings } from '../InfoCardRings';
@@ -129,7 +130,10 @@ export class SpaceSceneRuntime {
       return;
     }
     this.emitLoadingState({ active: true, progress: 0.96, label: 'Loading portfolio guide avatar...' });
-    await this.pandaMonkAvatar.load(pandaNotSpeakingUrl);
+    await this.pandaMonkAvatar.load({
+      idle: pandaNotSpeakingUrl,
+      speaking: pandaSpeakingUrl,
+    });
     if (this.disposed) {
       return;
     }
@@ -176,6 +180,10 @@ export class SpaceSceneRuntime {
   setCardDesignIndex(index: number): void {
     this.infoCardRings.setCardDesignIndex(index);
     this.rebuildInfoCards();
+  }
+
+  setPandaSpeaking(speaking: boolean): void {
+    this.pandaMonkAvatar.setSpeaking(speaking);
   }
 
   navigateTo(target: SceneNavigationTarget): void {

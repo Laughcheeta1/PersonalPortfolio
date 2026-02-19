@@ -3,18 +3,24 @@ import type { ChatbotStructuredResponse, ChatbotTurnResult } from './models';
 export function toChatbotTurnResult(
   structuredResponse: ChatbotStructuredResponse,
 ): ChatbotTurnResult {
-  const movementTargets: ChatbotTurnResult['movementTargets'] = [];
-  const modelMessages: ChatbotTurnResult['modelMessages'] = [];
+  const actions: ChatbotTurnResult['actions'] = [];
 
   for (const action of structuredResponse.response) {
     if (action.action_type === 'movement' && action.category_to_move_to) {
-      movementTargets.push(action.category_to_move_to);
+      actions.push({
+        type: 'movement',
+        categoryId: action.category_to_move_to,
+      });
+      continue;
     }
 
-    if (action.message && action.message.trim()) {
-      modelMessages.push({ sender: 'model', message: action.message.trim() });
+    if (action.action_type === 'text' && action.message && action.message.trim()) {
+      actions.push({
+        type: 'text',
+        message: action.message.trim(),
+      });
     }
   }
 
-  return { movementTargets, modelMessages };
+  return { actions };
 }

@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
-import { usePandaMonkChatboxLayout } from '../features/chatbot/hooks/usePandaMonkChatboxLayout';
-import { usePortfolioChatbot } from '../features/chatbot/usePortfolioChatbot';
+import { usePandaMonkChatbot } from '../features/chatbot/hooks/usePandaMonkChatbot';
 import { useAmbientAudio } from '../features/space/hooks/useAmbientAudio';
 import { useSpaceSceneRuntime } from '../features/space/hooks/useSpaceSceneRuntime';
 import { useViewportHints } from '../features/space/hooks/useViewportHints';
@@ -22,21 +21,28 @@ const SpaceShowcase = () => {
     loadingState,
     selectedCategoryLabel,
     avatarAnchor,
+    setPandaSpeaking,
   } = useSpaceSceneRuntime();
 
   const assetCredits = assetCreditsJson as AssetCreditsConfig;
-  const chatPanelStyle = usePandaMonkChatboxLayout({ avatarAnchor });
 
   const {
+    chatPanelStyle,
     isSendingChat,
     chatError,
     chatConversation,
+    isPandaSpeaking,
     sendUserMessage,
-  } = usePortfolioChatbot({
+  } = usePandaMonkChatbot({
+    avatarAnchor,
     onNavigateToCategory: (categoryId) => {
       window.portfolioNavigateTo?.({ categoryId });
     },
   });
+
+  useEffect(() => {
+    setPandaSpeaking(isPandaSpeaking);
+  }, [isPandaSpeaking, setPandaSpeaking]);
 
   return (
     <section className="space-page">

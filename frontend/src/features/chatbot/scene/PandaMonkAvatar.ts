@@ -9,6 +9,11 @@ type PandaMonkAvatarOptions = {
   onScreenAnchorChange: (anchor: AvatarScreenAnchor) => void;
 };
 
+type PandaMonkTextureUrls = {
+  idle: string;
+  speaking: string;
+};
+
 export class PandaMonkAvatar {
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.PerspectiveCamera;
@@ -27,6 +32,10 @@ export class PandaMonkAvatar {
   private lastAnchor: AvatarScreenAnchor = { x: Number.NaN, y: Number.NaN, visible: false };
 
   private sprite: THREE.Sprite | null = null;
+  private spriteMaterial: THREE.SpriteMaterial | null = null;
+  private idleTexture: THREE.Texture | null = null;
+  private speakingTexture: THREE.Texture | null = null;
+  private isSpeaking = false;
 
   constructor(options: PandaMonkAvatarOptions) {
     this.scene = options.scene;
@@ -35,20 +44,27 @@ export class PandaMonkAvatar {
     this.onScreenAnchorChange = options.onScreenAnchorChange;
   }
 
-  async load(textureUrl: string): Promise<void> {
-    const texture = await this.textureLoader.loadAsync(textureUrl);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.needsUpdate = true;
+  async load(textureUrls: PandaMonkTextureUrls): Promise<void> {
+    const [idleTexture, speakingTexture] = await Promise.all([
+      this.textureLoader.loadAsync(textureUrls.idle),
+      this.textureLoader.loadAsync(textureUrls.speaking),
+    ]);
+    idleTexture.colorSpace = THREE.SRGBColorSpace;
+    idleTexture.needsUpdate = true;
+    speakingTexture.colorSpace = THREE.SRGBColorSpace;
+    speakingTexture.needsUpdate = true;
+    this.idleTexture = idleTexture;
+    this.speakingTexture = speakingTexture;
 
     const material = new THREE.SpriteMaterial({
-      map: texture,
+      map: this.idleTexture,
       transparent: true,
       depthWrite: false,
       depthTest: true,
     });
 
     const sprite = new THREE.Sprite(material);
-    const image = texture.image as { width?: number; height?: number } | undefined;
+    const image = this.idleTexture.image as { width?: number; height?: number } | undefined;
     const aspectRatio =
       image && typeof image.width === 'number' && typeof image.height === 'number' && image.height > 0
         ? image.width / image.height
@@ -60,7 +76,9 @@ export class PandaMonkAvatar {
     this.targetScale.copy(this.defaultScale);
     sprite.position.copy(this.currentPosition);
     this.scene.add(sprite);
+    this.spriteMaterial = material;
     this.sprite = sprite;
+    this.applySpeakingState();
   }
 
   dispose(): void {
@@ -70,14 +88,23 @@ export class PandaMonkAvatar {
     }
 
     this.scene.remove(sprite);
-    const material = sprite.material;
-    if (material instanceof THREE.SpriteMaterial) {
-      if (material.map) {
-        material.map.dispose();
-      }
-      material.dispose();
+    if (this.spriteMaterial) {
+      this.spriteMaterial.dispose();
+      this.spriteMaterial = null;
     }
+    this.idleTexture?.dispose();
+    this.speakingTexture?.dispose();
+    this.idleTexture = null;
+    this.speakingTexture = null;
     this.sprite = null;
+  }
+
+  setSpeaking(speaking: boolean): void {
+    if (this.isSpeaking === speaking) {
+      return;
+    }
+    this.isSpeaking = speaking;
+    this.applySpeakingState();
   }
 
   update(dt: number, elapsedTime: number, focusPosition: THREE.Vector3 | null): void {
@@ -110,6 +137,15 @@ export class PandaMonkAvatar {
     sprite.quaternion.copy(this.camera.quaternion);
 
     this.emitScreenAnchor(sprite.position);
+  }
+
+  private applySpeakingState(): void {
+    if (!this.spriteMaterial || !this.idleTexture || !this.speakingTexture) {
+      return;
+    }
+
+    this.spriteMaterial.map = this.isSpeaking ? this.speakingTexture : this.idleTexture;
+    this.spriteMaterial.needsUpdate = true;
   }
 
   private emitScreenAnchor(worldPosition: THREE.Vector3): void {
