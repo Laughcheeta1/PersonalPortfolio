@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import json
+from typing import Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from llm_providers.base import LLMModel
 from llm_providers.groq_model import GroqModel
 from models.prompt import Prompt
+from models.response import ChatbotStructuredResponse
 from prompts.basic import SYSTEM_PROMPT, USER_PROMPT
+
+
+class ConversationMessage(TypedDict):
+    sender: Literal["user", "model"]
+    message: str
 
 
 class PortfolioChatbot(BaseModel):
@@ -38,19 +45,23 @@ class PortfolioChatbot(BaseModel):
         )
     )
 
-    def execute(self) -> None:
-        """Execute full pipeline (placeholder)."""
-        return None
+    def execute(self, messages: list[ConversationMessage] | None = None) -> dict[str, object]:
+        if messages is not None:
+            payload = {"messages": messages}
+            self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
 
-    def _get_response(self, messages: list[str]) -> str:
-        payload = {"messages": messages}
-        self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
+        return self._get_structured_response()
 
+    def _get_structured_response(self) -> dict[str, object]:
         errors: list[str] = []
         for model in self.llm_models:
             try:
-                response = model.call(self.prompt)
-                return response if isinstance(response, str) else str(response)
+                response = model.call(
+                    self.prompt, structured_output=ChatbotStructuredResponse
+                )
+                if not isinstance(response, ChatbotStructuredResponse):
+                    raise TypeError("Structured output did not return ChatbotStructuredResponse.")
+                return response.model_dump()
             except Exception as exc:
                 errors.append(f"{model.__class__.__name__}: {exc}")
 
