@@ -58,10 +58,20 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     }
 
     setChatConversation((prev) => [...prev, { sender: 'model', message: '' }]);
-    startSpeaking();
 
     let partial = '';
+    let wasSpeakingForPreviousChar = false;
     for (const char of normalized) {
+      const shouldSpeakForChar = !/\s/.test(char);
+      if (shouldSpeakForChar !== wasSpeakingForPreviousChar) {
+        if (shouldSpeakForChar) {
+          startSpeaking();
+        } else {
+          stopSpeaking();
+        }
+        wasSpeakingForPreviousChar = shouldSpeakForChar;
+      }
+
       partial += char;
       setChatConversation((prev) => {
         if (prev.length === 0) {

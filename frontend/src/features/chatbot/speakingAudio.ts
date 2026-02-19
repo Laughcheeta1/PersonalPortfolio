@@ -1,4 +1,4 @@
-import speakingLoopUrl from '../../assets/audio/the_smoke_decides.mp3';
+import speakingLoopUrl from '../../assets/audio/chatbot/sans_voice.mp3';
 
 export type SpeakingAudioController = {
   start: () => void;
