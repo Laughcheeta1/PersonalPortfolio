@@ -46,9 +46,10 @@ class PortfolioChatbot(BaseModel):
     )
 
     def execute(self, messages: list[ConversationMessage] | None = None) -> dict[str, object]:
-        if messages is not None:
-            payload = {"messages": messages}
-            self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
+        payload_messages = messages or []
+        payload = {"messages": payload_messages}
+        self.prompt.format_system_prompt()
+        self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
 
         return self._get_structured_response()
 

@@ -8,7 +8,7 @@
             "outputs": ["{projectRoot}/.aws-sam"],
             "options": {
                 "cwd": "lambdas",
-                "command": "sam build --cached"
+                "command": "set -a; [ -f .env ] && . ./.env; set +a; sam build --cached"
             }
         },
         "dev": {
@@ -16,7 +16,7 @@
             "executor": "nx:run-commands",
             "options": {
                 "cwd": "lambdas",
-                "command": "sam local start-api"
+                "command": "set -a; [ -f .env ] && . ./.env; set +a; sam local start-api --container-env-vars GROQ_API_KEY=${GROQ_API_KEY}"
             }
         },
         "deploy": {
