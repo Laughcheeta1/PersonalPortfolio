@@ -43,12 +43,12 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
 
   const getTypingDelayMs = (char: string): number => {
     if (char === '.' || char === ',' || char === '!' || char === '?' || char === ':') {
-      return 45;
+      return 110;
     }
-    if (char === ' ') {
-      return 8;
+    if (/\s/.test(char)) {
+      return 28;
     }
-    return 18;
+    return 40;
   };
 
   const animateModelText = async (fullText: string): Promise<void> => {
@@ -58,20 +58,10 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     }
 
     setChatConversation((prev) => [...prev, { sender: 'model', message: '' }]);
+    startSpeaking();
 
     let partial = '';
-    let wasSpeakingForPreviousChar = false;
     for (const char of normalized) {
-      const shouldSpeakForChar = !/\s/.test(char);
-      if (shouldSpeakForChar !== wasSpeakingForPreviousChar) {
-        if (shouldSpeakForChar) {
-          startSpeaking();
-        } else {
-          stopSpeaking();
-        }
-        wasSpeakingForPreviousChar = shouldSpeakForChar;
-      }
-
       partial += char;
       setChatConversation((prev) => {
         if (prev.length === 0) {
