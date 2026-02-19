@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
 import { usePandaMonkChatbot } from '../features/chatbot/hooks/usePandaMonkChatbot';
@@ -31,18 +31,14 @@ const SpaceShowcase = () => {
     isSendingChat,
     chatError,
     chatConversation,
-    isPandaSpeaking,
     sendUserMessage,
   } = usePandaMonkChatbot({
     avatarAnchor,
     onNavigateToCategory: (categoryId) => {
       window.portfolioNavigateTo?.({ categoryId });
     },
+    onPandaSpeakingChange: setPandaSpeaking,
   });
-
-  useEffect(() => {
-    setPandaSpeaking(isPandaSpeaking);
-  }, [isPandaSpeaking, setPandaSpeaking]);
 
   return (
     <section className="space-page">
