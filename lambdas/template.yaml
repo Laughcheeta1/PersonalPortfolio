@@ -58,5 +58,5 @@ Resources:
 
 Outputs:
   ApiUrl:
-    Description: "The api gateway endpoint url"
-    Value: !Sub "https://${PortfolioApi}.execute-api.${AWS::Region}.amazonaws.com/prod/chat"
+    Description: "The api gateway base url"
+    Value: !Sub "https://${PortfolioApi}.execute-api.${AWS::Region}.amazonaws.com/prod"

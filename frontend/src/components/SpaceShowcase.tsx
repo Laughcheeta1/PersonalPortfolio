@@ -11,6 +11,10 @@ import type {
   SceneNavigationTarget,
 } from '../features/information/models';
 import assetCreditsJson from '../features/information/data/assetCredits.json';
+import {
+  requestChatbotTurn,
+  type ConversationMessage,
+} from '../features/chatbot/client';
 import { startAmbientHum, type AmbientHumController } from '../features/space/ambientHum';
 import { SpaceSceneRuntime } from '../features/space/runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../features/space/spaceModels';
@@ -37,6 +41,10 @@ const SpaceShowcase = () => {
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isPortraitViewport, setIsPortraitViewport] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [isSendingChat, setIsSendingChat] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const [chatConversation, setChatConversation] = useState<ConversationMessage[]>([]);
 
   type AssetCreditItem = {
     name: string;
@@ -181,6 +189,47 @@ const SpaceShowcase = () => {
       ? ''
       : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex)?.label ?? '';
 
+  const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const userText = chatInput.trim();
+    if (!userText || isSendingChat) {
+      return;
+    }
+
+    const nextConversation: ConversationMessage[] = [
+      ...chatConversation,
+      { sender: 'user', message: userText },
+    ];
+    setChatConversation(nextConversation);
+    setChatInput('');
+    setChatError(null);
+
+    setIsSendingChat(true);
+    try {
+      const { movementTargets, modelMessages } = await requestChatbotTurn(nextConversation);
+
+      for (const categoryId of movementTargets) {
+        window.portfolioNavigateTo?.({ categoryId });
+      }
+
+      if (modelMessages.length > 0) {
+        setChatConversation((prev) => [...prev, ...modelMessages]);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Chat request failed.';
+      setChatError(errorMessage);
+      setChatConversation((prev) => [
+        ...prev,
+        {
+          sender: 'model',
+          message: `I ran into an error while calling the chatbot API: ${errorMessage}`,
+        },
+      ]);
+    } finally {
+      setIsSendingChat(false);
+    }
+  };
+
   return (
     <section className="space-page">
       <div ref={containerRef} className="space-canvas" aria-label="Interactive 3D portfolio scene" />
@@ -224,6 +273,45 @@ const SpaceShowcase = () => {
       >
         {isCreditsOpen ? 'Hide Sources' : 'Show Sources'}
       </button>
+
+      <aside className="chat-panel" aria-label="Portfolio chatbot">
+        <div className="chat-panel-topline">
+          <span>Portfolio Guide</span>
+          {isSendingChat ? <span>Thinking...</span> : <span>Ready</span>}
+        </div>
+
+        <div className="chat-log">
+          {chatConversation.length === 0 ? (
+            <p className="chat-placeholder">
+              Ask about work, projects, skills, education, honors, or personal profile.
+            </p>
+          ) : (
+            chatConversation.map((entry, index) => (
+              <p
+                key={`${entry.sender}-${index}`}
+                className={`chat-line ${entry.sender === 'user' ? 'chat-line-user' : 'chat-line-model'}`}
+              >
+                <strong>{entry.sender === 'user' ? 'You:' : 'Guide:'}</strong> {entry.message}
+              </p>
+            ))
+          )}
+        </div>
+
+        {chatError ? <p className="chat-error">{chatError}</p> : null}
+
+        <form className="chat-input-row" onSubmit={submitChatMessage}>
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(event) => setChatInput(event.target.value)}
+            placeholder="Ask a question..."
+            disabled={isSendingChat}
+          />
+          <button type="submit" disabled={isSendingChat || !chatInput.trim()}>
+            Send
+          </button>
+        </form>
+      </aside>
 
       {isCreditsOpen ? (
         <aside className="asset-credits-panel">

@@ -82,7 +82,24 @@ jobs:
 
       - name: Set the API_URL env for the front end
         run: |
-          echo "VITE_API_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
+          echo "VITE_API_BASE_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
+
+      - name: Validate VITE_API_BASE_URL
+        run: |
+          if [ -z "${VITE_API_BASE_URL}" ]; then
+            echo "VITE_API_BASE_URL is empty. Aborting frontend build."
+            exit 1
+          fi
+
+          if [[ ! "${VITE_API_BASE_URL}" =~ ^https?:// ]]; then
+            echo "VITE_API_BASE_URL must start with http:// or https://. Got: ${VITE_API_BASE_URL}"
+            exit 1
+          fi
+
+          if [[ "${VITE_API_BASE_URL}" =~ /chat/?$ ]]; then
+            echo "VITE_API_BASE_URL must be the API base URL, not the chat route. Got: ${VITE_API_BASE_URL}"
+            exit 1
+          fi
       
       - name: Install bun
         uses: oven-sh/setup-bun@v2
