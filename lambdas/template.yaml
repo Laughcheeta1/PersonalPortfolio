@@ -29,9 +29,9 @@ Resources:
           ThrottlingBurstLimit: 5
 
       Cors:
-        AllowOrigin: "'https://laughcheeta1.github.io/PersonalPortfolio/'"
+        AllowOrigin: "'*'"
         AllowMethods: "'POST,OPTIONS'"
-        AllowHeaders: "'content-type'"
+        AllowHeaders: "'content-type,authorization'"
 
       EndpointConfiguration: REGIONAL
       

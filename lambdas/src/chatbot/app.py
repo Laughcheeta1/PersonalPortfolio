@@ -34,9 +34,7 @@ def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
 
     chatbot = PortfolioChatbot()
     try:
-        response_payload = chatbot.execute(
-            messages=[message.model_dump() for message in request_payload.messages]
-        )
+        response_payload = chatbot.execute(messages=request_payload.messages)
     except Exception as exc:
         return {
             "statusCode": 500,

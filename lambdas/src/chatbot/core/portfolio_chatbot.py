@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import json
-from typing import Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from llm_providers.base import LLMModel
 from llm_providers.groq_model import GroqModel
 from models.prompt import Prompt
+from models.request import ConversationMessage
 from models.response import ChatbotStructuredResponse
 from prompts.basic import SYSTEM_PROMPT, USER_PROMPT
-
-
-class ConversationMessage(TypedDict):
-    sender: Literal["user", "model"]
-    message: str
-
 
 class PortfolioChatbot(BaseModel):
     """Runtime orchestrator for fallback model execution."""
@@ -46,7 +40,7 @@ class PortfolioChatbot(BaseModel):
     )
 
     def execute(self, messages: list[ConversationMessage] | None = None) -> dict[str, object]:
-        payload_messages = messages or []
+        payload_messages = [message.model_dump() for message in (messages or [])]
         payload = {"messages": payload_messages}
         self.prompt.format_system_prompt()
         self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
