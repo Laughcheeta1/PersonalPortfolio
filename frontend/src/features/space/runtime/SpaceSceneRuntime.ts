@@ -361,19 +361,21 @@ export class SpaceSceneRuntime {
   }
 
   private onKeyDown(event: KeyboardEvent): void {
+    const target = event.target;
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      (target instanceof HTMLElement && target.isContentEditable)
+    ) {
+      return;
+    }
+
     if (event.key === 'ArrowLeft') {
       this.cameraController.nudgeLeft();
       return;
     }
     if (event.key === 'ArrowRight') {
       this.cameraController.nudgeRight();
-      return;
-    }
-    if (event.key === 'Enter') {
-      const nearest = this.modelRing.getNearestModelIndex(this.cameraController.getCurrentOrbitAngle());
-      if (nearest !== null) {
-        this.setSelection(nearest);
-      }
       return;
     }
     if (event.key === 'Escape') {
