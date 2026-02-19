@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 PortfolioCategory = Literal[
     "work",
@@ -16,9 +16,11 @@ ResponseType = Literal["movement", "text"]
 
 
 class ChatbotResponseAction(BaseModel):
-    action_type: ResponseType
-    category_to_move_to: PortfolioCategory | None = None
-    message: str | None = None
+    model_config = ConfigDict(extra="forbid")
+
+    action_type: ResponseType = Field(...)
+    category_to_move_to: PortfolioCategory | None = Field(...)
+    message: str | None = Field(...)
 
     @model_validator(mode="after")
     def validate_action_shape(self) -> "ChatbotResponseAction":
@@ -34,4 +36,6 @@ class ChatbotResponseAction(BaseModel):
 
 
 class ChatbotStructuredResponse(BaseModel):
-    response: list[ChatbotResponseAction] = Field(default_factory=list, min_length=1)
+    model_config = ConfigDict(extra="forbid")
+
+    response: list[ChatbotResponseAction] = Field(..., min_length=1)

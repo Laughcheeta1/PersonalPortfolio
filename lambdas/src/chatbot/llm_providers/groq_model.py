@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from typing import Literal
 
@@ -9,6 +10,8 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from llm_providers.base import LLMModel, TStructured
 from models.prompt import Prompt
+
+LOGGER = logging.getLogger(__name__)
 
 
 class GroqModel(LLMModel):
@@ -50,6 +53,11 @@ class GroqModel(LLMModel):
         prompt: Prompt,
         structured_output: type[TStructured] | None = None,
     ) -> TStructured | str:
+        LOGGER.debug(
+            "Groq call. model=%s structured=%s",
+            self.model_name,
+            structured_output.__name__ if structured_output else None,
+        )
         request_kwargs: dict[str, object] = {
             "model": self.model_name,
             "messages": prompt.to_messages(),
@@ -65,10 +73,12 @@ class GroqModel(LLMModel):
             request_kwargs["reasoning_effort"] = self.reasoning_effort
 
         if not structured_output:
+            LOGGER.debug("Sending plain completion request.")
             completion = self._client.chat.completions.create(**request_kwargs)
             content = completion.choices[0].message.content
             if content is None:
                 raise ValueError("Groq response content is empty.")
+            LOGGER.debug("Plain completion received. content_len=%s", len(content))
             return content
 
         if not issubclass(structured_output, BaseModel):
@@ -90,6 +100,8 @@ class GroqModel(LLMModel):
         content = completion.choices[0].message.content
         if content is None:
             raise ValueError("Groq structured response content is empty.")
+        LOGGER.debug("Structured completion received. content_len=%s", len(content))
 
         payload = json.loads(content)
+        LOGGER.debug("Structured payload parsed.")
         return structured_output.model_validate(payload)

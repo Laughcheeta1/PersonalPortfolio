@@ -30,6 +30,7 @@ __pycache__/
 *.pyc
 .venv/
 .aws-sam/
+lambdas/.sam-local-env.json
 
 .nx/installation
 .nx/cache

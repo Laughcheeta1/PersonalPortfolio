@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class ConversationMessage(BaseModel):
-    sender: Literal["user", "model"]
-    message: str = Field(min_length=1)
+    sender: Literal["user", "model"] = Field(...)
+    message: str = Field(..., min_length=1)
 
     @model_validator(mode="before")
     @classmethod
@@ -29,4 +29,4 @@ class ConversationMessage(BaseModel):
 
 
 class ChatbotRequest(BaseModel):
-    messages: list[ConversationMessage] = Field(min_length=1)
+    messages: list[ConversationMessage] = Field(..., min_length=1)
