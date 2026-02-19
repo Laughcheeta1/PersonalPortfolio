@@ -101,7 +101,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     try {
       const { actions } = await requestChatbotTurn(nextConversation);
 
-      for (const action of actions) {
+      for (const [index, action] of actions.entries()) {
         if (action.type === 'movement') {
           stopSpeaking();
           onNavigateToCategory(action.categoryId);
@@ -110,6 +110,10 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
         }
 
         await animateModelText(action.message);
+        const nextAction = actions[index + 1];
+        if (nextAction?.type === 'text') {
+          await sleep(500);
+        }
       }
     } catch (error) {
       stopSpeaking();
