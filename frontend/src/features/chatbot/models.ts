@@ -23,3 +23,9 @@ export type ChatbotTurnResult = {
   movementTargets: CategoryId[];
   modelMessages: ConversationMessage[];
 };
+
+export type AvatarScreenAnchor = {
+  x: number;
+  y: number;
+  visible: boolean;
+};

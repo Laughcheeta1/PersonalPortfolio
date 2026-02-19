@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 
 import type { ConversationMessage } from '../features/chatbot/models';
 import styles from './ChatPanel.module.css';
@@ -8,9 +8,10 @@ type ChatPanelProps = {
   isSending: boolean;
   error: string | null;
   onSendMessage: (message: string) => Promise<void>;
+  panelStyle?: CSSProperties;
 };
 
-const ChatPanel = ({ conversation, isSending, error, onSendMessage }: ChatPanelProps) => {
+const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }: ChatPanelProps) => {
   const [chatInput, setChatInput] = useState('');
 
   const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -25,25 +26,32 @@ const ChatPanel = ({ conversation, isSending, error, onSendMessage }: ChatPanelP
   };
 
   return (
-    <aside className={styles.panel} aria-label="Portfolio chatbot">
+    <aside className={styles.panel} style={panelStyle} aria-label="Portfolio chatbot">
       <div className={styles.topline}>
-        <span>Portfolio Guide</span>
+        <span>Panda Monk</span>
         {isSending ? <span>Thinking...</span> : <span>Ready</span>}
       </div>
 
       <div className={styles.log}>
         {conversation.length === 0 ? (
-          <p className={styles.placeholder}>
+          <p className={`${styles.bubble} ${styles.bubbleModel} ${styles.placeholder}`}>
             Ask about work, projects, skills, education, honors, or personal profile.
           </p>
         ) : (
           conversation.map((entry, index) => (
-            <p
+            <div
               key={`${entry.sender}-${index}`}
-              className={`${styles.line} ${entry.sender === 'user' ? styles.lineUser : styles.lineModel}`}
+              className={`${styles.lineRow} ${entry.sender === 'user' ? styles.lineUser : styles.lineModel}`}
             >
-              <strong>{entry.sender === 'user' ? 'You:' : 'Guide:'}</strong> {entry.message}
-            </p>
+              <p
+                className={`${styles.bubble} ${
+                  entry.sender === 'user' ? styles.bubbleUser : styles.bubbleModel
+                }`}
+              >
+                <span className={styles.senderLabel}>{entry.sender === 'user' ? 'You' : 'Panda Monk'}</span>
+                {entry.message}
+              </p>
+            </div>
           ))
         )}
       </div>

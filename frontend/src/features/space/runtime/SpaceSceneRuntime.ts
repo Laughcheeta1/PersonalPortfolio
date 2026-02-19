@@ -5,6 +5,8 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 import backgroundExrUrl from '../../../assets/exr/sunflowers_puresky_1k.exr';
+import pandaNotSpeakingUrl from '../../../assets/images/Panda_monk_not_speaking.png';
+import { PandaMonkAvatar } from '../../chatbot/scene/PandaMonkAvatar';
 import { resolveNavigationTarget } from '../../information/navigation';
 import { InfoCardRings } from '../InfoCardRings';
 import { ModelRingManager } from './ModelRingManager';
@@ -34,6 +36,7 @@ export class SpaceSceneRuntime {
   private readonly modelRing: ModelRingManager;
   private readonly cameraController: OrbitCameraController;
   private readonly exrLoader = new EXRLoader();
+  private readonly pandaMonkAvatar: PandaMonkAvatar;
   private readonly clock = new THREE.Clock();
 
   private animationId = 0;
@@ -100,6 +103,12 @@ export class SpaceSceneRuntime {
     this.modelRing = new ModelRingManager(options.models.length, 22, 3.8, categoryLabelsByModelIndex);
     this.scene.add(this.modelRing.group);
     this.scene.add(this.infoCardRings.group);
+    this.pandaMonkAvatar = new PandaMonkAvatar({
+      scene: this.scene,
+      camera: this.camera,
+      container: this.container,
+      onScreenAnchorChange: options.onAvatarScreenAnchorChange,
+    });
     this.setupLights();
     this.bindEvents();
   }
@@ -116,6 +125,11 @@ export class SpaceSceneRuntime {
         label: `Loading model ${loadedCount}/${totalCount}: ${modelName}`,
       });
     });
+    if (this.disposed) {
+      return;
+    }
+    this.emitLoadingState({ active: true, progress: 0.96, label: 'Loading portfolio guide avatar...' });
+    await this.pandaMonkAvatar.load(pandaNotSpeakingUrl);
     if (this.disposed) {
       return;
     }
@@ -136,6 +150,7 @@ export class SpaceSceneRuntime {
       this.environmentTexture.dispose();
       this.environmentTexture = null;
     }
+    this.pandaMonkAvatar.dispose();
 
     this.renderer.dispose();
     if (this.renderer.domElement.parentNode === this.container) {
@@ -270,6 +285,7 @@ export class SpaceSceneRuntime {
         : undefined,
     );
     this.modelRing.updateCategoryTitleVisibility(this.selectedIndex === null);
+    this.pandaMonkAvatar.update(dt, this.clock.elapsedTime, focusTarget?.position ?? null);
 
     this.composer.render();
     this.animationId = requestAnimationFrame(this.animate);

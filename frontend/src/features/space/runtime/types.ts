@@ -4,6 +4,7 @@ import type {
   InformationItemSelection,
   InformationSceneCategory,
 } from '../../information/models';
+import type { AvatarScreenAnchor } from '../../chatbot/models';
 import type { SpaceModelItem } from '../spaceModels';
 
 export type RuntimeLoadingState = {
@@ -27,6 +28,8 @@ export type RuntimeOptions = {
   onInfoItemSelectionChange: (selection: InformationItemSelection | null) => void;
   // Callback to expose scene startup loading state to host UI.
   onLoadingStateChange: (state: RuntimeLoadingState) => void;
+  // Callback with avatar screen coordinates so UI can anchor chat below avatar.
+  onAvatarScreenAnchorChange: (anchor: AvatarScreenAnchor) => void;
 };
 
 // Camera orbit target used during focused mode.

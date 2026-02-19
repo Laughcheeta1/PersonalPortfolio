@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
+import { usePandaMonkChatboxLayout } from '../features/chatbot/hooks/usePandaMonkChatboxLayout';
 import { usePortfolioChatbot } from '../features/chatbot/usePortfolioChatbot';
 import { useAmbientAudio } from '../features/space/hooks/useAmbientAudio';
 import { useSpaceSceneRuntime } from '../features/space/hooks/useSpaceSceneRuntime';
@@ -20,9 +21,11 @@ const SpaceShowcase = () => {
     setSelectedInfoItem,
     loadingState,
     selectedCategoryLabel,
+    avatarAnchor,
   } = useSpaceSceneRuntime();
 
   const assetCredits = assetCreditsJson as AssetCreditsConfig;
+  const chatPanelStyle = usePandaMonkChatboxLayout({ avatarAnchor });
 
   const {
     isSendingChat,
@@ -84,6 +87,7 @@ const SpaceShowcase = () => {
         isSending={isSendingChat}
         error={chatError}
         onSendMessage={sendUserMessage}
+        panelStyle={chatPanelStyle}
       />
 
       <AssetCreditsPanel

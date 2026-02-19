@@ -5,6 +5,7 @@ import {
   sceneInformationCategories,
   validateSceneCategoryMappings,
 } from '../../information';
+import type { AvatarScreenAnchor } from '../../chatbot/models';
 import type { InformationItemSelection, SceneNavigationTarget } from '../../information/models';
 import { SpaceSceneRuntime } from '../runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../spaceModels';
@@ -26,6 +27,11 @@ export function useSpaceSceneRuntime() {
     progress: 0,
     label: 'Preparing scene...',
   });
+  const [avatarAnchor, setAvatarAnchor] = useState<AvatarScreenAnchor>({
+    x: 180,
+    y: 210,
+    visible: false,
+  });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -45,6 +51,18 @@ export function useSpaceSceneRuntime() {
           return;
         }
         setLoadingState(state);
+      },
+      onAvatarScreenAnchorChange: (anchor) => {
+        if (!isMounted) {
+          return;
+        }
+        setAvatarAnchor((prev) => {
+          const changed =
+            prev.visible !== anchor.visible ||
+            Math.abs(prev.x - anchor.x) > 0.5 ||
+            Math.abs(prev.y - anchor.y) > 0.5;
+          return changed ? anchor : prev;
+        });
       },
     });
 
@@ -93,5 +111,6 @@ export function useSpaceSceneRuntime() {
     setSelectedInfoItem,
     loadingState,
     selectedCategoryLabel,
+    avatarAnchor,
   };
 }
