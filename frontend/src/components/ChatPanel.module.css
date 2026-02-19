@@ -1,0 +1,121 @@
+.panel {
+  position: absolute;
+  left: 1rem;
+  top: 1rem;
+  z-index: 3;
+  width: min(27rem, calc(100vw - 2rem));
+  max-height: min(46vh, 28rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  border: 3px solid #2c1354;
+  border-radius: 1rem;
+  padding: 0.7rem;
+  background: linear-gradient(140deg, rgba(255, 127, 185, 0.96), rgba(255, 207, 77, 0.95));
+  box-shadow: 0 0.6rem 2rem rgba(21, 8, 42, 0.45);
+}
+
+.topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #2a1057;
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.log {
+  flex: 1;
+  min-height: 7rem;
+  max-height: 15rem;
+  overflow-y: auto;
+  border: 2px solid #1a1a1a;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.placeholder {
+  margin: 0;
+  color: #2f1656;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.line {
+  margin: 0;
+  line-height: 1.35;
+  font-size: 0.84rem;
+}
+
+.line + .line {
+  margin-top: 0.35rem;
+}
+
+.lineUser {
+  color: #1a0f36;
+}
+
+.lineModel {
+  color: #2f1656;
+}
+
+.error {
+  margin: 0;
+  color: #861f32;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.inputRow {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.inputRow input {
+  flex: 1;
+  min-width: 0;
+  border: 2px solid #1a1a1a;
+  border-radius: 0.6rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.85rem;
+  color: #1b0f36;
+}
+
+.inputRow button {
+  border: 2px solid #1a1a1a;
+  border-radius: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  background: #23e5f1;
+  color: #1b0f36;
+  font-weight: 800;
+}
+
+.inputRow button:disabled {
+  opacity: 0.6;
+}
+
+@media (max-width: 700px) {
+  .panel {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    top: 0.75rem;
+    max-height: 44vh;
+    border-width: 3px;
+    border-radius: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .log {
+    max-height: 11rem;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .panel {
+    max-height: min(55vh, 16.5rem);
+  }
+}

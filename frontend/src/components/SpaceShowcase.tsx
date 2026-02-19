@@ -1,234 +1,39 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 
-import {
-  normalizeNavigationTarget,
-  sceneInformationCategories,
-  validateSceneCategoryMappings,
-} from '../features/information';
-import { getSafeExternalHref } from '../features/information/urlSafety';
-import type {
-  InformationItemSelection,
-  SceneNavigationTarget,
-} from '../features/information/models';
 import assetCreditsJson from '../features/information/data/assetCredits.json';
-import {
-  requestChatbotTurn,
-  type ConversationMessage,
-} from '../features/chatbot/client';
-import { startAmbientHum, type AmbientHumController } from '../features/space/ambientHum';
-import { SpaceSceneRuntime } from '../features/space/runtime/SpaceSceneRuntime';
-import { SPACE_MODELS } from '../features/space/spaceModels';
-
-declare global {
-  interface Window {
-    portfolioNavigateTo?: (target: SceneNavigationTarget) => void;
-  }
-}
+import { usePortfolioChatbot } from '../features/chatbot/usePortfolioChatbot';
+import { useAmbientAudio } from '../features/space/hooks/useAmbientAudio';
+import { useSpaceSceneRuntime } from '../features/space/hooks/useSpaceSceneRuntime';
+import { useViewportHints } from '../features/space/hooks/useViewportHints';
+import AssetCreditsPanel, { type AssetCreditsConfig } from './AssetCreditsPanel';
+import ChatPanel from './ChatPanel';
+import InfoDetailPanel from './InfoDetailPanel';
 
 const SpaceShowcase = () => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const runtimeRef = useRef<SpaceSceneRuntime | null>(null);
-  const humRef = useRef<AmbientHumController | null>(null);
-
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [selectedInfoItem, setSelectedInfoItem] = useState<InformationItemSelection | null>(null);
-  const [isAudioOn, setIsAudioOn] = useState(true);
-  const [loadingState, setLoadingState] = useState({
-    active: true,
-    progress: 0,
-    label: 'Preparing scene...',
-  });
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isPortraitViewport, setIsPortraitViewport] = useState(false);
-  const [chatInput, setChatInput] = useState('');
-  const [isSendingChat, setIsSendingChat] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
-  const [chatConversation, setChatConversation] = useState<ConversationMessage[]>([]);
 
-  type AssetCreditItem = {
-    name: string;
-    author?: string;
-    sourceUrl?: string;
-    notes?: string;
-  };
-
-  type AssetCreditsConfig = {
-    music: AssetCreditItem[];
-    hdri: AssetCreditItem[];
-    models: AssetCreditItem[];
-  };
+  const { isMobileViewport, isPortraitViewport } = useViewportHints();
+  const { isAudioOn, setIsAudioOn } = useAmbientAudio();
+  const {
+    containerRef,
+    selectedInfoItem,
+    setSelectedInfoItem,
+    loadingState,
+    selectedCategoryLabel,
+  } = useSpaceSceneRuntime();
 
   const assetCredits = assetCreditsJson as AssetCreditsConfig;
-  const renderExternalLink = (
-    href: string | undefined,
-    children: ReactNode,
-    key: string,
-    className?: string,
-  ) => {
-    const safeHref = getSafeExternalHref(href);
-    if (!safeHref) {
-      return null;
-    }
 
-    return (
-      <a key={key} href={safeHref} target="_blank" rel="noopener noreferrer" className={className}>
-        {children}
-      </a>
-    );
-  };
-
-  useEffect(() => {
-    const mobileQuery = window.matchMedia('(max-width: 900px), (pointer: coarse)');
-    const portraitQuery = window.matchMedia('(orientation: portrait)');
-
-    const syncViewportHints = () => {
-      setIsMobileViewport(mobileQuery.matches);
-      setIsPortraitViewport(portraitQuery.matches);
-    };
-
-    syncViewportHints();
-    mobileQuery.addEventListener('change', syncViewportHints);
-    portraitQuery.addEventListener('change', syncViewportHints);
-
-    return () => {
-      mobileQuery.removeEventListener('change', syncViewportHints);
-      portraitQuery.removeEventListener('change', syncViewportHints);
-    };
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) {
-      return;
-    }
-    let isMounted = true;
-
-    const runtime = new SpaceSceneRuntime({
-      container,
-      models: SPACE_MODELS,
-      categories: sceneInformationCategories,
-      onSelectionChange: setSelectedIndex,
-      onInfoItemSelectionChange: setSelectedInfoItem,
-      onLoadingStateChange: (state) => {
-        if (!isMounted) {
-          return;
-        }
-        setLoadingState(state);
-      },
-    });
-
-    const mappingIssues = validateSceneCategoryMappings(SPACE_MODELS.length);
-    if (mappingIssues.length > 0) {
-      console.warn('[SpaceShowcase] Invalid category/model mappings:', mappingIssues);
-    }
-
-    runtimeRef.current = runtime;
-    runtime.setCardDesignIndex(0);
-    void runtime.start().catch((error) => {
-      console.error('[SpaceShowcase] Failed to start scene runtime:', error);
-      if (!isMounted) {
-        return;
-      }
-      setLoadingState({
-        active: true,
-        progress: 1,
-        label: 'Failed to load scene. Please refresh.',
-      });
-    });
-
-    window.portfolioNavigateTo = (target: SceneNavigationTarget) => {
-      runtime.navigateTo(normalizeNavigationTarget(target));
-    };
-
-    return () => {
-      isMounted = false;
-      runtime.dispose();
-      runtimeRef.current = null;
-      delete window.portfolioNavigateTo;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isAudioOn) {
-      humRef.current?.stop();
-      humRef.current = null;
-      return;
-    }
-
-    humRef.current = startAmbientHum();
-
-    return () => {
-      humRef.current?.stop();
-      humRef.current = null;
-    };
-  }, [isAudioOn]);
-
-  useEffect(() => {
-    const unlockAudio = () => {
-      if (!isAudioOn) {
-        return;
-      }
-      humRef.current?.ensurePlaying();
-    };
-
-    const passiveOptions: AddEventListenerOptions = { passive: true };
-    window.addEventListener('pointerdown', unlockAudio, passiveOptions);
-    window.addEventListener('keydown', unlockAudio);
-    window.addEventListener('touchstart', unlockAudio, passiveOptions);
-
-    return () => {
-      window.removeEventListener('pointerdown', unlockAudio, passiveOptions);
-      window.removeEventListener('keydown', unlockAudio);
-      window.removeEventListener('touchstart', unlockAudio, passiveOptions);
-    };
-  }, [isAudioOn]);
-
-  const selectedCategoryLabel =
-    selectedIndex === null
-      ? ''
-      : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex)?.label ?? '';
-
-  const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const userText = chatInput.trim();
-    if (!userText || isSendingChat) {
-      return;
-    }
-
-    const nextConversation: ConversationMessage[] = [
-      ...chatConversation,
-      { sender: 'user', message: userText },
-    ];
-    setChatConversation(nextConversation);
-    setChatInput('');
-    setChatError(null);
-
-    setIsSendingChat(true);
-    try {
-      const { movementTargets, modelMessages } = await requestChatbotTurn(nextConversation);
-
-      for (const categoryId of movementTargets) {
-        window.portfolioNavigateTo?.({ categoryId });
-      }
-
-      if (modelMessages.length > 0) {
-        setChatConversation((prev) => [...prev, ...modelMessages]);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Chat request failed.';
-      setChatError(errorMessage);
-      setChatConversation((prev) => [
-        ...prev,
-        {
-          sender: 'model',
-          message: `I ran into an error while calling the chatbot API: ${errorMessage}`,
-        },
-      ]);
-    } finally {
-      setIsSendingChat(false);
-    }
-  };
+  const {
+    isSendingChat,
+    chatError,
+    chatConversation,
+    sendUserMessage,
+  } = usePortfolioChatbot({
+    onNavigateToCategory: (categoryId) => {
+      window.portfolioNavigateTo?.({ categoryId });
+    },
+  });
 
   return (
     <section className="space-page">
@@ -274,150 +79,23 @@ const SpaceShowcase = () => {
         {isCreditsOpen ? 'Hide Sources' : 'Show Sources'}
       </button>
 
-      <aside className="chat-panel" aria-label="Portfolio chatbot">
-        <div className="chat-panel-topline">
-          <span>Portfolio Guide</span>
-          {isSendingChat ? <span>Thinking...</span> : <span>Ready</span>}
-        </div>
+      <ChatPanel
+        conversation={chatConversation}
+        isSending={isSendingChat}
+        error={chatError}
+        onSendMessage={sendUserMessage}
+      />
 
-        <div className="chat-log">
-          {chatConversation.length === 0 ? (
-            <p className="chat-placeholder">
-              Ask about work, projects, skills, education, honors, or personal profile.
-            </p>
-          ) : (
-            chatConversation.map((entry, index) => (
-              <p
-                key={`${entry.sender}-${index}`}
-                className={`chat-line ${entry.sender === 'user' ? 'chat-line-user' : 'chat-line-model'}`}
-              >
-                <strong>{entry.sender === 'user' ? 'You:' : 'Guide:'}</strong> {entry.message}
-              </p>
-            ))
-          )}
-        </div>
+      <AssetCreditsPanel
+        isOpen={isCreditsOpen}
+        credits={assetCredits}
+        onClose={() => setIsCreditsOpen(false)}
+      />
 
-        {chatError ? <p className="chat-error">{chatError}</p> : null}
-
-        <form className="chat-input-row" onSubmit={submitChatMessage}>
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(event) => setChatInput(event.target.value)}
-            placeholder="Ask a question..."
-            disabled={isSendingChat}
-          />
-          <button type="submit" disabled={isSendingChat || !chatInput.trim()}>
-            Send
-          </button>
-        </form>
-      </aside>
-
-      {isCreditsOpen ? (
-        <aside className="asset-credits-panel">
-          <div className="asset-credits-topline">
-            <span>Asset Credits</span>
-            <button type="button" onClick={() => setIsCreditsOpen(false)}>
-              Close
-            </button>
-          </div>
-
-          <p><strong>Music:</strong></p>
-          <div className="asset-credits-links">
-            {assetCredits.music.map((credit) =>
-              credit.sourceUrl ? (
-                renderExternalLink(
-                  credit.sourceUrl,
-                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
-                  `music-${credit.name}`,
-                )
-              ) : (
-                <p key={`music-${credit.name}`}>
-                  {credit.name} - {credit.author ?? 'Unknown'}
-                  {credit.notes ? ` (${credit.notes})` : ''}
-                </p>
-              ),
-            )}
-          </div>
-          <p><strong>HDRI:</strong></p>
-          <div className="asset-credits-links">
-            {assetCredits.hdri.map((credit) =>
-              credit.sourceUrl ? (
-                renderExternalLink(
-                  credit.sourceUrl,
-                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
-                  `hdri-${credit.name}`,
-                )
-              ) : (
-                <p key={`hdri-${credit.name}`}>
-                  {credit.name} - {credit.author ?? 'Unknown'}
-                  {credit.notes ? ` (${credit.notes})` : ''}
-                </p>
-              ),
-            )}
-          </div>
-          <p><strong>3D Models:</strong></p>
-          <div className="asset-credits-links">
-            {assetCredits.models.map((credit) =>
-              credit.sourceUrl ? (
-                renderExternalLink(
-                  credit.sourceUrl,
-                  `${credit.name} - ${credit.author ?? 'Unknown'}`,
-                  `model-${credit.name}`,
-                )
-              ) : (
-                <p key={`model-${credit.name}`}>
-                  {credit.name} - {credit.author ?? 'Unknown'}
-                  {credit.notes ? ` (${credit.notes})` : ''}
-                </p>
-              ),
-            )}
-          </div>
-        </aside>
-      ) : null}
-
-      {selectedInfoItem ? (
-        <aside className="info-detail-panel">
-          <div className="info-detail-topline">
-            <span>
-              {selectedInfoItem.categoryId} / {selectedInfoItem.subcategoryId}
-            </span>
-            <button type="button" onClick={() => setSelectedInfoItem(null)}>
-              Close
-            </button>
-          </div>
-
-          <h3>{selectedInfoItem.item.title}</h3>
-          <p className="info-summary">{selectedInfoItem.item.summary}</p>
-          <p>{selectedInfoItem.item.details}</p>
-
-          {selectedInfoItem.item.links ? (
-            <div className="info-links">
-              {selectedInfoItem.item.links.repoUrl ? (
-                renderExternalLink(
-                  selectedInfoItem.item.links.repoUrl,
-                  'Repository',
-                  'info-repository-link',
-                )
-              ) : null}
-              {selectedInfoItem.item.links.liveUrl ? (
-                renderExternalLink(
-                  selectedInfoItem.item.links.liveUrl,
-                  'Live Demo',
-                  'info-live-link',
-                )
-              ) : null}
-              {selectedInfoItem.item.links.externalUrl ? (
-                renderExternalLink(
-                  selectedInfoItem.item.links.externalUrl,
-                  'External Link',
-                  'info-external-link',
-                )
-              ) : null}
-            </div>
-          ) : null}
-        </aside>
-      ) : null}
+      <InfoDetailPanel
+        selectedInfoItem={selectedInfoItem}
+        onClose={() => setSelectedInfoItem(null)}
+      />
     </section>
   );
 };
