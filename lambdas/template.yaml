@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Deploy the backend lambdas my personal portfolio project
+
+Parameters:
+  LambdaExecutionRoleArn:
+    Type: String
+    NoEcho: true
+
+Globals:
+  Function:
+    Timeout: 50
+    MemorySize: 256
+    Runtime: python3.13
+    Architectures:
+      - x86_64
+    Tracing: Active
+
+Resources:
+  PortfolioApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: portfolio-api
+      StageName: prod
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 2
+          ThrottlingBurstLimit: 5
+
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'content-type,authorization'"
+
+      EndpointConfiguration: REGIONAL
+      
+
+  ChatbotLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: chatbot_lambda
+      CodeUri: src/chatbot
+      Handler: app.lambda_handler
+      Role: !Ref LambdaExecutionRoleArn
+
+      Environment:
+        Variables:
+          GROQ_API_KEY: "{{resolve:secretsmanager:GROQ_API_KEY:SecretString:GROQ_API_KEY}}"
+
+      Events:
+        ChatRoute:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PortfolioApi
+            Path: /chat
+            Method: POST
+
+Outputs:
+  ApiUrl:
+    Description: "The api gateway base url"
+    Value: !Sub "https://${PortfolioApi}.execute-api.${AWS::Region}.amazonaws.com/prod"

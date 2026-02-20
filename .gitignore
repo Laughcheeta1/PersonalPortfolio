@@ -23,3 +23,15 @@ dist-ssr
 *.sln
 *.sw?
 .vite/
+.env
+
+# Python / SAM
+__pycache__/
+*.pyc
+.venv/
+.aws-sam/
+lambdas/.sam-local-env.json
+
+.nx/installation
+.nx/cache
+.nx/workspace-data

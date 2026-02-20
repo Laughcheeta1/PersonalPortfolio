@@ -1,0 +1,116 @@
+{
+  "personalProjects": [
+    {
+      "id": "proj-nao-aeronautics",
+      "slug": "nao-aeronautics",
+      "title": "NAO Aeronautics",
+      "summary": "Logistics startup concept to bring city resources to remote areas.",
+      "details": "Developed a full business plan, process architecture, and prototype. Conducted 35 outreach contacts and interviewed 15 professionals across mining, cattle raising, farming, defense, NGOs, social programs, and expeditions to identify customers, early adopters, and iterate on the product.",
+      "architectureExplanation": "",
+      "technologies": [],
+      "skills": [35, 32, 30, 29],
+      "links": {}
+    },
+    {
+      "id": "proj-vcow",
+      "slug": "vcow",
+      "title": "VCOW",
+      "summary": "Mock startup project that pivoted from vertical farming for cattle-raising into a crowdfunding platform for cattle projects.",
+      "details": "Developed for the CREATE-X course (Georgia Tech). Interviewed 40+ cattle farmers to understand needs, then after pivot interviewed 10+ people to understand investment strategies and refine customer base.",
+      "architectureExplanation": "",
+      "technologies": [],
+      "skills": [35, 32, 29, 30],
+      "links": {}
+    },
+    {
+      "id": "proj-absence-management",
+      "slug": "employee-absence-management-software",
+      "title": "Employee Absence Management Software",
+      "summary": "Web application enabling employers to manage employee absences.",
+      "details": "Defined and documented requirements, designed the architecture and database, and built backend microservices and database layers.",
+      "architectureExplanation": "Monolith architecture using Next.js + GraphQL backed by Supabase, with backend services and database layers built to support absence workflows.",
+      "technologies": ["Next.js", "GraphQL", "PostgreSQL", "Supabase"],
+      "skills": [23, 24, 29],
+      "links": {}
+    },
+    {
+      "id": "proj-lookup",
+      "slug": "lookup-multi-brand-catalog",
+      "title": "Lookup",
+      "summary": "Multi-brand clothing catalog with CSV inventory upload and store/product geolocation.",
+      "details": "Collaboration with business students. Defined and documented requirements, designed the architecture and database, and developed backend microservices along with the database.",
+      "architectureExplanation": "REST microservice architecture with services split across Spring Boot and NestJS; React (Vite) frontend; MongoDB as the database engine.",
+      "technologies": ["Spring Boot", "NestJS", "React", "Vite", "MongoDB", "REST", "Microservices"],
+      "skills": [17, 23, 24, 29],
+      "links": {}
+    },
+    {
+      "id": "proj-personal-portfolio",
+      "slug": "personal-portfolio",
+      "title": "Personal Portfolio",
+      "summary": "This personal portfolio website",
+      "details": "I have to finish the portfolio first to update this entry to be more accurate.",
+      "architectureExplanation": "Three.js + React frontend + Chatbot that is able to navigate the website.",
+      "technologies": ["Three.js", "React", "LLMs", "Vite"],
+      "skills": [23, 24, 29],
+      "links": {}
+    },
+    {
+      "id": "proj-eia-university-hackathon",
+      "slug": "eia-university-hackathon",
+      "title": "EIA University Hackathon",
+      "summary": "Organized hackathon at EIA University with the sponsorship of mc2.",
+      "details": "The hackathon was about building a startup business model + a MVP of the product.",
+      "architectureExplanation": "",
+      "technologies": [],
+      "skills": [],
+      "links": {}
+    }
+  ],
+  "workProjects": [
+    {
+      "id": "proj-employee-medical-scales-calculator-agent",
+      "slug": "employee-medical-scales-calculator",
+      "title": "Medical Scales Calculator - Telepatia",
+      "summary": "Agent to calculate edical scales for patients given a transcript of a consultation",
+      "details": "This project was fundamental to increase the product market fit for doctors and specialists.",
+      "architectureExplanation": "",
+      "technologies": ["Python", "LLMs"],
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "proj-employee-emr-mapping-agent",
+      "slug": "employee-emr-mapping-agent",
+      "title": "EMR Mapping Agent - Telepatia",
+      "summary": "Agent to map any electronic medical record (EMR) to a standard format given its HTML file",
+      "details": "",
+      "architectureExplanation": "",
+      "technologies": ["Python", "LLMs"],
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "proj-employee-chrome-extension-for-integrations",
+      "slug": "employee-chrome-extension-for-integrations",
+      "title": "Chrome Extension for Integrations - Telepatia",
+      "summary": "Design and implemented an integrations framework, and a chrome extension to automatically create, manage and execute integrations with EMR systems",
+      "details": "This project was not completely finished due to time and priority constraints.",
+      "architectureExplanation": "",
+      "technologies": ["Chrome Extensions"],
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "proj-employee-coordinate-corportaion",
+      "slug": "employee-coordinate-corporation",
+      "title": "Coordinate Solution for a Corporation - Telepatia",
+      "summary": "A coorporation accidentally blocked access to Telepatia's product, so I coordinated all the neccesary people in the corporation to solve the problem in a single day",
+      "details": "This included coordinating multiple directives, technicians and doctors to solve the problem.",
+      "architectureExplanation": "",
+      "technologies": ["Java", "Spring Boot"],
+      "skills": [],
+      "links": {}
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+    "name": "lambdas",
+    "root": "lambdas",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "nx:run-commands",
+            "outputs": ["{projectRoot}/.aws-sam"],
+            "options": {
+                "cwd": "lambdas",
+                "command": "set -a; [ -f .env ] && . ./.env; set +a; sam build --cached"
+            }
+        },
+        "dev": {
+            "dependsOn": ["build"],
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "lambdas",
+                "command": "set -a; [ -f .env ] && . ./.env; set +a; printf '{\"ChatbotLambda\":{\"GROQ_API_KEY\":\"%s\"}}' \"$GROQ_API_KEY\" > .sam-local-env.json; sam local start-api --env-vars .sam-local-env.json"
+            }
+        },
+        "deploy": {
+            "dependsOn": ["build"],
+            "executor": "nx:run-commands",
+            "options": {
+                "cwd": "lambdas",
+                "command": "sam deploy --no-confirm-changeset --no-fail-on-empty-changeset"
+            }
+        }
+    }
+
+}
