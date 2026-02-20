@@ -105,6 +105,10 @@ export function useSpaceSceneRuntime() {
     runtimeRef.current?.setPandaSpeaking(speaking);
   }, []);
 
+  const deselectModel = useCallback(() => {
+    runtimeRef.current?.setSelection(null);
+  }, []);
+
   const setCategorySubcategoryFilter = useCallback(
     (categoryId: CategoryId, subcategoryId?: string) => {
       runtimeRef.current?.setCategorySubcategoryFilter(categoryId, subcategoryId);
@@ -128,6 +132,7 @@ export function useSpaceSceneRuntime() {
     selectedCategoryLabel,
     avatarAnchor,
     setPandaSpeaking,
+    deselectModel,
     setCategorySubcategoryFilter,
   };
 }

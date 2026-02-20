@@ -29,8 +29,8 @@ function parseAction(action: unknown): ChatResponseAction {
   }
 
   const actionType = action.action_type;
-  if (actionType !== 'movement' && actionType !== 'text') {
-    throw new Error('Chatbot response action_type must be movement or text.');
+  if (actionType !== 'movement' && actionType !== 'text' && actionType !== 'main_page') {
+    throw new Error('Chatbot response action_type must be movement, text, or main_page.');
   }
 
   const categoryToMoveTo = action.category_to_move_to;
@@ -63,6 +63,13 @@ function parseAction(action: unknown): ChatResponseAction {
 
   if (actionType === 'text' && subcategoryToMoveTo !== null && subcategoryToMoveTo !== undefined) {
     throw new Error('Text action must not include subcategory_to_move_to.');
+  }
+
+  if (
+    actionType === 'main_page' &&
+    (categoryToMoveTo != null || subcategoryToMoveTo != null)
+  ) {
+    throw new Error('main_page action must not include category_to_move_to or subcategory_to_move_to.');
   }
 
   if (message !== null && message !== undefined && typeof message !== 'string') {

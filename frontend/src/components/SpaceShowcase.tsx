@@ -27,6 +27,7 @@ const SpaceShowcase = () => {
     selectedCategoryLabel,
     avatarAnchor,
     setPandaSpeaking,
+    deselectModel,
     setCategorySubcategoryFilter,
   } = useSpaceSceneRuntime();
 
@@ -47,6 +48,7 @@ const SpaceShowcase = () => {
     onNavigateToCategory: (target) => {
       window.portfolioNavigateTo?.(target);
     },
+    onNavigateToMainPage: deselectModel,
     onPandaSpeakingChange: setPandaSpeaking,
   });
 

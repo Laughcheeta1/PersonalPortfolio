@@ -12,7 +12,7 @@ PortfolioCategory = Literal[
     "skills",
     "personal",
 ]
-ResponseType = Literal["movement", "text"]
+ResponseType = Literal["movement", "text", "main_page"]
 PortfolioSubcategory = Literal[
     "companies",
     "entrepreneurship",
@@ -42,10 +42,34 @@ CATEGORY_SUBCATEGORY_MAP: dict[PortfolioCategory, set[PortfolioSubcategory]] = {
 class ChatbotResponseAction(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    action_type: ResponseType = Field(...)
-    category_to_move_to: PortfolioCategory | None = Field(...)
-    subcategory_to_move_to: PortfolioSubcategory | None = Field(...)
-    message: str | None = Field(...)
+    action_type: ResponseType = Field(
+        ...,
+        description=(
+            "Type of action. Use 'movement' to navigate the 3d scene to a category/subcategory, "
+            "'main_page' to deselect any focused model and return to the main page, "
+            "or 'text' to return a textual assistant message."
+        ),
+    )
+    category_to_move_to: PortfolioCategory | None = Field(
+        ...,
+        description=(
+            "Target category for movement actions. Must be null for text actions. "
+            "Allowed values: work, education, projects, honors, skills, personal."
+        ),
+    )
+    subcategory_to_move_to: PortfolioSubcategory | None = Field(
+        ...,
+        description=(
+            "Optional target subcategory for movement actions to filter cards in the selected "
+            "category. Must be valid for the chosen category and null for text actions."
+        ),
+    )
+    message: str | None = Field(
+        ...,
+        description=(
+            "Assistant text content for text actions. Can be null for movement-only actions."
+        ),
+    )
 
     @model_validator(mode="after")
     def validate_action_shape(self) -> "ChatbotResponseAction":
@@ -64,10 +88,21 @@ class ChatbotResponseAction(BaseModel):
 
             return self
 
+        if self.action_type == "main_page":
+            if self.category_to_move_to is not None:
+                raise ValueError(
+                    "category_to_move_to must be null when action_type is 'main_page'."
+                )
+
+            if self.subcategory_to_move_to is not None:
+                raise ValueError(
+                    "subcategory_to_move_to must be null when action_type is 'main_page'."
+                )
+
+            return self
+
         if self.category_to_move_to is not None:
-            raise ValueError(
-                "category_to_move_to must be null when action_type is 'text'."
-            )
+            raise ValueError("category_to_move_to must be null when action_type is 'text'.")
 
         if self.subcategory_to_move_to is not None:
             raise ValueError(
@@ -80,4 +115,11 @@ class ChatbotResponseAction(BaseModel):
 class ChatbotStructuredResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    response: list[ChatbotResponseAction] = Field(..., min_length=1)
+    response: list[ChatbotResponseAction] = Field(
+        ...,
+        min_length=1,
+        description=(
+            "Ordered list of actions for the frontend to execute. Actions may combine movement "
+            "and text, and are processed in sequence."
+        ),
+    )

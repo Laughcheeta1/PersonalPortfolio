@@ -7,7 +7,7 @@ export type ConversationMessage = {
   message: string;
 };
 
-export type ChatActionType = 'movement' | 'text';
+export type ChatActionType = 'movement' | 'text' | 'main_page';
 
 export type ChatSubcategoryId =
   | 'companies'
@@ -40,6 +40,9 @@ export type ChatbotTurnAction =
       type: 'movement';
       categoryId: CategoryId;
       subcategoryId?: ChatSubcategoryId;
+    }
+  | {
+      type: 'main_page';
     }
   | {
       type: 'text';

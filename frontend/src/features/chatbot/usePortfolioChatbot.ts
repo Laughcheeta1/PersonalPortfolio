@@ -7,10 +7,11 @@ import { createSpeakingAudioController, type SpeakingAudioController } from './s
 
 type UsePortfolioChatbotParams = {
   onNavigateToCategory: (target: Pick<SceneNavigationTarget, 'categoryId' | 'subcategoryId'>) => void;
+  onNavigateToMainPage: () => void;
 };
 
 export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
-  const { onNavigateToCategory } = params;
+  const { onNavigateToCategory, onNavigateToMainPage } = params;
 
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
@@ -113,6 +114,13 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
             categoryId: action.categoryId,
             subcategoryId: action.subcategoryId,
           });
+          await sleep(900);
+          continue;
+        }
+
+        if (action.type === 'main_page') {
+          stopSpeaking();
+          onNavigateToMainPage();
           await sleep(900);
           continue;
         }

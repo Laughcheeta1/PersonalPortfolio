@@ -15,6 +15,11 @@ export function toChatbotTurnResult(
       continue;
     }
 
+    if (action.action_type === 'main_page') {
+      actions.push({ type: 'main_page' });
+      continue;
+    }
+
     if (action.action_type === 'text' && action.message && action.message.trim()) {
       actions.push({
         type: 'text',

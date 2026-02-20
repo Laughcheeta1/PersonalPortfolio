@@ -8,11 +8,12 @@ import { usePandaMonkChatboxLayout } from './usePandaMonkChatboxLayout';
 type UsePandaMonkChatbotParams = {
   avatarAnchor: AvatarScreenAnchor;
   onNavigateToCategory: (target: Pick<SceneNavigationTarget, 'categoryId' | 'subcategoryId'>) => void;
+  onNavigateToMainPage: () => void;
   onPandaSpeakingChange?: (speaking: boolean) => void;
 };
 
 export function usePandaMonkChatbot(params: UsePandaMonkChatbotParams) {
-  const { avatarAnchor, onNavigateToCategory, onPandaSpeakingChange } = params;
+  const { avatarAnchor, onNavigateToCategory, onNavigateToMainPage, onPandaSpeakingChange } = params;
   const chatPanelStyle = usePandaMonkChatboxLayout({ avatarAnchor });
   const {
     isSendingChat,
@@ -22,6 +23,7 @@ export function usePandaMonkChatbot(params: UsePandaMonkChatbotParams) {
     sendUserMessage,
   } = usePortfolioChatbot({
     onNavigateToCategory,
+    onNavigateToMainPage,
   });
 
   useEffect(() => {
