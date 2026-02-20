@@ -27,6 +27,22 @@
   letter-spacing: 0.03em;
 }
 
+.thinkingImageWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #1b0f36;
+  border-radius: 0.85rem;
+  padding: 0.35rem;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.thinkingImage {
+  width: min(10.5rem, 42vw);
+  height: auto;
+  display: block;
+}
+
 .log {
   flex: 1;
   min-height: 7rem;

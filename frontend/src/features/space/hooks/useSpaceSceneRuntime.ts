@@ -110,18 +110,23 @@ export function useSpaceSceneRuntime() {
   }, []);
 
   const setCategorySubcategoryFilter = useCallback(
-    (categoryId: CategoryId, subcategoryId?: string) => {
-      runtimeRef.current?.setCategorySubcategoryFilter(categoryId, subcategoryId);
+    (categoryId: CategoryId, subcategoryIds?: string[]) => {
+      runtimeRef.current?.setCategorySubcategoryFilter(categoryId, subcategoryIds);
     },
     [],
   );
 
-  const selectedCategoryLabel = useMemo(
+  const selectedCategory = useMemo(
     () =>
       selectedIndex === null
-        ? ''
-        : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex)?.label ?? '',
+        ? null
+        : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex) ?? null,
     [selectedIndex],
+  );
+
+  const selectedCategoryLabel = useMemo(
+    () => selectedCategory?.label ?? '',
+    [selectedCategory],
   );
 
   return {
@@ -129,6 +134,7 @@ export function useSpaceSceneRuntime() {
     selectedInfoItem,
     setSelectedInfoItem,
     loadingState,
+    selectedCategory,
     selectedCategoryLabel,
     avatarAnchor,
     setPandaSpeaking,

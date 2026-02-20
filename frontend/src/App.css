@@ -168,26 +168,27 @@
   padding-right: 0.2rem;
 }
 
-.subcategory-filter-field {
+.subcategory-filter-checkbox {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.2rem;
-}
-
-.subcategory-filter-field span {
-  color: #1d103a;
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.subcategory-filter-field select {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.45rem;
   border: 2px solid #1a1a1a;
   border-radius: 0.45rem;
   padding: 0.24rem 0.35rem;
   background: #ffffffdd;
-  color: #1b0f36;
+}
+
+.subcategory-filter-checkbox input {
+  width: 0.95rem;
+  height: 0.95rem;
+  margin: 0;
+}
+
+.subcategory-filter-checkbox span {
+  color: #1d103a;
   font-size: 0.78rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .chat-panel {

@@ -1,5 +1,6 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
+import pandaMonkThinkingUrl from '../assets/images/panda_monk_thinking.png';
 import type { ConversationMessage } from '../features/chatbot/models';
 import styles from './ChatPanel.module.css';
 
@@ -13,6 +14,16 @@ type ChatPanelProps = {
 
 const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }: ChatPanelProps) => {
   const [chatInput, setChatInput] = useState('');
+  const logRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const log = logRef.current;
+    if (!log) {
+      return;
+    }
+
+    log.scrollTop = log.scrollHeight;
+  }, [conversation]);
 
   const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,7 +43,13 @@ const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }
         {isSending ? <span>Thinking...</span> : <span>Ready</span>}
       </div>
 
-      <div className={styles.log}>
+      {isSending ? (
+        <div className={styles.thinkingImageWrap}>
+          <img className={styles.thinkingImage} src={pandaMonkThinkingUrl} alt="Panda Monk thinking" />
+        </div>
+      ) : null}
+
+      <div ref={logRef} className={styles.log}>
         {conversation.length === 0 ? (
           <p className={`${styles.bubble} ${styles.bubbleModel} ${styles.placeholder}`}>
             Ask about work, projects, skills, education, honors, or personal profile.

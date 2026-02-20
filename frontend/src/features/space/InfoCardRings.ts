@@ -45,7 +45,7 @@ export class InfoCardRings {
   // One row per subcategory.
   private infoRows: InfoCardRingRow[] = [];
   private activeCategory: InformationSceneCategory | null = null;
-  private activeSubcategoryFilterId: string | undefined;
+  private activeSubcategoryFilterIds: Set<string> | undefined;
   // We use this once after rebuild so cards spawn behind camera first.
   private introPending = false;
   // Current world-orbit angle for this full card system.
@@ -62,13 +62,15 @@ export class InfoCardRings {
   rebuild(
     category: InformationSceneCategory | null,
     arcSpan = this.currentArcSpan,
-    subcategoryFilterId = this.activeSubcategoryFilterId,
+    subcategoryFilterIds = this.activeSubcategoryFilterIds,
   ): void {
     // Rebuild from scratch whenever selected category changes.
     // This keeps state simple and avoids subtle diff-update bugs.
     this.clear();
     this.activeCategory = category;
-    this.activeSubcategoryFilterId = subcategoryFilterId;
+    this.activeSubcategoryFilterIds = subcategoryFilterIds
+      ? new Set(subcategoryFilterIds)
+      : undefined;
 
     // If nothing is selected (or category has no rows), there is nothing to draw.
     if (!category || category.subcategories.length === 0) {
@@ -92,7 +94,7 @@ export class InfoCardRings {
     }> = [];
 
     category.subcategories.forEach((subcategory) => {
-      if (subcategoryFilterId && subcategory.id !== subcategoryFilterId) {
+      if (subcategoryFilterIds && !subcategoryFilterIds.has(subcategory.id)) {
         return;
       }
 
@@ -165,7 +167,7 @@ export class InfoCardRings {
     this.infoCards = [];
     this.infoRows = [];
     this.activeCategory = null;
-    this.activeSubcategoryFilterId = undefined;
+    this.activeSubcategoryFilterIds = undefined;
     this.introPending = false;
     this.ringAngle = 0;
   }

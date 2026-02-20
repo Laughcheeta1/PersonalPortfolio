@@ -49,7 +49,7 @@ export class SpaceSceneRuntime {
   private environmentTexture: THREE.Texture | null = null;
   private selectedIndex: number | null = null;
   private pendingNavigationTarget: SceneNavigationTarget | null = null;
-  private readonly categorySubcategoryFilters = new Map<CategoryId, string>();
+  private readonly categorySubcategoryFilters = new Map<CategoryId, Set<string>>();
 
   private readonly onPointerDownBound = (event: PointerEvent) => this.onPointerDown(event);
   private readonly onPointerMoveBound = (event: PointerEvent) => this.onPointerMove(event);
@@ -191,9 +191,9 @@ export class SpaceSceneRuntime {
     this.pandaMonkAvatar.setSpeaking(speaking);
   }
 
-  setCategorySubcategoryFilter(categoryId: CategoryId, subcategoryId?: string): void {
-    if (subcategoryId) {
-      this.categorySubcategoryFilters.set(categoryId, subcategoryId);
+  setCategorySubcategoryFilter(categoryId: CategoryId, subcategoryIds?: string[]): void {
+    if (subcategoryIds && subcategoryIds.length > 0) {
+      this.categorySubcategoryFilters.set(categoryId, new Set(subcategoryIds));
     } else {
       this.categorySubcategoryFilters.delete(categoryId);
     }
@@ -252,10 +252,10 @@ export class SpaceSceneRuntime {
 
   private rebuildInfoCards(): void {
     const selectedCategory = this.getSelectedCategory();
-    const selectedSubcategoryFilter = selectedCategory
+    const selectedSubcategoryFilterIds = selectedCategory
       ? this.categorySubcategoryFilters.get(selectedCategory.id)
       : undefined;
-    this.infoCardRings.rebuild(selectedCategory, undefined, selectedSubcategoryFilter);
+    this.infoCardRings.rebuild(selectedCategory, undefined, selectedSubcategoryFilterIds);
     this.applyPendingNavigationTarget();
   }
 

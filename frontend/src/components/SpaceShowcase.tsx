@@ -1,8 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
 import { usePandaMonkChatbot } from '../features/chatbot/hooks/usePandaMonkChatbot';
-import { sceneInformationCategories } from '../features/information';
 import type { CategoryId } from '../features/information/models';
 import { useAmbientAudio } from '../features/space/hooks/useAmbientAudio';
 import { useSpaceSceneRuntime } from '../features/space/hooks/useSpaceSceneRuntime';
@@ -14,7 +13,7 @@ import InfoDetailPanel from './InfoDetailPanel';
 const SpaceShowcase = () => {
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
   const [subcategoryFilterByCategory, setSubcategoryFilterByCategory] = useState<
-    Partial<Record<CategoryId, string>>
+    Partial<Record<CategoryId, string[]>>
   >({});
 
   const { isMobileViewport, isPortraitViewport } = useViewportHints();
@@ -24,6 +23,7 @@ const SpaceShowcase = () => {
     selectedInfoItem,
     setSelectedInfoItem,
     loadingState,
+    selectedCategory,
     selectedCategoryLabel,
     avatarAnchor,
     setPandaSpeaking,
@@ -32,10 +32,9 @@ const SpaceShowcase = () => {
   } = useSpaceSceneRuntime();
 
   const assetCredits = assetCreditsJson as AssetCreditsConfig;
-  const categoriesByModelOrder = useMemo(
-    () => [...sceneInformationCategories].sort((a, b) => a.modelIndex - b.modelIndex),
-    [],
-  );
+  const selectedSubcategoryFilter = selectedCategory
+    ? subcategoryFilterByCategory[selectedCategory.id]
+    : undefined;
 
   const {
     chatPanelStyle,
@@ -96,34 +95,47 @@ const SpaceShowcase = () => {
         {isCreditsOpen ? 'Hide Sources' : 'Show Sources'}
       </button>
 
-      <section className="subcategory-filter-panel" aria-label="Subcategory model filters">
-        <p className="subcategory-filter-title">Model Subcategory Filters</p>
-        <div className="subcategory-filter-grid">
-          {categoriesByModelOrder.map((category) => (
-            <label key={category.id} className="subcategory-filter-field">
-              <span>{`Model ${category.modelIndex + 1}: ${category.label}`}</span>
-              <select
-                value={subcategoryFilterByCategory[category.id] ?? ''}
-                onChange={(event) => {
-                  const nextValue = event.target.value;
-                  setSubcategoryFilterByCategory((prev) => ({
-                    ...prev,
-                    [category.id]: nextValue,
-                  }));
-                  setCategorySubcategoryFilter(category.id, nextValue || undefined);
-                }}
-              >
-                <option value="">All subcategories</option>
-                {category.subcategories.map((subcategory) => (
-                  <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ))}
-        </div>
-      </section>
+      {selectedCategory ? (
+        <section className="subcategory-filter-panel" aria-label="Selected model subcategory filters">
+          <p className="subcategory-filter-title">{`${selectedCategory.label} Subcategories`}</p>
+          <div className="subcategory-filter-grid">
+            {selectedCategory.subcategories.map((subcategory) => {
+              const checked =
+                selectedSubcategoryFilter === undefined ||
+                selectedSubcategoryFilter.includes(subcategory.id);
+
+              return (
+                <label key={subcategory.id} className="subcategory-filter-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      const allIds = selectedCategory.subcategories.map((entry) => entry.id);
+                      const current = new Set(selectedSubcategoryFilter ?? allIds);
+                      if (current.has(subcategory.id)) {
+                        current.delete(subcategory.id);
+                      } else {
+                        current.add(subcategory.id);
+                      }
+
+                      const nextSelectedIds = allIds.filter((id) => current.has(id));
+                      const nextFilter =
+                        nextSelectedIds.length === allIds.length ? undefined : nextSelectedIds;
+
+                      setSubcategoryFilterByCategory((prev) => ({
+                        ...prev,
+                        [selectedCategory.id]: nextFilter,
+                      }));
+                      setCategorySubcategoryFilter(selectedCategory.id, nextFilter);
+                    }}
+                  />
+                  <span>{subcategory.label}</span>
+                </label>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <ChatPanel
         conversation={chatConversation}
