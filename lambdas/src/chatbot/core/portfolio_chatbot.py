@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import logging
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -13,6 +15,7 @@ from models.response import ChatbotStructuredResponse
 from prompts.basic import SYSTEM_PROMPT, USER_PROMPT
 
 LOGGER = logging.getLogger(__name__)
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 class PortfolioChatbot(BaseModel):
     """Runtime orchestrator for fallback model execution."""
@@ -45,9 +48,16 @@ class PortfolioChatbot(BaseModel):
     def execute(self, messages: list[ConversationMessage] | None = None) -> dict[str, object]:
         payload_messages = [message.model_dump() for message in (messages or [])]
         LOGGER.debug("PortfolioChatbot.execute called with %s messages.", len(payload_messages))
-        payload = {"messages": payload_messages}
-        self.prompt.format_system_prompt()
-        self.prompt.format_user_prompt(messages=json.dumps(payload, ensure_ascii=False))
+        self.prompt.format_system_prompt(
+            education=self._load_data_section("education.json"),
+            honors=self._load_data_section("honors.json"),
+            personal=self._load_data_section("personal.json"),
+            projects=self._load_data_section("projects.json"),
+            skills=self._load_data_section("skills.json"),
+            work=self._load_data_section("work.json"),
+            date=datetime.now(timezone.utc).date().isoformat(),
+        )
+        self.prompt.format_user_prompt(messages=json.dumps(payload_messages, ensure_ascii=False))
         LOGGER.debug(
             "Prompt prepared. system_len=%s user_len=%s",
             len(self.prompt.system_prompt),
@@ -55,6 +65,19 @@ class PortfolioChatbot(BaseModel):
         )
 
         return self._get_structured_response()
+
+    @staticmethod
+    def _load_data_section(filename: str) -> str:
+        path = DATA_DIR / filename
+        try:
+            with path.open("r", encoding="utf-8") as file:
+                payload = json.load(file)
+        except FileNotFoundError as exc:
+            raise RuntimeError(f"Missing chatbot data file: {path}") from exc
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(f"Invalid JSON in chatbot data file: {path}") from exc
+
+        return json.dumps(payload, ensure_ascii=False, indent=2)
 
     def _get_structured_response(self) -> dict[str, object]:
         errors: list[str] = []
