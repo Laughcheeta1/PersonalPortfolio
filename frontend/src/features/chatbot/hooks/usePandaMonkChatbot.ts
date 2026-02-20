@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 
-import type { CategoryId } from '../../information/models';
+import type { SceneNavigationTarget } from '../../information/models';
 import type { AvatarScreenAnchor } from '../models';
 import { usePortfolioChatbot } from '../usePortfolioChatbot';
 import { usePandaMonkChatboxLayout } from './usePandaMonkChatboxLayout';
 
 type UsePandaMonkChatbotParams = {
   avatarAnchor: AvatarScreenAnchor;
-  onNavigateToCategory: (categoryId: CategoryId) => void;
+  onNavigateToCategory: (target: Pick<SceneNavigationTarget, 'categoryId' | 'subcategoryId'>) => void;
   onPandaSpeakingChange?: (speaking: boolean) => void;
 };
 

@@ -1,0 +1,108 @@
+{
+  "companies": [
+    {
+      "id": "work-eia-selected-tutor-programming-fundamentals",
+      "slug": "eia-selected-tutor-programming-fundamentals",
+      "title": "University Selected Tutor — Programming Fundamentals",
+      "summary": "Taught programming fundamentals to first-semester students.",
+      "details": "Delivered lecture-style sessions covering programming fundamentals.",
+      "companyName": "EIA University",
+      "startDate": "2024-08",
+      "endDate": "2025-07",
+      "skills": [31, 29, 30],
+      "links": {
+        "externalUrl": "https://eia.edu.co/"
+      }
+    },
+    {
+      "id": "work-telepatia-ai-engineer",
+      "slug": "telepatia-ai-engineer",
+      "title": "AI Engineer - Telepatia",
+      "summary": "Engineered AI solutions for Telepatia's products.",
+      "details": "Developed and maintained AI agents for Telepatia's products.",
+      "companyName": "Telepatia",
+      "startDate": "2025-08-11",
+      "endDate": "2026-02-09",
+      "skills": [],
+      "links": {
+        "externalUrl": "https://www.telepatia.ai/"
+      }
+    }
+  ],
+  "entrepreneurship": [
+    {
+      "id": "work-elio-for-business",
+      "slug": "elio-for-business",
+      "title": "CTO & Cofounder",
+      "summary": "Led engineering strategy, architecture, and delivery for AI-driven sales automation.",
+      "details": "Built core systems including agent-driven sales automation, multiple database layers, and scalable cloud architecture; managed a team of 7 developers.",
+      "ventureName": "elio for business",
+      "startDate": "2025-06-01",
+      "endDate": null,
+      "skills": [20, 15, 23, 26, 27, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-nao-aeronautics",
+      "slug": "nao-aeronautics-venture",
+      "title": "NAO Aeronautics (Venture)",
+      "summary": "Logistics startup concept focused on serving remote areas.",
+      "details": "Built business plan, process architecture, and prototype; executed extensive interview-driven discovery and iteration.",
+      "ventureName": "NAO Aeronautics",
+      "startDate": "2024-01-01",
+      "endDate": null,
+      "skills": [35, 32, 30, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-vcow",
+      "slug": "vcow-venture",
+      "title": "VCOW (Venture)",
+      "summary": "Crowdfunding platform concept for cattle-raising projects (pivoted from vertical farming).",
+      "details": "Interview-driven validation (40+ farmers; 10+ investors after pivot) built for a CREATE-X course deliverable.",
+      "ventureName": "VCOW",
+      "startDate": "2024-10-01",
+      "endDate": null,
+      "skills": [35, 32, 29, 30],
+      "links": {}
+    }
+  ],
+  "independentWork": [
+    {
+      "id": "work-mc2-university-ambassador",
+      "slug": "mc2-university-ambassador",
+      "title": "University Ambassador",
+      "summary": "Built partnerships between mc2 and EIA University and organized a startup hackathon.",
+      "details": "Established connections/partnership with EIA University; organized a hackathon with 60+ participants and recruited judges while securing support and funding.",
+      "clientOrProductName": "mc2",
+      "startDate": "2025-03-01",
+      "endDate": null,
+      "skills": [29, 30, 35],
+      "links": {}
+    },
+    {
+      "id": "work-eia-private-tutor-data-structures",
+      "slug": "eia-private-tutor-data-structures",
+      "title": "Private Tutor — Data Structures",
+      "summary": "Provided personalized tutoring for Data Structures.",
+      "details": "Tailored lesson plans to student learning preferences to improve comprehension and performance.",
+      "clientOrProductName": "EIA University (Private tutoring)",
+      "startDate": "2024-09-01",
+      "endDate": "2025-07-01",
+      "skills": [31, 29, 24],
+      "links": {}
+    },
+    {
+      "id": "ind-demo-investor-pitches",
+      "slug": "investor-and-demo-pitches",
+      "title": "Investor & Demo Pitches",
+      "summary": "Delivered multiple startup pitches and demo presentations across events and programs.",
+      "details": "Included Innovate EPM (Nov 2024; reached penultimate round), Conexión Entrepreneur Summit (Oct 2024), and a demo pitch at the end of mc2 Builder’s Program (May 2025) showcasing NAO Aeronautics progress.",
+      "clientOrProductName": "Multiple events and programs",
+      "startDate": "2024-10-01",
+      "endDate": "2025-05-01",
+      "skills": [30, 29, 35],
+      "links": {}
+    }
+  ]
+}

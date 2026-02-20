@@ -136,6 +136,60 @@
   font-size: 0.78rem;
 }
 
+.subcategory-filter-panel {
+  position: absolute;
+  left: 1rem;
+  bottom: calc(var(--safe-bottom) + 2.6rem);
+  z-index: 2;
+  width: min(23rem, calc(100vw - 2rem));
+  border: 3px solid #2c1354;
+  border-radius: 0.9rem;
+  padding: 0.55rem 0.6rem;
+  background: linear-gradient(135deg, rgba(255, 127, 185, 0.95), rgba(255, 207, 77, 0.93));
+  box-shadow: 0 0.5rem 1.6rem rgba(21, 8, 42, 0.35);
+}
+
+.subcategory-filter-title {
+  margin: 0;
+  color: #2a1057;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.subcategory-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+  max-height: min(34vh, 14rem);
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.subcategory-filter-field {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.2rem;
+}
+
+.subcategory-filter-field span {
+  color: #1d103a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.subcategory-filter-field select {
+  border: 2px solid #1a1a1a;
+  border-radius: 0.45rem;
+  padding: 0.24rem 0.35rem;
+  background: #ffffffdd;
+  color: #1b0f36;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .chat-panel {
   position: absolute;
   left: 1rem;

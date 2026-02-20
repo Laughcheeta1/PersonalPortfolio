@@ -6,7 +6,11 @@ import {
   validateSceneCategoryMappings,
 } from '../../information';
 import type { AvatarScreenAnchor } from '../../chatbot/models';
-import type { InformationItemSelection, SceneNavigationTarget } from '../../information/models';
+import type {
+  CategoryId,
+  InformationItemSelection,
+  SceneNavigationTarget,
+} from '../../information/models';
 import { SpaceSceneRuntime } from '../runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../spaceModels';
 
@@ -101,6 +105,13 @@ export function useSpaceSceneRuntime() {
     runtimeRef.current?.setPandaSpeaking(speaking);
   }, []);
 
+  const setCategorySubcategoryFilter = useCallback(
+    (categoryId: CategoryId, subcategoryId?: string) => {
+      runtimeRef.current?.setCategorySubcategoryFilter(categoryId, subcategoryId);
+    },
+    [],
+  );
+
   const selectedCategoryLabel = useMemo(
     () =>
       selectedIndex === null
@@ -117,5 +128,6 @@ export function useSpaceSceneRuntime() {
     selectedCategoryLabel,
     avatarAnchor,
     setPandaSpeaking,
+    setCategorySubcategoryFilter,
   };
 }

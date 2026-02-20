@@ -10,6 +10,7 @@ export function toChatbotTurnResult(
       actions.push({
         type: 'movement',
         categoryId: action.category_to_move_to,
+        subcategoryId: action.subcategory_to_move_to ?? undefined,
       });
       continue;
     }

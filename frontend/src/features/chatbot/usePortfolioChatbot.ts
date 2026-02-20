@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
-import type { CategoryId } from '../information/models';
+import type { SceneNavigationTarget } from '../information/models';
 import { requestChatbotTurn } from './client';
 import type { ConversationMessage } from './models';
 import { createSpeakingAudioController, type SpeakingAudioController } from './speakingAudio';
 
 type UsePortfolioChatbotParams = {
-  onNavigateToCategory: (categoryId: CategoryId) => void;
+  onNavigateToCategory: (target: Pick<SceneNavigationTarget, 'categoryId' | 'subcategoryId'>) => void;
 };
 
 export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
@@ -15,6 +15,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatConversation, setChatConversation] = useState<ConversationMessage[]>([]);
+  const chatConversationRef = useRef<ConversationMessage[]>([]);
   const [isPandaSpeaking, setIsPandaSpeaking] = useState(false);
   const speakingAudioRef = useRef<SpeakingAudioController | null>(null);
 
@@ -25,6 +26,10 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
       speakingAudioRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    chatConversationRef.current = chatConversation;
+  }, [chatConversation]);
 
   const startSpeaking = () => {
     setIsPandaSpeaking(true);
@@ -90,7 +95,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     }
 
     const nextConversation: ConversationMessage[] = [
-      ...chatConversation,
+      ...chatConversationRef.current,
       { sender: 'user', message: userText },
     ];
 
@@ -104,7 +109,10 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
       for (const [index, action] of actions.entries()) {
         if (action.type === 'movement') {
           stopSpeaking();
-          onNavigateToCategory(action.categoryId);
+          onNavigateToCategory({
+            categoryId: action.categoryId,
+            subcategoryId: action.subcategoryId,
+          });
           await sleep(900);
           continue;
         }

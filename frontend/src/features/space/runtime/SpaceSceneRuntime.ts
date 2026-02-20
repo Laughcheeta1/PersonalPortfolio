@@ -14,7 +14,11 @@ import { ModelRingManager } from './ModelRingManager';
 import { OrbitCameraController } from './OrbitCameraController';
 import { pickSceneObject } from './picking';
 import type { RuntimeLoadingState, RuntimeOptions } from './types';
-import type { InformationItemSelection, SceneNavigationTarget } from '../../information/models';
+import type {
+  CategoryId,
+  InformationItemSelection,
+  SceneNavigationTarget,
+} from '../../information/models';
 
 // Orchestrates high-level runtime flow while delegated modules own specific logic.
 export class SpaceSceneRuntime {
@@ -45,6 +49,7 @@ export class SpaceSceneRuntime {
   private environmentTexture: THREE.Texture | null = null;
   private selectedIndex: number | null = null;
   private pendingNavigationTarget: SceneNavigationTarget | null = null;
+  private readonly categorySubcategoryFilters = new Map<CategoryId, string>();
 
   private readonly onPointerDownBound = (event: PointerEvent) => this.onPointerDown(event);
   private readonly onPointerMoveBound = (event: PointerEvent) => this.onPointerMove(event);
@@ -186,6 +191,19 @@ export class SpaceSceneRuntime {
     this.pandaMonkAvatar.setSpeaking(speaking);
   }
 
+  setCategorySubcategoryFilter(categoryId: CategoryId, subcategoryId?: string): void {
+    if (subcategoryId) {
+      this.categorySubcategoryFilters.set(categoryId, subcategoryId);
+    } else {
+      this.categorySubcategoryFilters.delete(categoryId);
+    }
+
+    const selectedCategory = this.getSelectedCategory();
+    if (selectedCategory?.id === categoryId) {
+      this.rebuildInfoCards();
+    }
+  }
+
   navigateTo(target: SceneNavigationTarget): void {
     const normalized = resolveNavigationTarget(this.categories, target);
     if (!normalized) {
@@ -233,7 +251,11 @@ export class SpaceSceneRuntime {
   }
 
   private rebuildInfoCards(): void {
-    this.infoCardRings.rebuild(this.getSelectedCategory());
+    const selectedCategory = this.getSelectedCategory();
+    const selectedSubcategoryFilter = selectedCategory
+      ? this.categorySubcategoryFilters.get(selectedCategory.id)
+      : undefined;
+    this.infoCardRings.rebuild(selectedCategory, undefined, selectedSubcategoryFilter);
     this.applyPendingNavigationTarget();
   }
 

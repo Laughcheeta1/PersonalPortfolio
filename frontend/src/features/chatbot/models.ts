@@ -9,9 +9,25 @@ export type ConversationMessage = {
 
 export type ChatActionType = 'movement' | 'text';
 
+export type ChatSubcategoryId =
+  | 'companies'
+  | 'entrepreneurship'
+  | 'independent-work'
+  | 'university'
+  | 'courses'
+  | 'personal-projects'
+  | 'work-projects'
+  | 'awards'
+  | 'honors'
+  | 'skills-list'
+  | 'profile'
+  | 'hobbies'
+  | 'languages';
+
 export type ChatResponseAction = {
   action_type: ChatActionType;
   category_to_move_to?: CategoryId | null;
+  subcategory_to_move_to?: ChatSubcategoryId | null;
   message?: string | null;
 };
 
@@ -23,6 +39,7 @@ export type ChatbotTurnAction =
   | {
       type: 'movement';
       categoryId: CategoryId;
+      subcategoryId?: ChatSubcategoryId;
     }
   | {
       type: 'text';

@@ -45,6 +45,7 @@ export class InfoCardRings {
   // One row per subcategory.
   private infoRows: InfoCardRingRow[] = [];
   private activeCategory: InformationSceneCategory | null = null;
+  private activeSubcategoryFilterId: string | undefined;
   // We use this once after rebuild so cards spawn behind camera first.
   private introPending = false;
   // Current world-orbit angle for this full card system.
@@ -58,11 +59,16 @@ export class InfoCardRings {
   // Vertical lift applied to the whole card system relative to its anchor.
   private readonly anchorOffset = new THREE.Vector3(0, 0.69984, 0);
 
-  rebuild(category: InformationSceneCategory | null, arcSpan = this.currentArcSpan): void {
+  rebuild(
+    category: InformationSceneCategory | null,
+    arcSpan = this.currentArcSpan,
+    subcategoryFilterId = this.activeSubcategoryFilterId,
+  ): void {
     // Rebuild from scratch whenever selected category changes.
     // This keeps state simple and avoids subtle diff-update bugs.
     this.clear();
     this.activeCategory = category;
+    this.activeSubcategoryFilterId = subcategoryFilterId;
 
     // If nothing is selected (or category has no rows), there is nothing to draw.
     if (!category || category.subcategories.length === 0) {
@@ -86,6 +92,10 @@ export class InfoCardRings {
     }> = [];
 
     category.subcategories.forEach((subcategory) => {
+      if (subcategoryFilterId && subcategory.id !== subcategoryFilterId) {
+        return;
+      }
+
       // Skip empty rows.
       if (subcategory.items.length === 0) {
         return;
@@ -155,6 +165,7 @@ export class InfoCardRings {
     this.infoCards = [];
     this.infoRows = [];
     this.activeCategory = null;
+    this.activeSubcategoryFilterId = undefined;
     this.introPending = false;
     this.ringAngle = 0;
   }
