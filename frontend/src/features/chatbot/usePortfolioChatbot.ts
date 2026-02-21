@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { SceneNavigationTarget } from '../information/models';
 import { requestChatbotTurn } from './client';
+import { getLocalizedChatbotErrorMessage } from './errorMessage';
 import type { ConversationMessage } from './models';
 import { createSpeakingAudioController, type SpeakingAudioController } from './speakingAudio';
 
@@ -137,13 +138,14 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     } catch (error) {
       setIsAwaitingChatResponse(false);
       stopSpeaking();
-      const errorMessage = error instanceof Error ? error.message : 'Chat request failed.';
-      setChatError(errorMessage);
+      const uiErrorMessage = getLocalizedChatbotErrorMessage();
+      console.error('[Chatbot] Request failed:', error);
+      setChatError(uiErrorMessage);
       setChatConversation((prev) => [
         ...prev,
         {
           sender: 'model',
-          message: `I ran into an error while calling the chatbot API: ${errorMessage}`,
+          message: uiErrorMessage,
         },
       ]);
     } finally {

@@ -3,12 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 import logging
+import os
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from llm_providers.base import LLMModel
 from llm_providers.groq_model import GroqModel
+from llm_providers.openai_model import OpenAIModel
 from models.prompt import Prompt
 from models.request import ConversationMessage
 from models.response import ChatbotStructuredResponse
@@ -17,25 +19,57 @@ from prompts.basic import SYSTEM_PROMPT, USER_PROMPT
 LOGGER = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
+
+def _build_default_models() -> list[LLMModel]:
+    models: list[LLMModel] = []
+
+    groq_api_key = os.getenv("GROQ_API_KEY", "").strip()
+    if groq_api_key:
+        models.extend(
+            [
+                GroqModel(
+                    model_name="openai/gpt-oss-120b",
+                    reasoning_effort="low",
+                    temperature=0.5,
+                    top_p=1.0,
+                    api_key=groq_api_key,
+                ),
+                GroqModel(
+                    model_name="meta-llama/llama-4-maverick-17b-128e-instruct",
+                    temperature=0.5,
+                    top_p=1.0,
+                    api_key=groq_api_key,
+                ),
+            ]
+        )
+
+    openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if openai_api_key:
+        models.append(
+            OpenAIModel(
+                model_name="gpt-4.1-mini",
+                reasoning_effort="medium",
+                temperature=0.5,
+                top_p=1.0,
+                api_key=openai_api_key,
+            )
+        )
+
+    if not models:
+        raise RuntimeError(
+            "No LLM providers configured. Set GROQ_API_KEY and/or OPENAI_API_KEY."
+        )
+
+    return models
+
+
 class PortfolioChatbot(BaseModel):
     """Runtime orchestrator for fallback model execution."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     llm_models: list[LLMModel] = Field(
-        default_factory=lambda: [
-            GroqModel(
-                model_name="openai/gpt-oss-120b",
-                reasoning_effort="low",
-                temperature=0.5,
-                top_p=1.0,
-            ),
-            GroqModel(
-                model_name="meta-llama/llama-4-maverick-17b-128e-instruct",
-                temperature=0.5,
-                top_p=1.0,
-            ),
-        ],
+        default_factory=_build_default_models,
         min_length=1,
     )
     prompt: Prompt = Field(

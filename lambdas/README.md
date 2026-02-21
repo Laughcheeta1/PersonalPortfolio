@@ -34,7 +34,7 @@ Create your local file:
 cp .env.example .env
 ```
 
-Then set your values in `lambdas/.env` (at minimum `GROQ_API_KEY`).
+Then set your values in `lambdas/.env` (at minimum one provider key: `GROQ_API_KEY` or `OPENAI_API_KEY`).
 
 When you run Nx targets, the env file is loaded automatically:
 
