@@ -65,9 +65,14 @@ jobs:
         run: |
           API_URL=$(aws cloudformation describe-stacks \
             --stack-name ${{ secrets.SAM_STACK_NAME }} \
-            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue | [0]" \
             --output text)
-          
+
+          if [ -z "$API_URL" ] || [ "$API_URL" = "None" ]; then
+            echo "Failed to resolve ApiUrl from CloudFormation outputs."
+          fi
+
+          echo "Resolved api_url: $API_URL"
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
 
   build-frontend:
@@ -82,7 +87,8 @@ jobs:
 
       - name: Set the API_URL env for the front end
         run: |
-          echo "VITE_API_BASE_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
+          API_URL="${{ needs.deploy-lambdas.outputs.api_url }}"
+          echo "VITE_API_BASE_URL=${API_URL}" >> $GITHUB_ENV
 
       - name: Validate VITE_API_BASE_URL
         run: |
