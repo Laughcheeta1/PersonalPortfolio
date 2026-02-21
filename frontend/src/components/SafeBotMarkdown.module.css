@@ -1,0 +1,29 @@
+.container {
+  display: block;
+}
+
+.paragraph {
+  margin: 0;
+}
+
+.paragraph + .paragraph {
+  margin-top: 0.35rem;
+}
+
+.list {
+  margin: 0.3rem 0;
+  padding-left: 1rem;
+}
+
+.spacer {
+  height: 0.35rem;
+}
+
+.codeBlock {
+  margin: 0.35rem 0;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(26, 26, 26, 0.28);
+  background: rgba(255, 255, 255, 0.72);
+  overflow-x: auto;
+}

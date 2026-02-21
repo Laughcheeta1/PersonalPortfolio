@@ -14,6 +14,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
   const { onNavigateToCategory, onNavigateToMainPage } = params;
 
   const [isSendingChat, setIsSendingChat] = useState(false);
+  const [isAwaitingChatResponse, setIsAwaitingChatResponse] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatConversation, setChatConversation] = useState<ConversationMessage[]>([]);
   const chatConversationRef = useRef<ConversationMessage[]>([]);
@@ -103,9 +104,11 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     setChatConversation(nextConversation);
     setChatError(null);
     setIsSendingChat(true);
+    setIsAwaitingChatResponse(true);
 
     try {
       const { actions } = await requestChatbotTurn(nextConversation);
+      setIsAwaitingChatResponse(false);
 
       for (const [index, action] of actions.entries()) {
         if (action.type === 'movement') {
@@ -132,6 +135,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
         }
       }
     } catch (error) {
+      setIsAwaitingChatResponse(false);
       stopSpeaking();
       const errorMessage = error instanceof Error ? error.message : 'Chat request failed.';
       setChatError(errorMessage);
@@ -150,6 +154,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
 
   return {
     isSendingChat,
+    isAwaitingChatResponse,
     chatError,
     chatConversation,
     isPandaSpeaking,

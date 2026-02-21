@@ -7,7 +7,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import backgroundExrUrl from '../../../assets/exr/sunflowers_puresky_1k.exr';
 import pandaNotSpeakingUrl from '../../../assets/images/Panda_monk_not_speaking.png';
 import pandaSpeakingUrl from '../../../assets/images/Panda_monk_speaking.png';
-import { PandaMonkAvatar } from '../../chatbot/scene/PandaMonkAvatar';
+import pandaThinkingUrl from '../../../assets/images/panda_monk_thinking.png';
+import { PandaMonkAvatar, type PandaMonkAvatarState } from '../../chatbot/scene/PandaMonkAvatar';
 import { resolveNavigationTarget } from '../../information/navigation';
 import { InfoCardRings } from '../InfoCardRings';
 import { ModelRingManager } from './ModelRingManager';
@@ -138,6 +139,7 @@ export class SpaceSceneRuntime {
     await this.pandaMonkAvatar.load({
       idle: pandaNotSpeakingUrl,
       speaking: pandaSpeakingUrl,
+      thinking: pandaThinkingUrl,
     });
     if (this.disposed) {
       return;
@@ -187,8 +189,8 @@ export class SpaceSceneRuntime {
     this.rebuildInfoCards();
   }
 
-  setPandaSpeaking(speaking: boolean): void {
-    this.pandaMonkAvatar.setSpeaking(speaking);
+  setPandaState(state: PandaMonkAvatarState): void {
+    this.pandaMonkAvatar.setState(state);
   }
 
   setCategorySubcategoryFilter(categoryId: CategoryId, subcategoryIds?: string[]): void {

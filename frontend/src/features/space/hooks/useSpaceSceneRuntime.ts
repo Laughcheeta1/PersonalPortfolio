@@ -13,6 +13,7 @@ import type {
 } from '../../information/models';
 import { SpaceSceneRuntime } from '../runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../spaceModels';
+import type { PandaMonkAvatarState } from '../../chatbot/scene/PandaMonkAvatar';
 
 type LoadingState = {
   active: boolean;
@@ -101,8 +102,8 @@ export function useSpaceSceneRuntime() {
     };
   }, []);
 
-  const setPandaSpeaking = useCallback((speaking: boolean) => {
-    runtimeRef.current?.setPandaSpeaking(speaking);
+  const setPandaState = useCallback((state: PandaMonkAvatarState) => {
+    runtimeRef.current?.setPandaState(state);
   }, []);
 
   const deselectModel = useCallback(() => {
@@ -137,7 +138,7 @@ export function useSpaceSceneRuntime() {
     selectedCategory,
     selectedCategoryLabel,
     avatarAnchor,
-    setPandaSpeaking,
+    setPandaState,
     deselectModel,
     setCategorySubcategoryFilter,
   };

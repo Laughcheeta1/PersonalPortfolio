@@ -1,20 +1,38 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
-import pandaMonkThinkingUrl from '../assets/images/panda_monk_thinking.png';
 import type { ConversationMessage } from '../features/chatbot/models';
+import SafeBotMarkdown from './SafeBotMarkdown';
 import styles from './ChatPanel.module.css';
 
 type ChatPanelProps = {
   conversation: ConversationMessage[];
   isSending: boolean;
+  isAwaitingResponse?: boolean;
   error: string | null;
   onSendMessage: (message: string) => Promise<void>;
   panelStyle?: CSSProperties;
 };
 
-const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }: ChatPanelProps) => {
+const ChatPanel = ({
+  conversation,
+  isSending,
+  isAwaitingResponse = false,
+  error,
+  onSendMessage,
+  panelStyle,
+}: ChatPanelProps) => {
   const [chatInput, setChatInput] = useState('');
   const logRef = useRef<HTMLDivElement | null>(null);
+
+  const sanitizeUserText = (rawValue: string): string => {
+    const filtered = Array.from(rawValue)
+      .filter((char) => {
+        const code = char.charCodeAt(0);
+        return code >= 32 && code !== 127;
+      })
+      .join('');
+    return filtered.trim();
+  };
 
   useEffect(() => {
     const log = logRef.current;
@@ -27,7 +45,7 @@ const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }
 
   const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const userText = chatInput.trim();
+    const userText = sanitizeUserText(chatInput);
     if (!userText || isSending) {
       return;
     }
@@ -43,34 +61,38 @@ const ChatPanel = ({ conversation, isSending, error, onSendMessage, panelStyle }
         {isSending ? <span>Thinking...</span> : <span>Ready</span>}
       </div>
 
-      {isSending ? (
-        <div className={styles.thinkingImageWrap}>
-          <img className={styles.thinkingImage} src={pandaMonkThinkingUrl} alt="Panda Monk thinking" />
-        </div>
-      ) : null}
-
       <div ref={logRef} className={styles.log}>
-        {conversation.length === 0 ? (
-          <p className={`${styles.bubble} ${styles.bubbleModel} ${styles.placeholder}`}>
-            Ask about work, projects, skills, education, honors, or personal profile.
-          </p>
-        ) : (
-          conversation.map((entry, index) => (
+        {conversation.map((entry, index) => (
+          <div
+            key={`${entry.sender}-${index}`}
+            className={`${styles.lineRow} ${entry.sender === 'user' ? styles.lineUser : styles.lineModel}`}
+          >
             <div
-              key={`${entry.sender}-${index}`}
-              className={`${styles.lineRow} ${entry.sender === 'user' ? styles.lineUser : styles.lineModel}`}
+              className={`${styles.bubble} ${
+                entry.sender === 'user' ? styles.bubbleUser : styles.bubbleModel
+              }`}
             >
-              <p
-                className={`${styles.bubble} ${
-                  entry.sender === 'user' ? styles.bubbleUser : styles.bubbleModel
-                }`}
-              >
-                <span className={styles.senderLabel}>{entry.sender === 'user' ? 'You' : 'Panda Monk'}</span>
-                {entry.message}
-              </p>
+              <span className={styles.senderLabel}>{entry.sender === 'user' ? 'You' : 'Panda Monk'}</span>
+              {entry.sender === 'model' ? (
+                <SafeBotMarkdown text={entry.message} />
+              ) : (
+                <span className={styles.rawUserMessage}>{entry.message}</span>
+              )}
             </div>
-          ))
-        )}
+          </div>
+        ))}
+        {isAwaitingResponse ? (
+          <div className={`${styles.lineRow} ${styles.lineModel}`}>
+            <div className={`${styles.bubble} ${styles.bubbleModel} ${styles.thinkingBubble}`} aria-live="polite">
+              <span className={styles.senderLabel}>Panda Monk</span>
+              <span className={styles.thinkingDots} aria-label="Panda Monk is thinking">
+                <span />
+                <span />
+                <span />
+              </span>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {error ? <p className={styles.error}>{error}</p> : null}

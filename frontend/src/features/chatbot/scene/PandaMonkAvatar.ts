@@ -12,7 +12,10 @@ type PandaMonkAvatarOptions = {
 type PandaMonkTextureUrls = {
   idle: string;
   speaking: string;
+  thinking: string;
 };
+
+export type PandaMonkAvatarState = 'idle' | 'thinking' | 'speaking';
 
 export class PandaMonkAvatar {
   private readonly scene: THREE.Scene;
@@ -35,7 +38,8 @@ export class PandaMonkAvatar {
   private spriteMaterial: THREE.SpriteMaterial | null = null;
   private idleTexture: THREE.Texture | null = null;
   private speakingTexture: THREE.Texture | null = null;
-  private isSpeaking = false;
+  private thinkingTexture: THREE.Texture | null = null;
+  private state: PandaMonkAvatarState = 'idle';
 
   constructor(options: PandaMonkAvatarOptions) {
     this.scene = options.scene;
@@ -45,16 +49,20 @@ export class PandaMonkAvatar {
   }
 
   async load(textureUrls: PandaMonkTextureUrls): Promise<void> {
-    const [idleTexture, speakingTexture] = await Promise.all([
+    const [idleTexture, speakingTexture, thinkingTexture] = await Promise.all([
       this.textureLoader.loadAsync(textureUrls.idle),
       this.textureLoader.loadAsync(textureUrls.speaking),
+      this.textureLoader.loadAsync(textureUrls.thinking),
     ]);
     idleTexture.colorSpace = THREE.SRGBColorSpace;
     idleTexture.needsUpdate = true;
     speakingTexture.colorSpace = THREE.SRGBColorSpace;
     speakingTexture.needsUpdate = true;
+    thinkingTexture.colorSpace = THREE.SRGBColorSpace;
+    thinkingTexture.needsUpdate = true;
     this.idleTexture = idleTexture;
     this.speakingTexture = speakingTexture;
+    this.thinkingTexture = thinkingTexture;
 
     const material = new THREE.SpriteMaterial({
       map: this.idleTexture,
@@ -78,7 +86,7 @@ export class PandaMonkAvatar {
     this.scene.add(sprite);
     this.spriteMaterial = material;
     this.sprite = sprite;
-    this.applySpeakingState();
+    this.applyAvatarState();
   }
 
   dispose(): void {
@@ -94,17 +102,19 @@ export class PandaMonkAvatar {
     }
     this.idleTexture?.dispose();
     this.speakingTexture?.dispose();
+    this.thinkingTexture?.dispose();
     this.idleTexture = null;
     this.speakingTexture = null;
+    this.thinkingTexture = null;
     this.sprite = null;
   }
 
-  setSpeaking(speaking: boolean): void {
-    if (this.isSpeaking === speaking) {
+  setState(state: PandaMonkAvatarState): void {
+    if (this.state === state) {
       return;
     }
-    this.isSpeaking = speaking;
-    this.applySpeakingState();
+    this.state = state;
+    this.applyAvatarState();
   }
 
   update(dt: number, elapsedTime: number, focusPosition: THREE.Vector3 | null): void {
@@ -139,12 +149,18 @@ export class PandaMonkAvatar {
     this.emitScreenAnchor(sprite.position);
   }
 
-  private applySpeakingState(): void {
-    if (!this.spriteMaterial || !this.idleTexture || !this.speakingTexture) {
+  private applyAvatarState(): void {
+    if (!this.spriteMaterial || !this.idleTexture || !this.speakingTexture || !this.thinkingTexture) {
       return;
     }
 
-    this.spriteMaterial.map = this.isSpeaking ? this.speakingTexture : this.idleTexture;
+    if (this.state === 'speaking') {
+      this.spriteMaterial.map = this.speakingTexture;
+    } else if (this.state === 'thinking') {
+      this.spriteMaterial.map = this.thinkingTexture;
+    } else {
+      this.spriteMaterial.map = this.idleTexture;
+    }
     this.spriteMaterial.needsUpdate = true;
   }
 

@@ -26,7 +26,7 @@ const SpaceShowcase = () => {
     selectedCategory,
     selectedCategoryLabel,
     avatarAnchor,
-    setPandaSpeaking,
+    setPandaState,
     deselectModel,
     setCategorySubcategoryFilter,
   } = useSpaceSceneRuntime();
@@ -39,6 +39,7 @@ const SpaceShowcase = () => {
   const {
     chatPanelStyle,
     isSendingChat,
+    isAwaitingChatResponse,
     chatError,
     chatConversation,
     sendUserMessage,
@@ -48,7 +49,7 @@ const SpaceShowcase = () => {
       window.portfolioNavigateTo?.(target);
     },
     onNavigateToMainPage: deselectModel,
-    onPandaSpeakingChange: setPandaSpeaking,
+    onPandaStateChange: setPandaState,
   });
 
   return (
@@ -140,6 +141,7 @@ const SpaceShowcase = () => {
       <ChatPanel
         conversation={chatConversation}
         isSending={isSendingChat}
+        isAwaitingResponse={isAwaitingChatResponse}
         error={chatError}
         onSendMessage={sendUserMessage}
         panelStyle={chatPanelStyle}

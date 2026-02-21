@@ -7,6 +7,32 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function formatApiError(payload: unknown, status: number): string {
+  if (!isRecord(payload)) {
+    return `Chatbot API request failed with status ${status}.`;
+  }
+
+  const detail =
+    typeof payload.detail === 'string'
+      ? payload.detail
+      : typeof payload.message === 'string'
+        ? payload.message
+        : null;
+  const error = typeof payload.error === 'string' ? payload.error : null;
+
+  if (error && detail) {
+    return `${error} ${detail}`;
+  }
+  if (detail) {
+    return detail;
+  }
+  if (error) {
+    return error;
+  }
+
+  return `Chatbot API request failed with status ${status}.`;
+}
+
 export async function postChatConversation(
   conversation: ConversationMessage[],
 ): Promise<unknown> {
@@ -24,11 +50,7 @@ export async function postChatConversation(
   }
 
   if (!response.ok) {
-    throw new Error(
-      isRecord(payload) && typeof payload.error === 'string'
-        ? payload.error
-        : `Request failed with status ${response.status}`,
-    );
+    throw new Error(formatApiError(payload, response.status));
   }
 
   return payload;

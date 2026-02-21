@@ -26,7 +26,7 @@ class PortfolioChatbot(BaseModel):
         default_factory=lambda: [
             GroqModel(
                 model_name="openai/gpt-oss-120b",
-                reasoning_effort="medium",
+                reasoning_effort="low",
                 temperature=0.5,
                 top_p=1.0,
             ),

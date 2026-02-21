@@ -43,18 +43,22 @@ def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
             ),
         }
 
-    chatbot = PortfolioChatbot()
     try:
+        chatbot = PortfolioChatbot()
         LOGGER.debug("Executing chatbot.")
         response_payload = chatbot.execute(messages=request_payload.messages)
         LOGGER.debug("Chatbot execution succeeded.")
     except Exception as exc:
         LOGGER.exception("Chatbot execution failed: %s", exc)
+        literal_error = f"{exc.__class__.__name__}: {exc}"
         return {
             "statusCode": 500,
             "headers": {"Content-Type": "application/json"},
             "body": json.dumps(
-                {"error": "Failed to generate chatbot response.", "detail": str(exc)}
+                {
+                    "error": "Failed to generate chatbot response.",
+                    "message": literal_error,
+                }
             ),
         }
 
