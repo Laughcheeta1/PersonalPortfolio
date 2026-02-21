@@ -72,8 +72,9 @@ jobs:
             echo "Failed to resolve ApiUrl from CloudFormation outputs."
           fi
 
-          echo "Resolved api_url"
+          echo "Resolved api_url: $API_URL"
           echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+          echo ""
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -87,9 +88,8 @@ jobs:
 
       - name: Set the API_URL env for the front end
         run: |
-          API_URL="${{ needs.deploy-lambdas.outputs.api_url }}"
-          echo "This is the api url: ${API_URL}"
-          echo "VITE_API_BASE_URL=${API_URL}" >> $GITHUB_ENV
+          echo "This is the api_url: ${{ needs.deploy-lambdas.outputs.api_url }}"
+          echo "VITE_API_BASE_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
 
       - name: Validate VITE_API_BASE_URL
         run: |
