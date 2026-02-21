@@ -27,9 +27,6 @@ jobs:
       run:
         working-directory: lambdas
 
-    outputs:
-      api_url: ${{ steps.cfn.outputs.api_url }}
-    
     steps:
       - name: Download the repo
         uses: actions/checkout@v4
@@ -73,8 +70,13 @@ jobs:
             echo "Failed to resolve ApiUrl from CloudFormation outputs."
           fi
 
-          echo "Fetched api_url: $API_URL"
-          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+          echo "$API_URL" > api_url.txt
+
+      - name: Upload API URL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-url
+          path: lambdas/api_url.txt
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -86,10 +88,16 @@ jobs:
       - name: Download repo
         uses: actions/checkout@v4
 
+      - name: Download API URL artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-url
+          path: .
+
       - name: Set the API_URL env for the front end
         run: |
-          echo "This is the api_url: ${{ needs.deploy-lambdas.outputs.api_url }}"
-          echo "VITE_API_BASE_URL=${{ needs.deploy-lambdas.outputs.api_url }}" >> $GITHUB_ENV
+          API_URL="$(cat ../api_url.txt)"
+          echo "VITE_API_BASE_URL=${API_URL}" >> $GITHUB_ENV
 
       - name: Validate VITE_API_BASE_URL
         run: |
