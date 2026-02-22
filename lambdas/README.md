@@ -34,7 +34,7 @@ Create your local file:
 cp .env.example .env
 ```
 
-Then set your values in `lambdas/.env` (at minimum one provider key: `GROQ_API_KEY` or `OPENAI_API_KEY`).
+Then set your value in `lambdas/.env` (`GROQ_API_KEY`).
 
 When you run Nx targets, the env file is loaded automatically:
 
@@ -50,3 +50,8 @@ nx dev lambdas
 ```bash
 sam deploy --guided
 ```
+
+In AWS, the Lambda always reads provider keys at runtime from Secrets Manager
+using secret id `GROQ_API_KEY`.
+Each secret should contain JSON with matching keys (for example `{"GROQ_API_KEY":"..."}`).
+The Lambda execution role must allow `secretsmanager:GetSecretValue` for that secret.

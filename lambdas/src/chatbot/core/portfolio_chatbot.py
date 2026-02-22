@@ -3,14 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import json
 import logging
-import os
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.secrets import resolve_secret_value
 from llm_providers.base import LLMModel
 from llm_providers.groq_model import GroqModel
-from llm_providers.openai_model import OpenAIModel
 from models.prompt import Prompt
 from models.request import ConversationMessage
 from models.response import ChatbotStructuredResponse
@@ -23,7 +22,10 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 def _build_default_models() -> list[LLMModel]:
     models: list[LLMModel] = []
 
-    groq_api_key = os.getenv("GROQ_API_KEY", "").strip()
+    groq_api_key = resolve_secret_value(
+        secret_id="GROQ_API_KEY",
+        json_key="GROQ_API_KEY",
+    )
     if groq_api_key:
         models.extend(
             [
@@ -43,22 +45,8 @@ def _build_default_models() -> list[LLMModel]:
             ]
         )
 
-    openai_api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if openai_api_key:
-        models.append(
-            OpenAIModel(
-                model_name="gpt-4.1-mini",
-                reasoning_effort="medium",
-                temperature=0.5,
-                top_p=1.0,
-                api_key=openai_api_key,
-            )
-        )
-
     if not models:
-        raise RuntimeError(
-            "No LLM providers configured. Set GROQ_API_KEY and/or OPENAI_API_KEY."
-        )
+        raise RuntimeError("No LLM providers configured. Set GROQ_API_KEY.")
 
     return models
 

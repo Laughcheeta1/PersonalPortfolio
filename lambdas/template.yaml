@@ -44,10 +44,6 @@ Resources:
       Handler: app.lambda_handler
       Role: !Ref LambdaExecutionRoleArn
 
-      Environment:
-        Variables:
-          GROQ_API_KEY: !Sub "{{resolve:secretsmanager:GROQ_API_KEY:SecretString:GROQ_API_KEY}}"
-
       Events:
         ChatRoute:
           Type: Api
