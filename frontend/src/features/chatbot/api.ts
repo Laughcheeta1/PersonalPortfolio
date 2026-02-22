@@ -1,7 +1,6 @@
 import type { ConversationMessage } from './models';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? '';
-const CHAT_API_URL = `${API_BASE_URL}/chat`;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.trim().replace(/\/+$/, '');
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -36,7 +35,7 @@ function formatApiError(payload: unknown, status: number): string {
 export async function postChatConversation(
   conversation: ConversationMessage[],
 ): Promise<unknown> {
-  const response = await fetch(CHAT_API_URL, {
+  const response = await fetch(`${API_BASE_URL}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ messages: conversation }),
