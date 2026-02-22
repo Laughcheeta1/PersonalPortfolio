@@ -10,6 +10,13 @@
   margin-top: 0.35rem;
 }
 
+.heading3 {
+  margin: 0.12rem 0 0.22rem;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  font-weight: 900;
+}
+
 .list {
   margin: 0.3rem 0;
   padding-left: 1rem;
