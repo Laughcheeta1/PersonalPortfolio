@@ -13,6 +13,12 @@ type ChatPanelProps = {
   panelStyle?: CSSProperties;
 };
 
+const DEFAULT_CHAT_PROMPTS = [
+  'Hello, please give me a tour around the page',
+  "Hello, please tell me about Santiago's work experience",
+  'Hello, who is Santiago Yepes?',
+] as const;
+
 const ChatPanel = ({
   conversation,
   isSending,
@@ -66,8 +72,13 @@ const ChatPanel = ({
       return;
     }
 
+    const lastMessage = conversation[conversation.length - 1];
+    const userJustSentMessage = lastMessage?.sender === 'user';
     const shouldAutoScroll =
-      !isAwaitingResponse || shouldStickToBottomRef.current || isNearBottom(log);
+      userJustSentMessage ||
+      !isAwaitingResponse ||
+      shouldStickToBottomRef.current ||
+      isNearBottom(log);
     if (!shouldAutoScroll) {
       return;
     }
@@ -86,6 +97,13 @@ const ChatPanel = ({
     await onSendMessage(userText);
   };
 
+  const sendSuggestedMessage = async (message: string) => {
+    if (isSending) {
+      return;
+    }
+    await onSendMessage(message);
+  };
+
   return (
     <aside className={styles.panel} style={panelStyle} aria-label="Portfolio chatbot">
       <div className={styles.topline}>
@@ -93,6 +111,24 @@ const ChatPanel = ({
       </div>
 
       <div ref={logRef} className={styles.log}>
+        {conversation.length === 0 ? (
+          <div className={styles.starterGrid} aria-label="Suggested questions">
+            {DEFAULT_CHAT_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                className={styles.starterCard}
+                onClick={() => {
+                  void sendSuggestedMessage(prompt);
+                }}
+                disabled={isSending}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         {conversation.map((entry, index) => (
           <div
             key={`${entry.sender}-${index}`}

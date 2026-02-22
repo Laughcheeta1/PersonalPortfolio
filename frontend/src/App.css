@@ -108,6 +108,36 @@
   transform: translateX(-50%) translateY(0);
 }
 
+.card-click-hint {
+  position: absolute;
+  right: 1rem;
+  top: 1.05rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+  border: 2px solid rgba(27, 15, 54, 0.38);
+  border-radius: 999px;
+  padding: 0.28rem 0.7rem;
+  background: rgba(255, 255, 255, 0.68);
+  color: #1f1440;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(4px);
+}
+
+.card-click-hint-dismiss {
+  border: 1px solid rgba(27, 15, 54, 0.44);
+  border-radius: 999px;
+  padding: 0.14rem 0.5rem;
+  background: rgba(245, 245, 245, 0.9);
+  color: #2a1057;
+  font-size: 0.66rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .ambient-audio-toggle {
   position: absolute;
   left: 1rem;
@@ -479,6 +509,14 @@
     border-width: 2px;
   }
 
+  .card-click-hint {
+    top: 0.7rem;
+    right: 0.75rem;
+    max-width: calc(100vw - 1rem);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+  }
+
   .ambient-audio-toggle {
     left: 0.75rem;
     bottom: max(0.6rem, env(safe-area-inset-bottom));
@@ -649,6 +687,18 @@
   .asset-credits-toggle {
     min-height: 1.85rem;
     font-size: 0.7rem;
+  }
+
+  .card-click-hint {
+    top: 0.45rem;
+    right: 0.55rem;
+    font-size: 0.64rem;
+    padding: 0.2rem 0.46rem;
+  }
+
+  .card-click-hint-dismiss {
+    font-size: 0.58rem;
+    padding: 0.1rem 0.4rem;
   }
 
   .asset-credits-panel,
