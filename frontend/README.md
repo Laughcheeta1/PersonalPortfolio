@@ -46,6 +46,10 @@ bun install
 npm run dev
 ```
 
+The chatbot client also expects:
+
+- `VITE_API_BASE_URL`
+
 ### Build for production
 
 ```bash

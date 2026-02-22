@@ -4,6 +4,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
+MAX_USER_MESSAGE_CHARS = 500
+
 
 class ConversationMessage(BaseModel):
     sender: Literal["user", "model"] = Field(...)
@@ -22,6 +24,10 @@ class ConversationMessage(BaseModel):
         trimmed_message = message.strip()
         if not trimmed_message:
             raise ValueError("message must not be empty.")
+        if data.get("sender") == "user" and len(trimmed_message) > MAX_USER_MESSAGE_CHARS:
+            raise ValueError(
+                f"user message exceeds max length of {MAX_USER_MESSAGE_CHARS} characters."
+            )
 
         normalized = dict(data)
         normalized["message"] = trimmed_message
