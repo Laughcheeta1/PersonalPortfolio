@@ -33,6 +33,20 @@ Resources:
         AllowMethods: "'POST,OPTIONS'"
         AllowHeaders: "'content-type,authorization'"
 
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'content-type,authorization'"
+              Access-Control-Allow-Methods: "'POST,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'content-type,authorization'"
+              Access-Control-Allow-Methods: "'POST,OPTIONS'"
+
       EndpointConfiguration: REGIONAL
       
 
