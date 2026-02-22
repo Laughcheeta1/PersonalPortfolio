@@ -1,0 +1,114 @@
+{
+  "1": {
+    "id": 1,
+    "slug": "python",
+    "name": "Python",
+    "category": "language",
+    "summary": "主要用于后端开发与智能体/工作流自动化的核心语言。"
+  },
+  "4": {
+    "id": 4,
+    "slug": "typescript",
+    "name": "TypeScript",
+    "category": "language",
+    "summary": "用于类型化 JavaScript 开发（尤其在 NestJS/React 工具链中）。"
+  },
+  "6": {
+    "id": 6,
+    "slug": "sql",
+    "name": "SQL",
+    "category": "language",
+    "summary": "关系型数据库与分析场景的查询语言。"
+  },
+  "15": {
+    "id": 15,
+    "slug": "docker",
+    "name": "Docker",
+    "category": "tool",
+    "summary": "用于可复现构建与部署的容器化技术。"
+  },
+  "17": {
+    "id": 17,
+    "slug": "mongodb",
+    "name": "MongoDB",
+    "category": "database",
+    "summary": "在微服务系统中使用的文档型数据库。"
+  },
+  "26": {
+    "id": 26,
+    "slug": "agent-development",
+    "name": "AI 智能体开发",
+    "category": "ai",
+    "summary": "开发智能体以自动化工作流（消息、协商、CRM、报价、支付）。"
+  },
+  "20": {
+    "id": 20,
+    "slug": "google-cloud",
+    "name": "Google Cloud",
+    "category": "cloud",
+    "summary": "用于托管与可扩展基础设施的云平台。"
+  },
+  "21": {
+    "id": 21,
+    "slug": "aws",
+    "name": "AWS",
+    "category": "cloud",
+    "summary": "云平台实践经验。"
+  },
+  "23": {
+    "id": 23,
+    "slug": "software-architecture",
+    "name": "软件架构",
+    "category": "architecture",
+    "summary": "设计可扩展、可靠、可维护的系统与数据流。"
+  },
+  "24": {
+    "id": 24,
+    "slug": "system-design",
+    "name": "系统设计",
+    "category": "architecture",
+    "summary": "设计系统组件、权衡方案以及可扩展性/可靠性模式。"
+  },
+  "27": {
+    "id": 27,
+    "slug": "leadership",
+    "name": "领导力",
+    "category": "soft-skill",
+    "summary": "带领团队并制定技术方向。"
+  },
+  "29": {
+    "id": 29,
+    "slug": "communication",
+    "name": "沟通",
+    "category": "soft-skill",
+    "summary": "面向技术与非技术对象的清晰书面/口头沟通能力。"
+  },
+  "30": {
+    "id": 30,
+    "slug": "public-speaking",
+    "name": "公众演讲",
+    "category": "soft-skill",
+    "summary": "进行 demo/pitch 展示并在公开场合演讲。"
+  },
+  "31": {
+    "id": 31,
+    "slug": "tutoring",
+    "name": "辅导教学",
+    "category": "soft-skill",
+    "summary": "通过结构化教学支持学生学习。"
+  },
+  "32": {
+    "id": 32,
+    "slug": "product-validation",
+    "name": "产品验证",
+    "category": "startup",
+    "summary": "通过访谈、迭代和市场探索验证产品想法。"
+  },
+  "35": {
+    "id": 35,
+    "slug": "entrepreneurship",
+    "name": "创业",
+    "category": "startup",
+    "summary": "从早期阶段推进创业项目、路演与产品迭代。"
+  }
+}

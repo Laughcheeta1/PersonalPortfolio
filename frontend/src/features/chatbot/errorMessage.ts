@@ -1,42 +1,16 @@
-const FALLBACK_LANGUAGE = 'en';
+import { ChatbotApiError } from './api';
+import { type Locale, translate } from '../i18n/messages';
 
-const ERROR_MESSAGES: Record<string, string> = {
-  en: 'Something went wrong while contacting the chatbot. Please try again.',
-  es: 'Ocurrió un error al contactar al chatbot. Inténtalo de nuevo.',
-  fr: "Une erreur s'est produite lors du contact avec le chatbot. Veuillez réessayer.",
-  pt: 'Ocorreu um erro ao contatar o chatbot. Tente novamente.',
-  zh: '联系聊天机器人时出错。请重试。',
-};
-
-function normalizeLanguageTag(tag: string): string {
-  return tag.trim().toLowerCase();
-}
-
-function resolvePreferredLanguage(): string {
-  if (typeof navigator === 'undefined') {
-    return FALLBACK_LANGUAGE;
-  }
-
-  const languageCandidates = Array.isArray(navigator.languages) && navigator.languages.length > 0
-    ? navigator.languages
-    : [navigator.language];
-
-  for (const candidate of languageCandidates) {
-    if (typeof candidate !== 'string' || candidate.trim().length === 0) {
-      continue;
+export function getChatbotErrorMessageForFailure(error: unknown, locale: Locale): string {
+  if (error instanceof ChatbotApiError) {
+    if (error.errorCode === 'groq_credit_limit_exceeded' || error.status === 402) {
+      return translate(locale, 'chat.error.creditLimit');
     }
 
-    const normalized = normalizeLanguageTag(candidate);
-    const base = normalized.split('-')[0];
-    if (base in ERROR_MESSAGES) {
-      return base;
+    if (error.errorCode === 'api_gateway_rate_limited' || error.status === 429) {
+      return translate(locale, 'chat.error.rateLimit');
     }
   }
 
-  return FALLBACK_LANGUAGE;
-}
-
-export function getLocalizedChatbotErrorMessage(): string {
-  const language = resolvePreferredLanguage();
-  return ERROR_MESSAGES[language] ?? ERROR_MESSAGES[FALLBACK_LANGUAGE];
+  return translate(locale, 'chat.error.generic');
 }

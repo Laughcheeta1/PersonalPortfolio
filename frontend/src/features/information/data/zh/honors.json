@@ -1,0 +1,106 @@
+{
+  "awards": [
+    {
+      "id": "award-sistecredito-hackathon-1st-3rd",
+      "slug": "sistecredito-hackathon-third-version-first-place",
+      "title": "第一名 — Sistecredito 第三届黑客松",
+      "summary": "在 Sistecredito 第三届黑客松中获得第一名。",
+      "details": "我们与 EIA University 团队在 Sistecredito 第三届黑客松中夺冠，构建了面向零售商的智能商品管理方案。\n系统使用 LSTM 预测商品需求，并包含 NestJS + MongoDB 后端（部署在 AWS）和 Next.js 前端（部署在 Vercel）。\n该方案帮助零售商保持最优库存水平，并提出自动化、主动式补货愿景。",
+      "skills": [24, 29, 30],
+      "date": "2024-11-01",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-1st-2nd",
+      "slug": "sistecredito-hackathon-second-version-first-place",
+      "title": "第一名 — Sistecredito 第二届黑客松",
+      "summary": "在 Sistecredito 第二届黑客松中获得第一名。",
+      "details": "我们为 170 万条标注交易设计了欺诈检测系统，并获得第一名。\n方案提出按个人消费习惯定制的多模型架构，考虑到数据不平衡与现实约束，优先采用无监督方法。\n尽管关键数据洞察限制了完整实现，我们仍交付了扎实分析和监督模型用于方案验证。",
+      "skills": [24, 29, 30],
+      "date": "2024-08-01",
+      "links": {}
+    },
+    {
+      "id": "award-isa-intercolombia-hackathon-1st",
+      "slug": "isa-intercolombia-hackathon-first-place",
+      "title": "第一名 — ISA Intercolombia 黑客松",
+      "summary": "在 ISA Intercolombia 黑客松中获得第一名。",
+      "details": "我们将 ISA 电力线路不可预测故障问题重构为物流与优化挑战。\n方案通过数据驱动模型预测故障风险，并优化服务中心选址、路径规划与库存分配。\n虽然受黑客松时间限制，该方案仍展示了预测分析对基础设施维护的变革潜力。",
+      "skills": [24, 29, 30],
+      "date": "2024-05-01",
+      "links": {}
+    }
+  ],
+  "honors": [
+    {
+      "id": "leadership-recognition-eia-university",
+      "slug": "leadership-recognition-eia-university",
+      "title": "领导力表彰 — EIA University",
+      "summary": "因担任系统与计算工程本科项目代表而获表彰。",
+      "details": "",
+      "skills": [],
+      "date": "2026-02-12",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-mentor-judge-4th",
+      "slug": "sistecredito-hackathon-mentor-judge-4th",
+      "title": "导师与评委 — Sistecredito 第四届黑客松",
+      "summary": "被选为 Sistecredito 第四届黑客松导师与评委。",
+      "details": "该黑客松主题是使用 AI 智能体进行债务协商。",
+      "skills": [29, 30, 27],
+      "date": "2025-03",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2024",
+      "slug": "icpc-represented-eia-2024",
+      "title": "ICPC EIA 区域赛代表 — 2024",
+      "summary": "代表 EIA University 参加 ICPC，团队晋级区域赛。",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2024",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2023",
+      "slug": "icpc-represented-eia-2023",
+      "title": "ICPC EIA 校内代表 — 2023",
+      "summary": "代表 EIA University 参加 ICPC。",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2023",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2022",
+      "slug": "icpc-represented-eia-2022",
+      "title": "ICPC EIA 校内代表 — 2022",
+      "summary": "代表 EIA University 参加 ICPC。",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2022",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2023-02",
+      "slug": "eia-deans-list-feb-2023",
+      "title": "院长名单 — 第二学期",
+      "summary": "因大学第二学期学业表现获得表彰。",
+      "details": "",
+      "skills": [29],
+      "date": "2023-02-01",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2022-10",
+      "slug": "eia-deans-list-oct-2022",
+      "title": "院长名单 — 第一学期",
+      "summary": "因大学第一学期学业表现获得表彰。",
+      "details": "",
+      "skills": [29],
+      "date": "2022-10-01",
+      "links": {}
+    }
+  ]
+}

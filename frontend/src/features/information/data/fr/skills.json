@@ -1,0 +1,114 @@
+{
+  "1": {
+    "id": 1,
+    "slug": "python",
+    "name": "Python",
+    "category": "language",
+    "summary": "Langage principal utilisé pour le backend et l'automatisation des agents/workflows."
+  },
+  "4": {
+    "id": 4,
+    "slug": "typescript",
+    "name": "TypeScript",
+    "category": "language",
+    "summary": "Utilisé pour le développement JS typé (notamment avec l'outillage NestJS/React)."
+  },
+  "6": {
+    "id": 6,
+    "slug": "sql",
+    "name": "SQL",
+    "category": "language",
+    "summary": "Langage de requête pour bases de données relationnelles et analytique."
+  },
+  "15": {
+    "id": 15,
+    "slug": "docker",
+    "name": "Docker",
+    "category": "tool",
+    "summary": "Conteneurisation pour des builds et déploiements reproductibles."
+  },
+  "17": {
+    "id": 17,
+    "slug": "mongodb",
+    "name": "MongoDB",
+    "category": "database",
+    "summary": "Base documentaire utilisée dans des systèmes microservices."
+  },
+  "26": {
+    "id": 26,
+    "slug": "agent-development",
+    "name": "Développement d'agents IA",
+    "category": "ai",
+    "summary": "Développement d'agents pour automatiser des workflows (messagerie, négociation, CRM, devis, paiements)."
+  },
+  "20": {
+    "id": 20,
+    "slug": "google-cloud",
+    "name": "Google Cloud",
+    "category": "cloud",
+    "summary": "Plateforme cloud utilisée pour l'hébergement et l'infrastructure scalable."
+  },
+  "21": {
+    "id": 21,
+    "slug": "aws",
+    "name": "AWS",
+    "category": "cloud",
+    "summary": "Expérience avec plateforme cloud."
+  },
+  "23": {
+    "id": 23,
+    "slug": "software-architecture",
+    "name": "Architecture logicielle",
+    "category": "architecture",
+    "summary": "Conception de systèmes et flux de données scalables, fiables et maintenables."
+  },
+  "24": {
+    "id": 24,
+    "slug": "system-design",
+    "name": "Conception de systèmes",
+    "category": "architecture",
+    "summary": "Conception des composants, arbitrages et patterns de scalabilité/fiabilité."
+  },
+  "27": {
+    "id": 27,
+    "slug": "leadership",
+    "name": "Leadership",
+    "category": "soft-skill",
+    "summary": "Pilotage d'équipes et direction technique."
+  },
+  "29": {
+    "id": 29,
+    "slug": "communication",
+    "name": "Communication",
+    "category": "soft-skill",
+    "summary": "Communication écrite/orale claire auprès de publics techniques et non techniques."
+  },
+  "30": {
+    "id": 30,
+    "slug": "public-speaking",
+    "name": "Prise de parole en public",
+    "category": "soft-skill",
+    "summary": "Présentation de démos/pitches et interventions publiques."
+  },
+  "31": {
+    "id": 31,
+    "slug": "tutoring",
+    "name": "Tutorat",
+    "category": "soft-skill",
+    "summary": "Enseignement et accompagnement d'étudiants via un apprentissage structuré."
+  },
+  "32": {
+    "id": 32,
+    "slug": "product-validation",
+    "name": "Validation produit",
+    "category": "startup",
+    "summary": "Validation d'idées produit via entretiens, itération et découverte de marché."
+  },
+  "35": {
+    "id": 35,
+    "slug": "entrepreneurship",
+    "name": "Entrepreneuriat",
+    "category": "startup",
+    "summary": "Construction de ventures, pitches et itération produit dès les premières phases."
+  }
+}

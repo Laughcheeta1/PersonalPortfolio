@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
 import { usePandaMonkChatbot } from '../features/chatbot/hooks/usePandaMonkChatbot';
+import { useI18n } from '../features/i18n/useI18n';
 import type { CategoryId } from '../features/information/models';
 import { useAmbientAudio } from '../features/space/hooks/useAmbientAudio';
 import { useSpaceSceneRuntime } from '../features/space/hooks/useSpaceSceneRuntime';
@@ -14,20 +15,16 @@ const CARD_HINT_DISMISSED_STORAGE_KEY = 'portfolio.cardHintDismissed.v1';
 
 const SpaceShowcase = () => {
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
-  const [isCardHintDismissed, setIsCardHintDismissed] = useState(false);
+  const { locale, setLocale, supportedLocales, t } = useI18n();
+  const [isCardHintDismissed, setIsCardHintDismissed] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.localStorage.getItem(CARD_HINT_DISMISSED_STORAGE_KEY) === '1';
+  });
   const [subcategoryFilterByCategory, setSubcategoryFilterByCategory] = useState<
     Partial<Record<CategoryId, string[]>>
   >({});
-
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    setIsCardHintDismissed(
-      window.localStorage.getItem(CARD_HINT_DISMISSED_STORAGE_KEY) === '1',
-    );
-  }, []);
 
   const dismissCardHint = () => {
     setIsCardHintDismissed(true);
@@ -74,17 +71,30 @@ const SpaceShowcase = () => {
 
   return (
     <section className="space-page">
-      <div ref={containerRef} className="space-canvas" aria-label="Interactive 3D portfolio scene" />
+      <div ref={containerRef} className="space-canvas" aria-label={t('space.canvasAria')} />
+      <label className="language-picker" aria-label={t('language.label')}>
+        <span>{t('language.label')}</span>
+        <select
+          value={locale}
+          onChange={(event) => setLocale(event.target.value as (typeof supportedLocales)[number])}
+        >
+          {supportedLocales.map((localeOption) => (
+            <option key={localeOption} value={localeOption}>
+              {t(`language.${localeOption}`)}
+            </option>
+          ))}
+        </select>
+      </label>
       {loadingState.active ? (
         <div className="loading-overlay" role="status" aria-live="polite">
           <div className="loading-card">
-            <p className="loading-title">Loading 3D Portfolio</p>
+            <p className="loading-title">{t('space.loading.title')}</p>
             <p className="loading-label">{loadingState.label}</p>
             {isMobileViewport ? (
               <p className="loading-mobile-tip">
                 {isPortraitViewport
-                  ? 'For the best experience, rotate your phone to landscape.'
-                  : 'Landscape mode gives the best viewing experience on mobile.'}
+                  ? t('space.loading.mobilePortrait')
+                  : t('space.loading.mobileLandscape')}
               </p>
             ) : null}
             <div className="loading-track" aria-hidden="true">
@@ -101,14 +111,14 @@ const SpaceShowcase = () => {
       <div className={`focus-label ${selectedCategoryLabel ? 'show' : ''}`}>{selectedCategoryLabel}</div>
       {selectedCategory && !selectedInfoItem && !isCardHintDismissed ? (
         <div className="card-click-hint" role="status" aria-live="polite">
-          <span>Tip: click a card to open full details.</span>
+          <span>{t('space.cardHint.tip')}</span>
           <button
             type="button"
             className="card-click-hint-dismiss"
-            aria-label="Hide card click tip permanently"
+            aria-label={t('space.cardHint.hideAria')}
             onClick={dismissCardHint}
           >
-            Hide
+            {t('space.cardHint.hide')}
           </button>
         </div>
       ) : null}
@@ -118,7 +128,7 @@ const SpaceShowcase = () => {
         className="ambient-audio-toggle"
         onClick={() => setIsAudioOn((prev) => !prev)}
       >
-        {isAudioOn ? 'Music: On' : 'Music: Off'}
+        {isAudioOn ? t('space.music.on') : t('space.music.off')}
       </button>
 
       <button
@@ -126,12 +136,14 @@ const SpaceShowcase = () => {
         className="asset-credits-toggle"
         onClick={() => setIsCreditsOpen((prev) => !prev)}
       >
-        {isCreditsOpen ? 'Hide Sources' : 'Show Sources'}
+        {isCreditsOpen ? t('space.sources.hide') : t('space.sources.show')}
       </button>
 
       {selectedCategory ? (
-        <section className="subcategory-filter-panel" aria-label="Selected model subcategory filters">
-          <p className="subcategory-filter-title">{`${selectedCategory.label} Subcategories`}</p>
+        <section className="subcategory-filter-panel" aria-label={t('space.subcategoryPanel.aria')}>
+          <p className="subcategory-filter-title">
+            {t('space.subcategoryPanel.title', { category: selectedCategory.label })}
+          </p>
           <div className="subcategory-filter-grid">
             {selectedCategory.subcategories.map((subcategory) => {
               const checked =

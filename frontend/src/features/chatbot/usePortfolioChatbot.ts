@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 import type { SceneNavigationTarget } from '../information/models';
+import { useI18n } from '../i18n/useI18n';
 import { requestChatbotTurn } from './client';
-import { getLocalizedChatbotErrorMessage } from './errorMessage';
+import { getChatbotErrorMessageForFailure } from './errorMessage';
 import type { ConversationMessage } from './models';
 import { createSpeakingAudioController, type SpeakingAudioController } from './speakingAudio';
 
@@ -13,6 +14,7 @@ type UsePortfolioChatbotParams = {
 
 export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
   const { onNavigateToCategory, onNavigateToMainPage } = params;
+  const { locale } = useI18n();
 
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [isAwaitingChatResponse, setIsAwaitingChatResponse] = useState(false);
@@ -138,7 +140,7 @@ export function usePortfolioChatbot(params: UsePortfolioChatbotParams) {
     } catch (error) {
       setIsAwaitingChatResponse(false);
       stopSpeaking();
-      const uiErrorMessage = getLocalizedChatbotErrorMessage();
+      const uiErrorMessage = getChatbotErrorMessageForFailure(error, locale);
       console.error('[Chatbot] Request failed:', error);
       setChatError(uiErrorMessage);
       setChatConversation((prev) => [

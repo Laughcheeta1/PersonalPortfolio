@@ -1,0 +1,109 @@
+{
+  "companies": [
+    {
+      "id": "work-eia-selected-tutor-programming-fundamentals",
+      "slug": "eia-selected-tutor-programming-fundamentals",
+      "title": "大学遴选导师 — 编程基础",
+      "summary": "为大一新生教授编程基础。",
+      "details": "以讲授形式开展课程，覆盖编程基础核心内容。",
+      "companyName": "EIA University",
+      "startDate": "2024-08",
+      "endDate": "2025-07",
+      "skills": [31, 29, 30],
+      "links": {
+        "externalUrl": "https://eia.edu.co/"
+      }
+    },
+    {
+      "id": "work-telepatia-ai-engineer",
+      "slug": "telepatia-ai-engineer",
+      "title": "AI 工程师 - Telepatia",
+      "summary": "为 Telepatia 的产品构建 AI 解决方案。",
+      "details": "负责开发并维护 Telepatia 产品中的 AI 智能体。",
+      "enhanced": true,
+      "companyName": "Telepatia",
+      "startDate": "2025-08-11",
+      "endDate": "2026-02-09",
+      "skills": [],
+      "links": {
+        "externalUrl": "https://www.telepatia.ai/"
+      }
+    }
+  ],
+  "entrepreneurship": [
+    {
+      "id": "work-elio-for-business",
+      "slug": "elio-for-business",
+      "title": "CTO 与联合创始人",
+      "summary": "主导 AI 驱动销售自动化的工程策略、架构与交付。",
+      "details": "搭建核心系统，包括智能体驱动销售自动化、多层数据库与可扩展云架构；管理 7 人开发团队。",
+      "ventureName": "elio for business",
+      "startDate": "2025-06-01",
+      "endDate": null,
+      "skills": [20, 15, 23, 26, 27, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-nao-aeronautics",
+      "slug": "nao-aeronautics-venture",
+      "title": "NAO Aeronautics（创业项目）",
+      "summary": "面向偏远地区服务的物流创业概念。",
+      "details": "完成商业计划、流程架构与原型；通过大量访谈开展需求探索与迭代。",
+      "ventureName": "NAO Aeronautics",
+      "startDate": "2024-01-01",
+      "endDate": null,
+      "skills": [35, 32, 30, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-vcow",
+      "slug": "vcow-venture",
+      "title": "VCOW（创业项目）",
+      "summary": "面向养牛项目的众筹平台概念（由垂直农业方向转型）。",
+      "details": "通过访谈验证（40+ 养殖户；转型后 10+ 投资者），作为 CREATE-X 课程交付成果构建。",
+      "ventureName": "VCOW",
+      "startDate": "2024-10-01",
+      "endDate": null,
+      "skills": [35, 32, 29, 30],
+      "links": {}
+    }
+  ],
+  "independentWork": [
+    {
+      "id": "work-mc2-university-ambassador",
+      "slug": "mc2-university-ambassador",
+      "title": "大学大使",
+      "summary": "推动 mc2 与 EIA 大学合作并组织创业黑客松。",
+      "details": "建立与 EIA 大学的联系/合作；组织 60+ 人参与的黑客松，邀请评委并落实支持与资金。",
+      "clientOrProductName": "mc2",
+      "startDate": "2025-03-01",
+      "endDate": null,
+      "skills": [29, 30, 35],
+      "links": {}
+    },
+    {
+      "id": "work-eia-private-tutor-data-structures",
+      "slug": "eia-private-tutor-data-structures",
+      "title": "私人导师 — 数据结构",
+      "summary": "提供个性化数据结构辅导。",
+      "details": "根据学生学习偏好定制教学计划，提升理解与成绩表现。",
+      "clientOrProductName": "EIA University（私人辅导）",
+      "startDate": "2024-09-01",
+      "endDate": "2025-07-01",
+      "skills": [31, 29, 24],
+      "links": {}
+    },
+    {
+      "id": "ind-demo-investor-pitches",
+      "slug": "investor-and-demo-pitches",
+      "title": "投资路演与产品演示",
+      "summary": "在多个活动和项目中完成创业路演与 demo 展示。",
+      "details": "包括 Innovate EPM（2024-11，进入倒数第二轮）、Conexión Entrepreneur Summit（2024-10），以及 mc2 Builder’s Program 结业 Demo（2025-05），展示 NAO Aeronautics 进展。",
+      "clientOrProductName": "多个活动与项目",
+      "startDate": "2024-10-01",
+      "endDate": "2025-05-01",
+      "skills": [30, 29, 35],
+      "links": {}
+    }
+  ]
+}

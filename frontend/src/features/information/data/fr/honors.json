@@ -1,0 +1,106 @@
+{
+  "awards": [
+    {
+      "id": "award-sistecredito-hackathon-1st-3rd",
+      "slug": "sistecredito-hackathon-third-version-first-place",
+      "title": "Première place — Troisième Hackathon de Sistecredito",
+      "summary": "Victoire au troisième hackathon de Sistecredito.",
+      "details": "Nous avons remporté la première place au troisième Hackathon de Sistecredito avec l'Université EIA en construisant une solution intelligente de gestion de produits pour commerçants.\nLe système prédit la demande avec des modèles LSTM et inclut un backend NestJS + MongoDB (déployé sur AWS) et un frontend Next.js (sur Vercel).\nIl aide à maintenir des niveaux de stock optimaux et introduit une vision de commandes automatisées et proactives.",
+      "skills": [24, 29, 30],
+      "date": "2024-11-01",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-1st-2nd",
+      "slug": "sistecredito-hackathon-second-version-first-place",
+      "title": "Première place — Deuxième Hackathon de Sistecredito",
+      "summary": "Victoire au deuxième hackathon de Sistecredito.",
+      "details": "Nous avons gagné en concevant un système de détection de fraude pour 1,7M de transactions étiquetées.\nNotre approche proposait une architecture multi-modèles adaptée aux habitudes de dépense individuelles, privilégiant des méthodes non supervisées en raison du déséquilibre des données et des contraintes réelles.\nMalgré des limites sur la mise en oeuvre complète, nous avons livré une analyse solide et un modèle supervisé démonstratif.",
+      "skills": [24, 29, 30],
+      "date": "2024-08-01",
+      "links": {}
+    },
+    {
+      "id": "award-isa-intercolombia-hackathon-1st",
+      "slug": "isa-intercolombia-hackathon-first-place",
+      "title": "Première place — Hackathon ISA Intercolombia",
+      "summary": "Victoire au hackathon d'ISA Intercolombia.",
+      "details": "Nous avons abordé les pannes imprévisibles des lignes électriques d'ISA en requalifiant le problème en défi logistique et d'optimisation.\nNotre concept prédisait les risques de panne et optimisait l'emplacement des centres de service, le routage et l'allocation de stock grâce à des modèles data-driven.\nMalgré les contraintes du hackathon, la solution a montré comment l'analytique prédictive peut transformer la maintenance des infrastructures.",
+      "skills": [24, 29, 30],
+      "date": "2024-05-01",
+      "links": {}
+    }
+  ],
+  "honors": [
+    {
+      "id": "leadership-recognition-eia-university",
+      "slug": "leadership-recognition-eia-university",
+      "title": "Reconnaissance de leadership — Université EIA",
+      "summary": "Reconnu pour représenter le programme de premier cycle en ingénierie systèmes et informatique.",
+      "details": "",
+      "skills": [],
+      "date": "2026-02-12",
+      "links": {}
+    },
+    {
+      "id": "award-sistecredito-hackathon-mentor-judge-4th",
+      "slug": "sistecredito-hackathon-mentor-judge-4th",
+      "title": "Mentor et jury — Quatrième Hackathon de Sistecredito",
+      "summary": "Sélectionné comme mentor et jury pour le quatrième hackathon de Sistecredito.",
+      "details": "Le hackathon portait sur des agents IA utilisés comme négociateurs de dette.",
+      "skills": [29, 30, 27],
+      "date": "2025-03",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2024",
+      "slug": "icpc-represented-eia-2024",
+      "title": "Représentant régional ICPC EIA — 2024",
+      "summary": "Représentation de l'Université EIA à l'ICPC, qualification de l'équipe au tour régional.",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2024",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2023",
+      "slug": "icpc-represented-eia-2023",
+      "title": "Représentant local ICPC EIA — 2023",
+      "summary": "Représentation de l'Université EIA à l'ICPC.",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2023",
+      "links": {}
+    },
+    {
+      "id": "honor-icpc-represented-eia-2022",
+      "slug": "icpc-represented-eia-2022",
+      "title": "Représentant local ICPC EIA — 2022",
+      "summary": "Représentation de l'Université EIA à l'ICPC.",
+      "details": "",
+      "skills": [24, 29],
+      "date": "2022",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2023-02",
+      "slug": "eia-deans-list-feb-2023",
+      "title": "Liste du doyen — Deuxième semestre",
+      "summary": "Reconnu pour les performances académiques au deuxième semestre d'université.",
+      "details": "",
+      "skills": [29],
+      "date": "2023-02-01",
+      "links": {}
+    },
+    {
+      "id": "honor-eia-deans-list-2022-10",
+      "slug": "eia-deans-list-oct-2022",
+      "title": "Liste du doyen — Premier semestre",
+      "summary": "Reconnu pour les performances académiques au premier semestre d'université.",
+      "details": "",
+      "skills": [29],
+      "date": "2022-10-01",
+      "links": {}
+    }
+  ]
+}

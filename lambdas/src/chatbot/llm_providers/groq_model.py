@@ -8,10 +8,37 @@ from typing import Literal
 from groq import Groq
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
+from core.errors import ChatbotHttpError
 from llm_providers.base import LLMModel, TStructured
 from models.prompt import Prompt
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _extract_status_code(error: Exception) -> int | None:
+    status_code = getattr(error, "status_code", None)
+    if isinstance(status_code, int):
+        return status_code
+
+    response = getattr(error, "response", None)
+    response_status_code = getattr(response, "status_code", None)
+    if isinstance(response_status_code, int):
+        return response_status_code
+
+    return None
+
+
+def _is_credit_limit_error(error: Exception) -> bool:
+    message = str(error).lower()
+    indicators = (
+        "credit limit",
+        "insufficient credits",
+        "billing",
+        "spend limit",
+        "payment required",
+        "quota exceeded",
+    )
+    return any(indicator in message for indicator in indicators)
 
 
 class GroqModel(LLMModel):
@@ -74,7 +101,7 @@ class GroqModel(LLMModel):
 
         if not structured_output:
             LOGGER.debug("Sending plain completion request.")
-            completion = self._client.chat.completions.create(**request_kwargs)
+            completion = self._create_completion(request_kwargs)
             content = completion.choices[0].message.content
             if content is None:
                 raise ValueError("Groq response content is empty.")
@@ -96,7 +123,7 @@ class GroqModel(LLMModel):
             },
         }
 
-        completion = self._client.chat.completions.create(**request_kwargs)
+        completion = self._create_completion(request_kwargs)
         content = completion.choices[0].message.content
         if content is None:
             raise ValueError("Groq structured response content is empty.")
@@ -105,3 +132,26 @@ class GroqModel(LLMModel):
         payload = json.loads(content)
         LOGGER.debug("Structured payload parsed.")
         return structured_output.model_validate(payload)
+
+    def _create_completion(self, request_kwargs: dict[str, object]):
+        try:
+            return self._client.chat.completions.create(**request_kwargs)
+        except Exception as exc:
+            if _is_credit_limit_error(exc):
+                raise ChatbotHttpError(
+                    status_code=402,
+                    error_code="groq_credit_limit_exceeded",
+                    message="Groq API credit limit exceeded.",
+                    detail=str(exc),
+                ) from exc
+
+            status_code = _extract_status_code(exc)
+            if status_code == 402:
+                raise ChatbotHttpError(
+                    status_code=402,
+                    error_code="groq_credit_limit_exceeded",
+                    message="Groq API credit limit exceeded.",
+                    detail=str(exc),
+                ) from exc
+
+            raise

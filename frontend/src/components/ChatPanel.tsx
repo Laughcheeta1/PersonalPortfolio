@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
+import { useI18n } from '../features/i18n/useI18n';
 import type { ConversationMessage } from '../features/chatbot/models';
 import SafeBotMarkdown from './SafeBotMarkdown';
 import styles from './ChatPanel.module.css';
@@ -13,12 +14,6 @@ type ChatPanelProps = {
   panelStyle?: CSSProperties;
 };
 
-const DEFAULT_CHAT_PROMPTS = [
-  'Hello, please give me a tour around the page',
-  "Hello, please tell me about Santiago's work experience",
-  'Hello, who is Santiago Yepes?',
-] as const;
-
 const ChatPanel = ({
   conversation,
   isSending,
@@ -27,9 +22,15 @@ const ChatPanel = ({
   onSendMessage,
   panelStyle,
 }: ChatPanelProps) => {
+  const { t } = useI18n();
   const [chatInput, setChatInput] = useState('');
   const logRef = useRef<HTMLDivElement | null>(null);
   const shouldStickToBottomRef = useRef(true);
+  const suggestedPrompts = [
+    t('chat.prompt.tour'),
+    t('chat.prompt.work'),
+    t('chat.prompt.profile'),
+  ];
 
   const sanitizeUserText = (rawValue: string): string => {
     const filtered = Array.from(rawValue)
@@ -105,15 +106,15 @@ const ChatPanel = ({
   };
 
   return (
-    <aside className={styles.panel} style={panelStyle} aria-label="Portfolio chatbot">
+    <aside className={styles.panel} style={panelStyle} aria-label={t('chat.aria')}>
       <div className={styles.topline}>
-        <span>Panda Monk</span>
+        <span>{t('chat.title')}</span>
       </div>
 
       <div ref={logRef} className={styles.log}>
         {conversation.length === 0 ? (
-          <div className={styles.starterGrid} aria-label="Suggested questions">
-            {DEFAULT_CHAT_PROMPTS.map((prompt) => (
+          <div className={styles.starterGrid} aria-label={t('chat.suggested.aria')}>
+            {suggestedPrompts.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
@@ -139,7 +140,9 @@ const ChatPanel = ({
                 entry.sender === 'user' ? styles.bubbleUser : styles.bubbleModel
               }`}
             >
-              <span className={styles.senderLabel}>{entry.sender === 'user' ? 'You' : 'Panda Monk'}</span>
+              <span className={styles.senderLabel}>
+                {entry.sender === 'user' ? t('chat.sender.you') : t('chat.sender.bot')}
+              </span>
               {entry.sender === 'model' ? (
                 <SafeBotMarkdown text={entry.message} />
               ) : (
@@ -151,8 +154,8 @@ const ChatPanel = ({
         {isAwaitingResponse ? (
           <div className={`${styles.lineRow} ${styles.lineModel}`}>
             <div className={`${styles.bubble} ${styles.bubbleModel} ${styles.thinkingBubble}`} aria-live="polite">
-              <span className={styles.senderLabel}>Panda Monk</span>
-              <span className={styles.thinkingDots} aria-label="Panda Monk is thinking">
+              <span className={styles.senderLabel}>{t('chat.sender.bot')}</span>
+              <span className={styles.thinkingDots} aria-label={t('chat.thinking.aria')}>
                 <span />
                 <span />
                 <span />
@@ -169,11 +172,11 @@ const ChatPanel = ({
           type="text"
           value={chatInput}
           onChange={(event) => setChatInput(event.target.value)}
-          placeholder="Ask a question..."
+          placeholder={t('chat.input.placeholder')}
           disabled={isSending}
         />
         <button type="submit" disabled={isSending || !chatInput.trim()}>
-          Send
+          {t('chat.send')}
         </button>
       </form>
     </aside>
