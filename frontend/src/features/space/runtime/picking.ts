@@ -62,13 +62,15 @@ export function pickSceneObject(params: PickSceneObjectParams): ScenePickResult 
   }
 
   // Intersections are already sorted nearest-first by Three.js.
-  // We still enforce card priority when both card/model are hit at same cursor.
+  // Enforce hard card-priority across all hits first, then fallback to model.
   for (const hit of intersections) {
     const cardSelection = getCardSelectionByObject(hit.object);
     if (cardSelection) {
       return { type: 'card', selection: cardSelection };
     }
+  }
 
+  for (const hit of intersections) {
     const modelIndex = getModelIndexByObject(hit.object);
     if (modelIndex !== null) {
       return { type: 'model', modelIndex };

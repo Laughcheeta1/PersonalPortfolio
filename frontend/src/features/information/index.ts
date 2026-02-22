@@ -43,6 +43,7 @@ function toSceneItems(
     title: string;
     summary: string;
     details: string;
+    enhanced?: boolean;
     skills: number[];
     links?: { repoUrl?: string; liveUrl?: string; externalUrl?: string };
   }>,
@@ -53,6 +54,7 @@ function toSceneItems(
     title: item.title,
     summary: item.summary,
     details: item.details,
+    enhanced: item.enhanced,
     skills: item.skills,
     links: item.links,
   }));

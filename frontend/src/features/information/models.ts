@@ -31,6 +31,7 @@ export interface BaseInformationEntry {
   title: string;
   summary: string;
   details: string;
+  enhanced?: boolean;
   skills: SkillId[];
   links?: LinkSet;
 }
@@ -154,6 +155,7 @@ export interface InformationSceneItem {
   title: string;
   summary: string;
   details: string;
+  enhanced?: boolean;
   skills: SkillId[];
   links?: LinkSet;
 }

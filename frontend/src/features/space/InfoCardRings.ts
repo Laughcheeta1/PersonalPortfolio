@@ -4,6 +4,7 @@ import type {
   InformationSceneItem,
   InformationItemSelection,
   InformationSceneCategory,
+  InformationSceneSubcategory,
 } from '../information/models';
 import { CARD_DESIGN_COUNT, InfoCard3D } from './InfoCard3D';
 import { InfoCardRingRow } from './InfoCardRingRow';
@@ -93,7 +94,8 @@ export class InfoCardRings {
       rowRadius: number;
     }> = [];
 
-    category.subcategories.forEach((subcategory) => {
+    const orderedSubcategories = this.orderSubcategoriesForDisplay(category);
+    orderedSubcategories.forEach((subcategory) => {
       if (subcategoryFilterIds && !subcategoryFilterIds.has(subcategory.id)) {
         return;
       }
@@ -259,6 +261,25 @@ export class InfoCardRings {
     const horizontalFovRad = 2 * Math.atan(Math.tan(verticalFovRad * 0.5) * camera.aspect);
     const usable = horizontalFovRad * VISIBLE_ARC_FRACTION;
     return THREE.MathUtils.clamp(usable, MIN_VISIBLE_ARC_SPAN, MAX_SEMICIRCLE_SPAN);
+  }
+
+  private orderSubcategoriesForDisplay(
+    category: InformationSceneCategory,
+  ): InformationSceneSubcategory[] {
+    if (category.id !== 'work') {
+      return category.subcategories;
+    }
+
+    const source = [...category.subcategories];
+    const companiesIndex = source.findIndex((subcategory) => subcategory.id === 'companies');
+    if (companiesIndex < 0) {
+      return category.subcategories;
+    }
+
+    const [companiesSubcategory] = source.splice(companiesIndex, 1);
+    const middleIndex = Math.floor(source.length / 2);
+    source.splice(middleIndex, 0, companiesSubcategory);
+    return source;
   }
 
   getSelectionByObject(object: THREE.Object3D): InformationItemSelection | null {
