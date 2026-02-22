@@ -6,6 +6,9 @@ Parameters:
   LambdaExecutionRoleArn:
     Type: String
     NoEcho: true
+  AllowedCorsOrigin:
+    Type: String
+    Description: Allowed CORS origin for chatbot requests (for example, https://username.github.io).
 
 Globals:
   Function:
@@ -29,7 +32,7 @@ Resources:
           ThrottlingBurstLimit: 5
 
       Cors:
-        AllowOrigin: "'*'"
+        AllowOrigin: !Sub "'${AllowedCorsOrigin}'"
         AllowMethods: "'POST,OPTIONS'"
         AllowHeaders: "'content-type,authorization'"
 
@@ -37,20 +40,20 @@ Resources:
         DEFAULT_4XX:
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Origin: !Sub "'${AllowedCorsOrigin}'"
               Access-Control-Allow-Headers: "'content-type,authorization'"
               Access-Control-Allow-Methods: "'POST,OPTIONS'"
         DEFAULT_5XX:
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Origin: !Sub "'${AllowedCorsOrigin}'"
               Access-Control-Allow-Headers: "'content-type,authorization'"
               Access-Control-Allow-Methods: "'POST,OPTIONS'"
         THROTTLED:
           StatusCode: 429
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Origin: !Sub "'${AllowedCorsOrigin}'"
               Access-Control-Allow-Headers: "'content-type,authorization'"
               Access-Control-Allow-Methods: "'POST,OPTIONS'"
           ResponseTemplates:
@@ -59,7 +62,7 @@ Resources:
           StatusCode: 429
           ResponseParameters:
             Headers:
-              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Origin: !Sub "'${AllowedCorsOrigin}'"
               Access-Control-Allow-Headers: "'content-type,authorization'"
               Access-Control-Allow-Methods: "'POST,OPTIONS'"
           ResponseTemplates:
@@ -75,6 +78,9 @@ Resources:
       CodeUri: src/chatbot
       Handler: app.lambda_handler
       Role: !Ref LambdaExecutionRoleArn
+      Environment:
+        Variables:
+          ALLOWED_ORIGINS: !Ref AllowedCorsOrigin
 
       Events:
         ChatRoute:

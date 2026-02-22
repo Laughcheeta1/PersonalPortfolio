@@ -18,6 +18,7 @@ from prompts.basic import SYSTEM_PROMPT, USER_PROMPT
 
 LOGGER = logging.getLogger(__name__)
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+CONTEXT_MESSAGES_WINDOW = 5
 
 
 def _build_default_models() -> list[LLMModel]:
@@ -70,7 +71,12 @@ class PortfolioChatbot(BaseModel):
 
     def execute(self, messages: list[ConversationMessage] | None = None) -> dict[str, object]:
         payload_messages = [message.model_dump() for message in (messages or [])]
-        LOGGER.debug("PortfolioChatbot.execute called with %s messages.", len(payload_messages))
+        prompt_messages = payload_messages[-CONTEXT_MESSAGES_WINDOW:]
+        LOGGER.debug(
+            "PortfolioChatbot.execute called with %s messages; using last %s for prompt context.",
+            len(payload_messages),
+            len(prompt_messages),
+        )
         self.prompt.format_system_prompt(
             education=self._load_data_section("education.json"),
             honors=self._load_data_section("honors.json"),
@@ -80,7 +86,7 @@ class PortfolioChatbot(BaseModel):
             work=self._load_data_section("work.json"),
             date=datetime.now(timezone.utc).date().isoformat(),
         )
-        self.prompt.format_user_prompt(messages=json.dumps(payload_messages, ensure_ascii=False))
+        self.prompt.format_user_prompt(messages=json.dumps(prompt_messages, ensure_ascii=False))
         LOGGER.debug(
             "Prompt prepared. system_len=%s user_len=%s",
             len(self.prompt.system_prompt),

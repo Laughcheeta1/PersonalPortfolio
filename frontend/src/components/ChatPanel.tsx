@@ -14,6 +14,8 @@ type ChatPanelProps = {
   panelStyle?: CSSProperties;
 };
 
+const MAX_CHAT_INPUT_CHARS = 500;
+
 const ChatPanel = ({
   conversation,
   isSending,
@@ -90,7 +92,7 @@ const ChatPanel = ({
   const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const userText = sanitizeUserText(chatInput);
-    if (!userText || isSending) {
+    if (!userText || userText.length > MAX_CHAT_INPUT_CHARS || isSending) {
       return;
     }
 
@@ -171,7 +173,8 @@ const ChatPanel = ({
         <input
           type="text"
           value={chatInput}
-          onChange={(event) => setChatInput(event.target.value)}
+          maxLength={MAX_CHAT_INPUT_CHARS}
+          onChange={(event) => setChatInput(event.target.value.slice(0, MAX_CHAT_INPUT_CHARS))}
           placeholder={t('chat.input.placeholder')}
           disabled={isSending}
         />
