@@ -39,6 +39,34 @@
   pointer-events: auto;
 }
 
+.starterGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.42rem;
+}
+
+.starterCard {
+  text-align: left;
+  border: 2px solid #1b0f36;
+  border-radius: 0.78rem;
+  padding: 0.52rem 0.58rem;
+  background: linear-gradient(145deg, #fff2c4, #ffdca0);
+  color: #24104a;
+  font-size: 0.79rem;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.starterCard:hover:not(:disabled) {
+  background: linear-gradient(145deg, #ffe79b, #ffc978);
+}
+
+.starterCard:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .lineRow {
   display: flex;
   margin-top: 0.38rem;

@@ -132,6 +132,15 @@ export default function SafeBotMarkdown({ text }: SafeBotMarkdownProps) {
       return;
     }
 
+    if (/^###\s+/.test(trimmed)) {
+      elements.push(
+        <h3 key={`h3-${index}`} className={styles.heading3}>
+          {parseInlineMarkdown(trimmed.replace(/^###\s+/, ''), `line-${index}`)}
+        </h3>,
+      );
+      return;
+    }
+
     elements.push(
       <p key={`p-${index}`} className={styles.paragraph}>
         {parseInlineMarkdown(line, `line-${index}`)}

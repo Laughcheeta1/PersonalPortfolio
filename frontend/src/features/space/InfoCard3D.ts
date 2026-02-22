@@ -36,6 +36,17 @@ type CardDesign = {
   panelRadius: number;
 };
 
+type EnhancedCardStyle = {
+  sideColor: string;
+  backColor: string;
+  panelFrom: string;
+  panelTo: string;
+  borderColor: string;
+  titleColor: string;
+  stripeColorA: string;
+  stripeColorB: string;
+};
+
 const CARD_DESIGNS: CardDesign[] = [
   {
     id: 'comic-pop-2',
@@ -73,6 +84,17 @@ const CARD_DESIGNS: CardDesign[] = [
   },
 ];
 
+const ENHANCED_CARD_STYLE: EnhancedCardStyle = {
+  sideColor: '#0f2d34',
+  backColor: '#092127',
+  panelFrom: '#7bf0ff',
+  panelTo: '#2fd5e6',
+  borderColor: '#012c34',
+  titleColor: '#032229',
+  stripeColorA: '#ffffffd1',
+  stripeColorB: '#00e8ff36',
+};
+
 export const CARD_DESIGN_OPTIONS = CARD_DESIGNS.map((design, index) => ({
   index,
   id: design.id,
@@ -100,8 +122,9 @@ export class InfoCard3D {
 
     const geometry = new THREE.BoxGeometry(2.2, 1.08, 0.5);
     const design = CARD_DESIGNS[this.designIndex];
+    const isEnhanced = params.item.enhanced === true;
 
-    const texture = this.createCardTexture(params.item.title, design);
+    const texture = this.createCardTexture(params.item.title, design, isEnhanced);
 
     const frontMaterial = new THREE.MeshStandardMaterial({
       map: texture,
@@ -111,13 +134,16 @@ export class InfoCard3D {
       metalness: 0.08,
     });
 
+    const sideColor = isEnhanced ? ENHANCED_CARD_STYLE.sideColor : design.sideColor;
+    const backColor = isEnhanced ? ENHANCED_CARD_STYLE.backColor : design.backColor;
+
     const sideMaterial = new THREE.MeshStandardMaterial({
-      color: design.sideColor,
+      color: sideColor,
       roughness: 0.55,
       metalness: 0.15,
     });
     const backMaterial = new THREE.MeshStandardMaterial({
-      color: design.backColor,
+      color: backColor,
       roughness: 0.6,
       metalness: 0.05,
     });
@@ -178,7 +204,11 @@ export class InfoCard3D {
     material.dispose();
   }
 
-  private createCardTexture(title: string, design: CardDesign): THREE.CanvasTexture {
+  private createCardTexture(
+    title: string,
+    design: CardDesign,
+    isEnhanced: boolean,
+  ): THREE.CanvasTexture {
     const canvas = document.createElement('canvas');
     canvas.width = 1024;
     canvas.height = 512;
@@ -191,12 +221,14 @@ export class InfoCard3D {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     const panelGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    panelGradient.addColorStop(0, design.panelFrom);
-    panelGradient.addColorStop(1, design.panelTo);
+    const panelFrom = isEnhanced ? ENHANCED_CARD_STYLE.panelFrom : design.panelFrom;
+    const panelTo = isEnhanced ? ENHANCED_CARD_STYLE.panelTo : design.panelTo;
+    panelGradient.addColorStop(0, panelFrom);
+    panelGradient.addColorStop(1, panelTo);
 
     ctx.fillStyle = panelGradient;
-    ctx.strokeStyle = design.borderColor;
-    ctx.lineWidth = 6;
+    ctx.strokeStyle = isEnhanced ? ENHANCED_CARD_STYLE.borderColor : design.borderColor;
+    ctx.lineWidth = isEnhanced ? 10 : 6;
 
     const padding = design.panelPadding;
     const radius = design.panelRadius;
@@ -207,9 +239,9 @@ export class InfoCard3D {
     ctx.fill();
     ctx.stroke();
 
-    this.decorateDesign(ctx, design.id, canvas.width, canvas.height, padding);
+    this.decorateDesign(ctx, design.id, canvas.width, canvas.height, padding, isEnhanced);
 
-    ctx.fillStyle = design.titleColor;
+    ctx.fillStyle = isEnhanced ? ENHANCED_CARD_STYLE.titleColor : design.titleColor;
     ctx.font = design.titleFont;
     this.drawCenteredWrappedText(ctx, title, {
       centerX: canvas.width * 0.5,
@@ -232,19 +264,37 @@ export class InfoCard3D {
     width: number,
     height: number,
     padding: number,
+    isEnhanced: boolean,
   ): void {
     ctx.save();
-    ctx.strokeStyle = '#141414';
-    ctx.lineWidth = 6;
+    ctx.strokeStyle = isEnhanced ? ENHANCED_CARD_STYLE.borderColor : '#141414';
+    ctx.lineWidth = isEnhanced ? 8 : 6;
     ctx.strokeRect(padding + 12, padding + 12, width - (padding + 12) * 2, height - (padding + 12) * 2);
 
-    if (designId === 'comic-pop-2') {
+    if (designId === 'comic-pop-2' && !isEnhanced) {
       ctx.fillStyle = '#ffffffdd';
       ctx.strokeStyle = '#1a1a1a';
       ctx.lineWidth = 4;
       this.drawRoundedRect(ctx, 88, 68, 260, 76, 28);
       ctx.fill();
       ctx.stroke();
+    }
+
+    if (isEnhanced) {
+      const stripeHeight = 58;
+      const stripeGradient = ctx.createLinearGradient(0, padding + 24, 0, padding + 24 + stripeHeight);
+      stripeGradient.addColorStop(0, ENHANCED_CARD_STYLE.stripeColorA);
+      stripeGradient.addColorStop(1, ENHANCED_CARD_STYLE.stripeColorB);
+      ctx.fillStyle = stripeGradient;
+      this.drawRoundedRect(
+        ctx,
+        padding + 18,
+        padding + 20,
+        width - (padding + 18) * 2,
+        stripeHeight,
+        18,
+      );
+      ctx.fill();
     }
 
     ctx.restore();

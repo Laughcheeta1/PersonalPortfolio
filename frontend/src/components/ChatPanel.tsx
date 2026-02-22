@@ -13,6 +13,12 @@ type ChatPanelProps = {
   panelStyle?: CSSProperties;
 };
 
+const DEFAULT_CHAT_PROMPTS = [
+  'Hello, please give me a tour around the page',
+  "Hello, please tell me about Santiago's work experience",
+  'Hello, who is Santiago Yepes?',
+] as const;
+
 const ChatPanel = ({
   conversation,
   isSending,
@@ -23,6 +29,7 @@ const ChatPanel = ({
 }: ChatPanelProps) => {
   const [chatInput, setChatInput] = useState('');
   const logRef = useRef<HTMLDivElement | null>(null);
+  const shouldStickToBottomRef = useRef(true);
 
   const sanitizeUserText = (rawValue: string): string => {
     const filtered = Array.from(rawValue)
@@ -34,14 +41,50 @@ const ChatPanel = ({
     return filtered.trim();
   };
 
+  const isNearBottom = (container: HTMLDivElement): boolean =>
+    container.scrollHeight - container.scrollTop - container.clientHeight <= 24;
+
   useEffect(() => {
     const log = logRef.current;
     if (!log) {
       return;
     }
 
+    const handleScroll = () => {
+      const nearBottom = isNearBottom(log);
+      if (isAwaitingResponse) {
+        shouldStickToBottomRef.current = nearBottom;
+        return;
+      }
+      shouldStickToBottomRef.current = true;
+    };
+
+    log.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      log.removeEventListener('scroll', handleScroll);
+    };
+  }, [isAwaitingResponse]);
+
+  useEffect(() => {
+    const log = logRef.current;
+    if (!log) {
+      return;
+    }
+
+    const lastMessage = conversation[conversation.length - 1];
+    const userJustSentMessage = lastMessage?.sender === 'user';
+    const shouldAutoScroll =
+      userJustSentMessage ||
+      !isAwaitingResponse ||
+      shouldStickToBottomRef.current ||
+      isNearBottom(log);
+    if (!shouldAutoScroll) {
+      return;
+    }
+
     log.scrollTop = log.scrollHeight;
-  }, [conversation]);
+  }, [conversation, isAwaitingResponse]);
 
   const submitChatMessage = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,14 +97,38 @@ const ChatPanel = ({
     await onSendMessage(userText);
   };
 
+  const sendSuggestedMessage = async (message: string) => {
+    if (isSending) {
+      return;
+    }
+    await onSendMessage(message);
+  };
+
   return (
     <aside className={styles.panel} style={panelStyle} aria-label="Portfolio chatbot">
       <div className={styles.topline}>
         <span>Panda Monk</span>
-        {isSending ? <span>Thinking...</span> : <span>Ready</span>}
       </div>
 
       <div ref={logRef} className={styles.log}>
+        {conversation.length === 0 ? (
+          <div className={styles.starterGrid} aria-label="Suggested questions">
+            {DEFAULT_CHAT_PROMPTS.map((prompt) => (
+              <button
+                key={prompt}
+                type="button"
+                className={styles.starterCard}
+                onClick={() => {
+                  void sendSuggestedMessage(prompt);
+                }}
+                disabled={isSending}
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         {conversation.map((entry, index) => (
           <div
             key={`${entry.sender}-${index}`}

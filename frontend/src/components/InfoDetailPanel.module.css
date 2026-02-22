@@ -12,10 +12,16 @@
   box-shadow: 0 0.6rem 2.2rem rgba(21, 8, 42, 0.45);
 }
 
+.panelEnhanced {
+  border-color: #2b1a00;
+  background: linear-gradient(140deg, #ffe696 0%, #ffbc4d 45%, #ff8e43 100%);
+}
+
 .topline {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 0.8rem;
   color: #2a1057;
   font-size: 0.84rem;
@@ -23,6 +29,10 @@
   font-weight: 800;
   letter-spacing: 0.03em;
   padding-top: 0.2rem;
+}
+
+.topline button {
+  margin-left: auto;
 }
 
 .topline button {

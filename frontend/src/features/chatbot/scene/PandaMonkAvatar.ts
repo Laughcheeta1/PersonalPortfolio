@@ -18,6 +18,9 @@ type PandaMonkTextureUrls = {
 export type PandaMonkAvatarState = 'idle' | 'thinking' | 'speaking';
 
 export class PandaMonkAvatar {
+  private static readonly DEFAULT_BOB_AMPLITUDE = 0.09;
+  private static readonly FOCUSED_BOB_AMPLITUDE = PandaMonkAvatar.DEFAULT_BOB_AMPLITUDE * 0.5;
+
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.PerspectiveCamera;
   private readonly container: HTMLDivElement;
@@ -142,7 +145,10 @@ export class PandaMonkAvatar {
     this.currentPosition.lerp(this.targetPosition, followStrength);
     sprite.scale.lerp(this.targetScale, followStrength);
 
-    const bobOffset = Math.sin(elapsedTime * 2.8) * 0.09;
+    const bobAmplitude = focusPosition
+      ? PandaMonkAvatar.FOCUSED_BOB_AMPLITUDE
+      : PandaMonkAvatar.DEFAULT_BOB_AMPLITUDE;
+    const bobOffset = Math.sin(elapsedTime * 2.8) * bobAmplitude;
     sprite.position.set(this.currentPosition.x, this.currentPosition.y + bobOffset, this.currentPosition.z);
     sprite.quaternion.copy(this.camera.quaternion);
 

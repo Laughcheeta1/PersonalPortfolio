@@ -30,8 +30,10 @@ const InfoDetailPanel = ({ selectedInfoItem, onClose }: InfoDetailPanelProps) =>
     return null;
   }
 
+  const isEnhanced = selectedInfoItem.item.enhanced === true;
+
   return (
-    <aside className={styles.panel}>
+    <aside className={`${styles.panel} ${isEnhanced ? styles.panelEnhanced : ''}`}>
       <div className={styles.topline}>
         <span>
           {selectedInfoItem.categoryId} / {selectedInfoItem.subcategoryId}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import assetCreditsJson from '../features/information/data/assetCredits.json';
 import { usePandaMonkChatbot } from '../features/chatbot/hooks/usePandaMonkChatbot';
@@ -10,11 +10,31 @@ import AssetCreditsPanel, { type AssetCreditsConfig } from './AssetCreditsPanel'
 import ChatPanel from './ChatPanel';
 import InfoDetailPanel from './InfoDetailPanel';
 
+const CARD_HINT_DISMISSED_STORAGE_KEY = 'portfolio.cardHintDismissed.v1';
+
 const SpaceShowcase = () => {
   const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+  const [isCardHintDismissed, setIsCardHintDismissed] = useState(false);
   const [subcategoryFilterByCategory, setSubcategoryFilterByCategory] = useState<
     Partial<Record<CategoryId, string[]>>
   >({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    setIsCardHintDismissed(
+      window.localStorage.getItem(CARD_HINT_DISMISSED_STORAGE_KEY) === '1',
+    );
+  }, []);
+
+  const dismissCardHint = () => {
+    setIsCardHintDismissed(true);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(CARD_HINT_DISMISSED_STORAGE_KEY, '1');
+    }
+  };
 
   const { isMobileViewport, isPortraitViewport } = useViewportHints();
   const { isAudioOn, setIsAudioOn } = useAmbientAudio();
@@ -79,6 +99,19 @@ const SpaceShowcase = () => {
       ) : null}
 
       <div className={`focus-label ${selectedCategoryLabel ? 'show' : ''}`}>{selectedCategoryLabel}</div>
+      {selectedCategory && !selectedInfoItem && !isCardHintDismissed ? (
+        <div className="card-click-hint" role="status" aria-live="polite">
+          <span>Tip: click a card to open full details.</span>
+          <button
+            type="button"
+            className="card-click-hint-dismiss"
+            aria-label="Hide card click tip permanently"
+            onClick={dismissCardHint}
+          >
+            Hide
+          </button>
+        </div>
+      ) : null}
 
       <button
         type="button"
