@@ -1,0 +1,109 @@
+{
+  "companies": [
+    {
+      "id": "work-eia-selected-tutor-programming-fundamentals",
+      "slug": "eia-selected-tutor-programming-fundamentals",
+      "title": "Tuteur sélectionné par l'université — Fondamentaux de la programmation",
+      "summary": "J'ai enseigné les fondamentaux de la programmation à des étudiants de premier semestre.",
+      "details": "J'ai animé des sessions magistrales couvrant les fondamentaux de la programmation.",
+      "companyName": "EIA University",
+      "startDate": "2024-08",
+      "endDate": "2025-07",
+      "skills": [31, 29, 30],
+      "links": {
+        "externalUrl": "https://eia.edu.co/"
+      }
+    },
+    {
+      "id": "work-telepatia-ai-engineer",
+      "slug": "telepatia-ai-engineer",
+      "title": "Ingénieur IA - Telepatia",
+      "summary": "J'ai conçu des solutions IA pour les produits de Telepatia.",
+      "details": "J'ai développé et maintenu des agents IA pour les produits de Telepatia.",
+      "enhanced": true,
+      "companyName": "Telepatia",
+      "startDate": "2025-08-11",
+      "endDate": "2026-02-09",
+      "skills": [],
+      "links": {
+        "externalUrl": "https://www.telepatia.ai/"
+      }
+    }
+  ],
+  "entrepreneurship": [
+    {
+      "id": "work-elio-for-business",
+      "slug": "elio-for-business",
+      "title": "CTO et cofondateur",
+      "summary": "J'ai dirigé la stratégie d'ingénierie, l'architecture et la livraison pour l'automatisation commerciale par IA.",
+      "details": "J'ai construit les systèmes clés, incluant l'automatisation commerciale pilotée par agents, plusieurs couches de bases de données et une architecture cloud scalable ; j'ai géré une équipe de 7 développeurs.",
+      "ventureName": "elio for business",
+      "startDate": "2025-06-01",
+      "endDate": null,
+      "skills": [20, 15, 23, 26, 27, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-nao-aeronautics",
+      "slug": "nao-aeronautics-venture",
+      "title": "NAO Aeronautics (Venture)",
+      "summary": "Concept de startup logistique axée sur les zones éloignées.",
+      "details": "J'ai élaboré le business plan, l'architecture de processus et le prototype ; j'ai mené une découverte et des itérations approfondies via des entretiens.",
+      "ventureName": "NAO Aeronautics",
+      "startDate": "2024-01-01",
+      "endDate": null,
+      "skills": [35, 32, 30, 29],
+      "links": {}
+    },
+    {
+      "id": "ent-vcow",
+      "slug": "vcow-venture",
+      "title": "VCOW (Venture)",
+      "summary": "Concept de plateforme de financement participatif pour projets d'élevage (pivot depuis l'agriculture verticale).",
+      "details": "Validation par entretiens (40+ éleveurs ; 10+ investisseurs après pivot) réalisée pour un livrable du cours CREATE-X.",
+      "ventureName": "VCOW",
+      "startDate": "2024-10-01",
+      "endDate": null,
+      "skills": [35, 32, 29, 30],
+      "links": {}
+    }
+  ],
+  "independentWork": [
+    {
+      "id": "work-mc2-university-ambassador",
+      "slug": "mc2-university-ambassador",
+      "title": "Ambassadeur universitaire",
+      "summary": "J'ai créé des partenariats entre mc2 et l'Université EIA et organisé un hackathon startup.",
+      "details": "J'ai établi des liens/partenariats avec l'Université EIA ; organisé un hackathon avec plus de 60 participants, recruté des jurés et obtenu soutien et financement.",
+      "clientOrProductName": "mc2",
+      "startDate": "2025-03-01",
+      "endDate": null,
+      "skills": [29, 30, 35],
+      "links": {}
+    },
+    {
+      "id": "work-eia-private-tutor-data-structures",
+      "slug": "eia-private-tutor-data-structures",
+      "title": "Tuteur privé — Structures de données",
+      "summary": "J'ai donné des cours personnalisés en structures de données.",
+      "details": "J'ai adapté les plans de cours aux préférences d'apprentissage des étudiants pour améliorer compréhension et performance.",
+      "clientOrProductName": "EIA University (Tutorat privé)",
+      "startDate": "2024-09-01",
+      "endDate": "2025-07-01",
+      "skills": [31, 29, 24],
+      "links": {}
+    },
+    {
+      "id": "ind-demo-investor-pitches",
+      "slug": "investor-and-demo-pitches",
+      "title": "Pitches investisseurs et démos",
+      "summary": "J'ai réalisé plusieurs pitches startup et présentations démo lors d'événements et de programmes.",
+      "details": "Inclut Innovate EPM (nov 2024 ; demi-finale), Conexión Entrepreneur Summit (oct 2024), et un pitch démo à la fin du Builder’s Program de mc2 (mai 2025) présentant les avancées de NAO Aeronautics.",
+      "clientOrProductName": "Plusieurs événements et programmes",
+      "startDate": "2024-10-01",
+      "endDate": "2025-05-01",
+      "skills": [30, 29, 35],
+      "links": {}
+    }
+  ]
+}

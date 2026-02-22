@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.errors import ChatbotHttpError
 from core.secrets import resolve_secret_value
 from llm_providers.base import LLMModel
 from llm_providers.groq_model import GroqModel
@@ -118,6 +119,8 @@ class PortfolioChatbot(BaseModel):
                     raise TypeError("Structured output did not return ChatbotStructuredResponse.")
                 LOGGER.debug("Model succeeded: %s", model.model_name)
                 return response.model_dump()
+            except ChatbotHttpError:
+                raise
             except Exception as exc:
                 LOGGER.warning("Model failed (%s): %s", model.model_name, exc)
                 errors.append(f"{model.__class__.__name__}: {exc}")

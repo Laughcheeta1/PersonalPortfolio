@@ -14,7 +14,7 @@ import { InfoCardRings } from '../InfoCardRings';
 import { ModelRingManager } from './ModelRingManager';
 import { OrbitCameraController } from './OrbitCameraController';
 import { pickSceneObject } from './picking';
-import type { RuntimeLoadingState, RuntimeOptions } from './types';
+import type { RuntimeLoadingMessages, RuntimeLoadingState, RuntimeOptions } from './types';
 import type {
   CategoryId,
   InformationItemSelection,
@@ -29,6 +29,7 @@ export class SpaceSceneRuntime {
   private readonly onSelectionChange: RuntimeOptions['onSelectionChange'];
   private readonly onInfoItemSelectionChange: RuntimeOptions['onInfoItemSelectionChange'];
   private readonly onLoadingStateChange: RuntimeOptions['onLoadingStateChange'];
+  private readonly loadingMessages: RuntimeLoadingMessages;
 
   private readonly scene = new THREE.Scene();
   private readonly camera: THREE.PerspectiveCamera;
@@ -66,6 +67,7 @@ export class SpaceSceneRuntime {
     this.onSelectionChange = options.onSelectionChange;
     this.onInfoItemSelectionChange = options.onInfoItemSelectionChange;
     this.onLoadingStateChange = options.onLoadingStateChange;
+    this.loadingMessages = options.loadingMessages;
 
     this.camera = new THREE.PerspectiveCamera(
       50,
@@ -121,21 +123,33 @@ export class SpaceSceneRuntime {
   }
 
   async start(): Promise<void> {
-    this.emitLoadingState({ active: true, progress: 0.03, label: 'Preparing renderer...' });
+    this.emitLoadingState({
+      active: true,
+      progress: 0.03,
+      label: this.loadingMessages.preparingRenderer,
+    });
     await this.loadEnvironment();
-    this.emitLoadingState({ active: true, progress: 0.12, label: 'Environment ready. Loading models...' });
+    this.emitLoadingState({
+      active: true,
+      progress: 0.12,
+      label: this.loadingMessages.environmentReadyLoadingModels,
+    });
     await this.modelRing.load(this.models, () => this.disposed, (loadedCount, totalCount, modelName) => {
       const progress = 0.12 + (loadedCount / Math.max(totalCount, 1)) * 0.88;
       this.emitLoadingState({
         active: true,
         progress,
-        label: `Loading model ${loadedCount}/${totalCount}: ${modelName}`,
+        label: this.loadingMessages.loadingModel(loadedCount, totalCount, modelName),
       });
     });
     if (this.disposed) {
       return;
     }
-    this.emitLoadingState({ active: true, progress: 0.96, label: 'Loading portfolio guide avatar...' });
+    this.emitLoadingState({
+      active: true,
+      progress: 0.96,
+      label: this.loadingMessages.loadingAvatar,
+    });
     await this.pandaMonkAvatar.load({
       idle: pandaNotSpeakingUrl,
       speaking: pandaSpeakingUrl,
@@ -145,7 +159,7 @@ export class SpaceSceneRuntime {
       return;
     }
     this.modelRing.highlightSelection(this.selectedIndex, this.bloomPass);
-    this.emitLoadingState({ active: false, progress: 1, label: 'Scene ready' });
+    this.emitLoadingState({ active: false, progress: 1, label: this.loadingMessages.sceneReady });
     this.animate();
   }
 

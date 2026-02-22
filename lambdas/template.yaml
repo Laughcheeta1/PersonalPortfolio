@@ -46,6 +46,24 @@ Resources:
               Access-Control-Allow-Origin: "'*'"
               Access-Control-Allow-Headers: "'content-type,authorization'"
               Access-Control-Allow-Methods: "'POST,OPTIONS'"
+        THROTTLED:
+          StatusCode: 429
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'content-type,authorization'"
+              Access-Control-Allow-Methods: "'POST,OPTIONS'"
+          ResponseTemplates:
+            application/json: '{"error":"Too many concurrent requests.","error_code":"api_gateway_rate_limited"}'
+        QUOTA_EXCEEDED:
+          StatusCode: 429
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'content-type,authorization'"
+              Access-Control-Allow-Methods: "'POST,OPTIONS'"
+          ResponseTemplates:
+            application/json: '{"error":"API quota exceeded.","error_code":"api_gateway_rate_limited"}'
 
       EndpointConfiguration: REGIONAL
       

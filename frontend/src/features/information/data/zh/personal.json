@@ -1,0 +1,55 @@
+{
+  "headline": "\"我不知道还有什么比尝试伟大与不可能并为之燃烧更好的人生目标\" - 尼采",
+  "summary": "Santiago 充满好奇、学习速度快且执行力强，善于通过提问寻找有价值的答案。他热衷于拓展知识，不仅在技术与学术方面，也包括地缘政治、经济与时事。他富有感染力并具备出色的公众表达能力，是团队中的天然领导者，常常主动承担责任。凭借积极主动的思维方式和丰富的团队管理经验，他擅长带领团队走向成功。",
+  "availability": "open_to_offers",
+  "githubUrl": "https://laughcheeta1.github.io/PersonalPortfolio/",
+  "linkedinUrl": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270",
+  "hobbies": [
+    {
+      "id": "reading",
+      "slug": "reading",
+      "title": "阅读",
+      "summary": "我喜欢阅读技术相关的书籍和文章。",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "gym",
+      "slug": "gym",
+      "title": "健身活动",
+      "summary": "我喜欢健身活动，比如力量训练和跑步。",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "jiu-jitsu",
+      "slug": "jiu-jitsu",
+      "title": "柔术",
+      "summary": "我把练习柔术当作爱好。",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "gifts-and-surprise-parties",
+      "slug": "gifts-and-surprise-parties",
+      "title": "制作礼物与惊喜派对",
+      "summary": "我喜欢为朋友和家人准备礼物与惊喜派对。",
+      "details": "",
+      "skills": [],
+      "links": {}
+    },
+    {
+      "id": "motorcicle-driving",
+      "slug": "motorcicle-driving",
+      "title": "摩托车驾驶",
+      "summary": "我喜欢骑摩托车。",
+      "details": "",
+      "skills": [],
+      "links": {}
+    }
+  ],
+  "languagesSpoken": ["西班牙语", "英语"]
+}

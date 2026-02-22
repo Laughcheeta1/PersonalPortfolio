@@ -1,0 +1,97 @@
+{
+  "universityEducations": [
+    {
+      "id": "edu-eia-systems-engineering",
+      "slug": "eia-systems-engineering-computing",
+      "title": "Ingénierie des systèmes et informatique",
+      "summary": "Programme de licence en ingénierie des systèmes et informatique (neuvième semestre sur dix).",
+      "details": "Moyenne cumulative : 4.45.",
+      "institution": "EIA University",
+      "degree": "Ingénierie des systèmes et informatique",
+      "startDate": "2022-01-01",
+      "endDate": "2026-11-01",
+      "skills": [24, 23, 29],
+      "links": {}
+    }
+  ],
+  "courseEducations": [
+    {
+      "id": "course-softserve-python-advanced",
+      "slug": "softserve-python-advanced",
+      "title": "Cours avancé de Python",
+      "summary": "Formation avancée Python avec un focus pratique en développement logiciel.",
+      "details": "Cours complété via SoftServe (mars 2025 – juillet 2025).",
+      "provider": "SoftServe",
+      "completionDate": "2025-07-01",
+      "skills": [1, 24],
+      "links": {
+        "externalUrl": "https://career.softserveinc.com/en-us/certification/verification"
+      }
+    },
+    {
+      "id": "course-stanford-ml-regression-classification",
+      "slug": "supervised-ml-regression-classification",
+      "title": "Apprentissage supervisé : régression et classification",
+      "summary": "Formation fondamentale en apprentissage supervisé axée sur régression et classification.",
+      "details": "Cours de Stanford University et DeepLearning.AI (janvier 2025).",
+      "provider": "Stanford University & DeepLearning.AI",
+      "completionDate": "2025-01-01",
+      "skills": [1],
+      "links": {
+        "externalUrl": "https://www.coursera.org/account/accomplishments/verify/PQ8KNO22EI1O"
+      }
+    },
+    {
+      "id": "course-harvard-cs50ai",
+      "slug": "harvard-cs50ai",
+      "title": "CS50 AI",
+      "summary": "Cours introductif en IA.",
+      "details": "Ce cours couvre les bases de l'IA, des fondamentaux de probabilité et statistiques aux sujets avancés comme le machine learning, le deep learning et les LLMs.",
+      "provider": "Harvard University",
+      "completionDate": "2024-07",
+      "skills": [24, 1],
+      "links": {
+        "externalUrl": "https://certificates.cs50.io/c0ec4251-a812-4952-b65a-36ca53c8211f.pdf?size=letter"
+      }
+    },
+    {
+      "id": "course-harvard-cs50x",
+      "slug": "harvard-cs50x",
+      "title": "CS50x",
+      "summary": "Cours introductif fondamental en informatique.",
+      "details": "Ce cours couvre les bases de l'informatique, de la programmation aux sujets avancés comme algorithmes et structures de données.",
+      "provider": "Harvard University",
+      "completionDate": "2024-06",
+      "skills": [24, 1],
+      "links": {
+        "externalUrl": "https://certificates.cs50.io/88848e26-785b-454f-80f3-5d3fe1dde262.pdf?size=letter"
+      }
+    },
+    {
+      "id": "course-eia-data-analytics-diploma",
+      "slug": "eia-data-analytics-diploma",
+      "title": "Diplôme d'analyse de données",
+      "summary": "Formation structurée sur les fondamentaux de l'analyse de données.",
+      "details": "Diplôme complété à l'Université EIA (août 2023 – novembre 2023).",
+      "provider": "EIA University",
+      "completionDate": "2023-11-01",
+      "skills": [6],
+      "links": {
+        "externalUrl": "https://wallet.xertify.co/certificates/F5A51F73A001?r=1"
+      }
+    },
+    {
+      "id": "course-mc2-builders-program",
+      "slug": "mc2-builders-program",
+      "title": "mc2 Builders Program",
+      "summary": "Programme long de création de startup avec démos et itérations.",
+      "details": "Dans ce cours, vous recevez toutes les ressources et connaissances nécessaires pour construire une startup à partir de zéro.",
+      "provider": "mc2",
+      "completionDate": "2025-05",
+      "skills": [35, 32, 30, 29],
+      "links": {
+        "externalUrl": "https://mc2.builders/"
+      }
+    }
+  ]
+}

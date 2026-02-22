@@ -13,6 +13,14 @@ export type RuntimeLoadingState = {
   label: string;
 };
 
+export type RuntimeLoadingMessages = {
+  preparingRenderer: string;
+  environmentReadyLoadingModels: string;
+  loadingModel: (loadedCount: number, totalCount: number, modelName: string) => string;
+  loadingAvatar: string;
+  sceneReady: string;
+};
+
 // Input contract used by the runtime constructor.
 // This keeps runtime decoupled from React by receiving plain callbacks/data.
 export type RuntimeOptions = {
@@ -28,6 +36,8 @@ export type RuntimeOptions = {
   onInfoItemSelectionChange: (selection: InformationItemSelection | null) => void;
   // Callback to expose scene startup loading state to host UI.
   onLoadingStateChange: (state: RuntimeLoadingState) => void;
+  // Localized loading-state labels shown during startup.
+  loadingMessages: RuntimeLoadingMessages;
   // Callback with avatar screen coordinates so UI can anchor chat below avatar.
   onAvatarScreenAnchorChange: (anchor: AvatarScreenAnchor) => void;
 };

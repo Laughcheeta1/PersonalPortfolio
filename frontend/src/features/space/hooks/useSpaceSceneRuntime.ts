@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
+  getSceneInformationCategories,
   normalizeNavigationTarget,
-  sceneInformationCategories,
   validateSceneCategoryMappings,
 } from '../../information';
 import type { AvatarScreenAnchor } from '../../chatbot/models';
-import type {
-  CategoryId,
-  InformationItemSelection,
-  SceneNavigationTarget,
-} from '../../information/models';
+import { useI18n } from '../../i18n/useI18n';
+import { CATEGORY_KEY_BY_ID, SUBCATEGORY_KEY_BY_ID } from '../../information/i18nKeys';
+import type { CategoryId, InformationItemSelection, InformationSceneCategory, SceneNavigationTarget } from '../../information/models';
 import { SpaceSceneRuntime } from '../runtime/SpaceSceneRuntime';
 import { SPACE_MODELS } from '../spaceModels';
 import type { PandaMonkAvatarState } from '../../chatbot/scene/PandaMonkAvatar';
@@ -22,6 +20,7 @@ type LoadingState = {
 };
 
 export function useSpaceSceneRuntime() {
+  const { t, locale } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<SpaceSceneRuntime | null>(null);
 
@@ -30,13 +29,51 @@ export function useSpaceSceneRuntime() {
   const [loadingState, setLoadingState] = useState<LoadingState>({
     active: true,
     progress: 0,
-    label: 'Preparing scene...',
+    label: t('runtime.loading.preparingScene'),
   });
   const [avatarAnchor, setAvatarAnchor] = useState<AvatarScreenAnchor>({
     x: 180,
     y: 210,
     visible: false,
   });
+
+  const localizedModels = useMemo(
+    () =>
+      SPACE_MODELS.map((model, index) => ({
+        ...model,
+        name: t(`model.${index}`),
+      })),
+    [t],
+  );
+
+  const localizedCategories = useMemo<InformationSceneCategory[]>(
+    () =>
+      getSceneInformationCategories(locale).map((category) => ({
+        ...category,
+        label: t(CATEGORY_KEY_BY_ID[category.id] ?? category.label),
+        subcategories: category.subcategories.map((subcategory) => ({
+          ...subcategory,
+          label: t(SUBCATEGORY_KEY_BY_ID[subcategory.id] ?? subcategory.label),
+        })),
+      })),
+    [locale, t],
+  );
+
+  const loadingMessages = useMemo(
+    () => ({
+      preparingRenderer: t('runtime.loading.preparingRenderer'),
+      environmentReadyLoadingModels: t('runtime.loading.environmentReady'),
+      loadingModel: (loadedCount: number, totalCount: number, modelName: string) =>
+        t('runtime.loading.loadingModel', {
+          loaded: loadedCount,
+          total: totalCount,
+          model: modelName,
+        }),
+      loadingAvatar: t('runtime.loading.loadingAvatar'),
+      sceneReady: t('runtime.loading.sceneReady'),
+    }),
+    [t],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -47,8 +84,8 @@ export function useSpaceSceneRuntime() {
 
     const runtime = new SpaceSceneRuntime({
       container,
-      models: SPACE_MODELS,
-      categories: sceneInformationCategories,
+      models: localizedModels,
+      categories: localizedCategories,
       onSelectionChange: setSelectedIndex,
       onInfoItemSelectionChange: setSelectedInfoItem,
       onLoadingStateChange: (state) => {
@@ -57,6 +94,7 @@ export function useSpaceSceneRuntime() {
         }
         setLoadingState(state);
       },
+      loadingMessages,
       onAvatarScreenAnchorChange: (anchor) => {
         if (!isMounted) {
           return;
@@ -71,7 +109,7 @@ export function useSpaceSceneRuntime() {
       },
     });
 
-    const mappingIssues = validateSceneCategoryMappings(SPACE_MODELS.length);
+    const mappingIssues = validateSceneCategoryMappings(localizedModels.length, localizedCategories);
     if (mappingIssues.length > 0) {
       console.warn('[SpaceShowcase] Invalid category/model mappings:', mappingIssues);
     }
@@ -86,7 +124,7 @@ export function useSpaceSceneRuntime() {
       setLoadingState({
         active: true,
         progress: 1,
-        label: 'Failed to load scene. Please refresh.',
+        label: t('runtime.loading.failedScene'),
       });
     });
 
@@ -100,7 +138,7 @@ export function useSpaceSceneRuntime() {
       runtimeRef.current = null;
       delete window.portfolioNavigateTo;
     };
-  }, []);
+  }, [localizedCategories, localizedModels, loadingMessages, t]);
 
   const setPandaState = useCallback((state: PandaMonkAvatarState) => {
     runtimeRef.current?.setPandaState(state);
@@ -121,8 +159,8 @@ export function useSpaceSceneRuntime() {
     () =>
       selectedIndex === null
         ? null
-        : sceneInformationCategories.find((category) => category.modelIndex === selectedIndex) ?? null,
-    [selectedIndex],
+        : localizedCategories.find((category) => category.modelIndex === selectedIndex) ?? null,
+    [localizedCategories, selectedIndex],
   );
 
   const selectedCategoryLabel = useMemo(

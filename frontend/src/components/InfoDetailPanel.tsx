@@ -1,4 +1,6 @@
 import { getSafeExternalHref } from '../features/information/urlSafety';
+import { useI18n } from '../features/i18n/useI18n';
+import { CATEGORY_KEY_BY_ID, SUBCATEGORY_KEY_BY_ID } from '../features/information/i18nKeys';
 import type { InformationItemSelection } from '../features/information/models';
 import styles from './InfoDetailPanel.module.css';
 
@@ -26,20 +28,26 @@ function renderExternalLink(
 }
 
 const InfoDetailPanel = ({ selectedInfoItem, onClose }: InfoDetailPanelProps) => {
+  const { t } = useI18n();
+
   if (!selectedInfoItem) {
     return null;
   }
 
   const isEnhanced = selectedInfoItem.item.enhanced === true;
+  const categoryLabel = t(CATEGORY_KEY_BY_ID[selectedInfoItem.categoryId] ?? selectedInfoItem.categoryId);
+  const subcategoryLabel = t(
+    SUBCATEGORY_KEY_BY_ID[selectedInfoItem.subcategoryId] ?? selectedInfoItem.subcategoryId,
+  );
 
   return (
     <aside className={`${styles.panel} ${isEnhanced ? styles.panelEnhanced : ''}`}>
       <div className={styles.topline}>
         <span>
-          {selectedInfoItem.categoryId} / {selectedInfoItem.subcategoryId}
+          {categoryLabel} / {subcategoryLabel}
         </span>
         <button type="button" onClick={onClose}>
-          Close
+          {t('common.close')}
         </button>
       </div>
 
@@ -52,17 +60,21 @@ const InfoDetailPanel = ({ selectedInfoItem, onClose }: InfoDetailPanelProps) =>
           {selectedInfoItem.item.links.repoUrl
             ? renderExternalLink(
                 selectedInfoItem.item.links.repoUrl,
-                'Repository',
+                t('info.link.repository'),
                 'info-repository-link',
               )
             : null}
           {selectedInfoItem.item.links.liveUrl
-            ? renderExternalLink(selectedInfoItem.item.links.liveUrl, 'Live Demo', 'info-live-link')
+            ? renderExternalLink(
+                selectedInfoItem.item.links.liveUrl,
+                t('info.link.liveDemo'),
+                'info-live-link',
+              )
             : null}
           {selectedInfoItem.item.links.externalUrl
             ? renderExternalLink(
                 selectedInfoItem.item.links.externalUrl,
-                'External Link',
+                t('info.link.external'),
                 'info-external-link',
               )
             : null}

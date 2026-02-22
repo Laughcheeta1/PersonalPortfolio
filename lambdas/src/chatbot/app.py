@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Any
 
+from core.errors import ChatbotHttpError
 from core.portfolio_chatbot import PortfolioChatbot
 from pydantic import ValidationError
 from models.request import ChatbotRequest
@@ -54,6 +55,13 @@ def lambda_handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         LOGGER.debug("Executing chatbot.")
         response_payload = chatbot.execute(messages=request_payload.messages)
         LOGGER.debug("Chatbot execution succeeded.")
+    except ChatbotHttpError as exc:
+        LOGGER.warning(
+            "Chatbot returned handled HTTP error. status=%s error_code=%s",
+            exc.status_code,
+            exc.error_code,
+        )
+        return _json_response(exc.status_code, exc.to_payload())
     except Exception as exc:
         LOGGER.exception("Chatbot execution failed: %s", exc)
         literal_error = f"{exc.__class__.__name__}: {exc}"

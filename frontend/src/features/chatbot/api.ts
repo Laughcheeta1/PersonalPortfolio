@@ -2,6 +2,18 @@ import type { ConversationMessage } from './models';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.trim().replace(/\/+$/, '');
 
+export class ChatbotApiError extends Error {
+  readonly status: number;
+  readonly errorCode: string | null;
+
+  constructor(message: string, status: number, errorCode: string | null = null) {
+    super(message);
+    this.name = 'ChatbotApiError';
+    this.status = status;
+    this.errorCode = errorCode;
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -32,6 +44,13 @@ function formatApiError(payload: unknown, status: number): string {
   return `Chatbot API request failed with status ${status}.`;
 }
 
+function getErrorCode(payload: unknown): string | null {
+  if (!isRecord(payload)) {
+    return null;
+  }
+  return typeof payload.error_code === 'string' ? payload.error_code : null;
+}
+
 export async function postChatConversation(
   conversation: ConversationMessage[],
 ): Promise<unknown> {
@@ -41,15 +60,25 @@ export async function postChatConversation(
     body: JSON.stringify({ messages: conversation }),
   });
 
+  const responseText = await response.text();
   let payload: unknown = null;
-  try {
-    payload = await response.json();
-  } catch {
-    throw new Error('Chatbot API returned invalid JSON.');
+  if (responseText.trim()) {
+    try {
+      payload = JSON.parse(responseText);
+    } catch {
+      if (response.ok) {
+        throw new Error('Chatbot API returned invalid JSON.');
+      }
+      payload = { message: responseText };
+    }
   }
 
   if (!response.ok) {
-    throw new Error(formatApiError(payload, response.status));
+    throw new ChatbotApiError(
+      formatApiError(payload, response.status),
+      response.status,
+      getErrorCode(payload),
+    );
   }
 
   return payload;
