@@ -1,7 +1,7 @@
 import type { ConversationMessage } from './models';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim() ?? '';
-const CHAT_API_URL = `${API_BASE_URL.replace(/\/+$/, '')}/chat`;
+const CHAT_API_URL = `${API_BASE_URL}/chat`;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
