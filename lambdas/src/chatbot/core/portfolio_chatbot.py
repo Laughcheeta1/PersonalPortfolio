@@ -25,7 +25,7 @@ def _build_default_models() -> list[LLMModel]:
     models: list[LLMModel] = []
 
     openrouter_api_key = resolve_secret_value(
-        secret_id="OPEN_ROUTER_API_KEY",
+        secret_id="GROQ_API_KEY",
         json_key="OPEN_ROUTER_API_KEY",
     )
     if openrouter_api_key:
