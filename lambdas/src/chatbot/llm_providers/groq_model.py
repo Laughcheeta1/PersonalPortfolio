@@ -142,6 +142,7 @@ class GroqModel(LLMModel):
                     status_code=402,
                     error_code="groq_credit_limit_exceeded",
                     message="Groq API credit limit exceeded.",
+                    detail=str(exc),
                 ) from exc
 
             status_code = _extract_status_code(exc)
@@ -150,6 +151,7 @@ class GroqModel(LLMModel):
                     status_code=402,
                     error_code="groq_credit_limit_exceeded",
                     message="Groq API credit limit exceeded.",
+                    detail=str(exc),
                 ) from exc
 
             raise

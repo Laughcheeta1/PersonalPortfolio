@@ -1,24 +1,16 @@
 import type { ConversationMessage } from './models';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL.trim().replace(/\/+$/, '');
-type ChatbotErrorI18nKey = 'chat.error.generic' | 'chat.error.rateLimit' | 'chat.error.creditLimit';
 
 export class ChatbotApiError extends Error {
   readonly status: number;
   readonly errorCode: string | null;
-  readonly i18nKey: ChatbotErrorI18nKey;
 
-  constructor(
-    message: string,
-    status: number,
-    errorCode: string | null = null,
-    i18nKey: ChatbotErrorI18nKey = 'chat.error.generic',
-  ) {
+  constructor(message: string, status: number, errorCode: string | null = null) {
     super(message);
     this.name = 'ChatbotApiError';
     this.status = status;
     this.errorCode = errorCode;
-    this.i18nKey = i18nKey;
   }
 }
 
@@ -27,10 +19,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function formatApiError(payload: unknown, status: number): string {
-  if (status >= 500) {
-    return 'Chatbot service is temporarily unavailable. Please try again shortly.';
-  }
-
   if (!isRecord(payload)) {
     return `Chatbot API request failed with status ${status}.`;
   }
@@ -63,16 +51,6 @@ function getErrorCode(payload: unknown): string | null {
   return typeof payload.error_code === 'string' ? payload.error_code : null;
 }
 
-function getErrorI18nKey(status: number, errorCode: string | null): ChatbotErrorI18nKey {
-  if (errorCode === 'groq_credit_limit_exceeded' || status === 402) {
-    return 'chat.error.creditLimit';
-  }
-  if (errorCode === 'api_gateway_rate_limited' || status === 429) {
-    return 'chat.error.rateLimit';
-  }
-  return 'chat.error.generic';
-}
-
 export async function postChatConversation(
   conversation: ConversationMessage[],
 ): Promise<unknown> {
@@ -96,12 +74,10 @@ export async function postChatConversation(
   }
 
   if (!response.ok) {
-    const errorCode = getErrorCode(payload);
     throw new ChatbotApiError(
       formatApiError(payload, response.status),
       response.status,
-      errorCode,
-      getErrorI18nKey(response.status, errorCode),
+      getErrorCode(payload),
     );
   }
 
