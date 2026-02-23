@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from core.errors import ChatbotHttpError
 from core.secrets import resolve_secret_value
 from llm_providers.base import LLMModel
-from llm_providers.groq_model import GroqModel
+from llm_providers.openrouter_model import OpenRouterModel
 from models.prompt import Prompt
 from models.request import ConversationMessage
 from models.response import ChatbotStructuredResponse
@@ -24,31 +24,31 @@ CONTEXT_MESSAGES_WINDOW = 5
 def _build_default_models() -> list[LLMModel]:
     models: list[LLMModel] = []
 
-    groq_api_key = resolve_secret_value(
-        secret_id="GROQ_API_KEY",
-        json_key="GROQ_API_KEY",
+    openrouter_api_key = resolve_secret_value(
+        secret_id="OPEN_ROUTER_API_KEY",
+        json_key="OPEN_ROUTER_API_KEY",
     )
-    if groq_api_key:
+    if openrouter_api_key:
         models.extend(
             [
-                GroqModel(
+                OpenRouterModel(
                     model_name="openai/gpt-oss-120b",
                     reasoning_effort="low",
                     temperature=0.5,
                     top_p=1.0,
-                    api_key=groq_api_key,
+                    api_key=openrouter_api_key,
                 ),
-                GroqModel(
-                    model_name="meta-llama/llama-4-maverick-17b-128e-instruct",
+                OpenRouterModel(
+                    model_name="meta-llama/llama-4-maverick",
                     temperature=0.5,
                     top_p=1.0,
-                    api_key=groq_api_key,
+                    api_key=openrouter_api_key,
                 ),
             ]
         )
 
     if not models:
-        raise RuntimeError("No LLM providers configured. Set GROQ_API_KEY.")
+        raise RuntimeError("No LLM providers configured. Set OPEN_ROUTER_API_KEY.")
 
     return models
 

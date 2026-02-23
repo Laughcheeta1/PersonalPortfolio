@@ -1,4 +1,4 @@
 from .base import LLMModel
-from .groq_model import GroqModel
+from .openrouter_model import OpenRouterModel
 
-__all__ = ["LLMModel", "GroqModel"]
+__all__ = ["LLMModel", "OpenRouterModel", "GroqModel"]

@@ -13,7 +13,7 @@ AWS SAM project for backend Lambda functions.
 
 ```bash
 sam build
-GROQ_API_KEY=your_key sam local start-api
+OPEN_ROUTER_API_KEY=your_key sam local start-api
 ```
 
 This runs a local API Gateway emulator, so the chatbot endpoint is available at:
@@ -36,7 +36,7 @@ cp .env.example .env
 
 Then set values in `lambdas/.env`:
 
-- `GROQ_API_KEY`
+- `OPEN_ROUTER_API_KEY`
 - `ALLOWED_ORIGINS` (for local frontend, typically `http://127.0.0.1:5173`)
 
 When you run Nx targets, the env file is loaded automatically:
@@ -46,7 +46,7 @@ nx build lambdas
 nx dev lambdas
 ```
 
-`nx dev lambdas` starts `sam local start-api` and injects `GROQ_API_KEY` from `.env` into the local Lambda container.
+`nx dev lambdas` starts `sam local start-api` and injects `OPEN_ROUTER_API_KEY` from `.env` into the local Lambda container.
 
 ## Deploy
 
@@ -55,8 +55,8 @@ sam deploy --guided
 ```
 
 In AWS, the Lambda reads provider keys at runtime from Secrets Manager
-using secret id `GROQ_API_KEY`.
-Each secret should contain JSON with matching keys (for example `{"GROQ_API_KEY":"..."}`).
+using secret id `OPEN_ROUTER_API_KEY`.
+Each secret should contain JSON with matching keys (for example `{"OPEN_ROUTER_API_KEY":"..."}`).
 The Lambda execution role must allow `secretsmanager:GetSecretValue` for that secret.
 
 Deployment also requires SAM parameters:
