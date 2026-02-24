@@ -104,9 +104,13 @@ class OpenRouterModel(LLMModel):
         if self.top_p is not None:
             request_kwargs["top_p"] = self.top_p
         if self.top_k is not None:
-            request_kwargs["top_k"] = self.top_k
+            LOGGER.warning(
+                "Open Router SDK does not suppor top_k"
+            )
         if self.reasoning_effort is not None:
-            request_kwargs["reasoning_effort"] = self.reasoning_effort
+            request_kwargs["reasoning"] = {
+                "effort": self.reasoning_effort
+            }
 
         if not structured_output:
             LOGGER.debug("Sending plain completion request.")

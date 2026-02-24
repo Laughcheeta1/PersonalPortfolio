@@ -16,7 +16,7 @@
             "executor": "nx:run-commands",
             "options": {
                 "cwd": "lambdas",
-                "command": "set -a; [ -f .env ] && . ./.env; set +a; printf '{\"ChatbotLambda\":{\"GROQ_API_KEY\":\"%s\"}}' \"$GROQ_API_KEY\" > .sam-local-env.json; sam local start-api --env-vars .sam-local-env.json"
+                "command": "set -a; [ -f .env ] && . ./.env; set +a; printf '{\"ChatbotLambda\":{\"GROQ_API_KEY\":\"%s\",\"OPEN_ROUTER_API_KEY\":\"%s\"}}' \"$GROQ_API_KEY\" \"$OPEN_ROUTER_API_KEY\" > .sam-local-env.json; sam local start-api --env-vars .sam-local-env.json"
             }
         },
         "deploy": {
