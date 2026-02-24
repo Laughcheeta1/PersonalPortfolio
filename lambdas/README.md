@@ -34,7 +34,11 @@ Create your local file:
 cp .env.example .env
 ```
 
-Then set your value in `lambdas/.env` (`GROQ_API_KEY`).
+Then set values in `lambdas/.env`:
+
+- `GROQ_API_KEY`
+- `OPEN_ROUTER_API_KEY`
+- `ALLOWED_ORIGINS` (for local frontend, typically `http://127.0.0.1:5173`)
 
 When you run Nx targets, the env file is loaded automatically:
 
@@ -43,7 +47,8 @@ nx build lambdas
 nx dev lambdas
 ```
 
-`nx dev lambdas` starts `sam local start-api` and injects `OPEN_ROUTER_API_KEY` from `.env` into the local Lambda container.
+`nx dev lambdas` starts `sam local start-api` and injects `GROQ_API_KEY`,
+`OPEN_ROUTER_API_KEY`, and `ALLOWED_ORIGINS` from `.env` into the local Lambda container.
 
 ## Deploy
 
@@ -55,3 +60,7 @@ In AWS, the Lambda always reads provider keys at runtime from Secrets Manager
 using secret id `GROQ_API_KEY`.
 Each secret should contain JSON with matching keys (for example `{"GROQ_API_KEY":"..."}`).
 The Lambda execution role must allow `secretsmanager:GetSecretValue` for that secret.
+
+Deployment also requires SAM parameter:
+
+- `AllowedCorsOrigin`

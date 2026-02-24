@@ -56,7 +56,9 @@ jobs:
             --resolve-s3 \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides LambdaExecutionRoleArn=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }}
+            --parameter-overrides \
+              LambdaExecutionRoleArn=${{ secrets.LAMBDA_EXECUTION_ROLE_ARN }} \
+              AllowedCorsOrigin=${{ secrets.ALLOWED_CORS_ORIGIN }}
 
       - name: Read Api Gateawy url
         id: cfn

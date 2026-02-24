@@ -1,9 +1,0 @@
-- [ ] Reproduce and trace OpenRouter failure paths in model call plumbing
-- [ ] Remove/guard unsupported OpenRouter request args (`reasoning_effort`) without changing Groq behavior
-- [ ] Make structured-output parsing resilient to wrapped/fenced/truncated model text and raise clearer errors
-- [ ] Add or update focused tests for OpenRouter request kwargs and structured parsing behavior
-- [ ] Run chatbot unit tests (or nearest test scope) and record outcomes
-- [ ] Document the fix and verification evidence in REVIEW.md
-- [ ] Inspect the local Python openrouter package to find chat completion signatures
-- [ ] Confirm whether `reasoning_effort` is accepted and identify any reasoning control parameter
-- [ ] Prepare findings (paths and function defs) for reporting
