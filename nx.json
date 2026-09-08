@@ -1,7 +1,0 @@
-{
-  "installation": {
-    "version": "22.5.1"
-  },
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "master"
-}

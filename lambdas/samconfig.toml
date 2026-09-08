@@ -1,6 +1,0 @@
-version = 0.1
-
-[default.deploy.parameters]
-capabilities = "CAPABILITY_NAMED_IAM"
-confirm_changeset = true
-s3_prefix = "PersonalPortfolio"
