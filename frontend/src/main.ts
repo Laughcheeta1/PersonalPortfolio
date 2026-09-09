@@ -13,26 +13,26 @@ import { PanelSystem } from './panels';
 import { ChatUI } from './chat/ChatUI';
 import { AmbientAudio } from './chat/AmbientAudio';
 import { MusicPlayer } from './chat/MusicPlayer';
-import { getLanguage, setLanguage, onLanguageChange, localize, t, type Language } from './i18n';
+import { getLanguage, onLanguageChange, localize, t } from './i18n';
+import { createLanguageMenu } from './i18n/LanguageMenu';
 import { damping } from './world/physics';
 import { distance, landmarkLabelRadius } from './world/navigation';
 
 const app=document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML=`<main id="world" aria-label="Interactive island portfolio"></main>
-<header class="masthead"><a href="#" class="brand" aria-label="A little world home"><span class="brand-mark">✳</span><span>a little world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><span class="island-time"><i></i> A GOOD DAY TO EXPLORE</span><button id="sound" class="round-button" aria-label="Unmute audio" title="Unmute audio">♪<span class="mute-slash">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
+<header class="masthead"><a href="#" class="brand" aria-label="A little world home"><span class="brand-mark">✳</span><span>a little world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><button id="music" class="round-button unmuted" aria-label="Mute audio" title="Mute audio">♫<span class="mute-slash" aria-hidden="true">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
 <aside class="welcome"><span class="eyebrow"><span class="tiny-star">✦</span> WELCOME TO MY CORNER OF THE WORLD</span><h1>Big ideas.<br>A little island.</h1><p>Follow your curiosity. Every path<br>has a story to tell.</p><button id="explore" class="explore-button">Let’s wander <span>↗</span></button><div class="welcome-foot">7 places to discover <span>·</span> Make yourself at home</div></aside>
-<aside class="location-chip"><span class="location-icon">⌁</span><div><small>YOU ARE EXPLORING</small><strong id="location">The greenway</strong></div></aside>
 <div class="guide-hint"><span>✦</span><p>A friend for the journey<small>Walk up to your guide to say hello.</small></p></div>
-<aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 181 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span><span>Take the scenic route ↗</span></div></aside>
+<aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 181 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span></div></aside>
 <nav class="destination-list" aria-label="Guide destinations" hidden><header><span>WHERE TO?</span><button id="map-close" aria-label="Close destinations">×</button></header><p>Your guide will lead the way.</p>${landmarks.map((l,i)=>`<button data-destination="${l.id}"><span class="destination-number" style="background:${l.color}">${i+1}</span><span><strong>${l.title}</strong><small>${l.subtitle}</small></span><span>↗</span></button>`).join('')}</nav>
 <footer class="controls"><span><kbd>W</kbd><span class="keys-row"><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span>Move</span><i></i><span class="mouse-icon">↔</span><span>Drag to look</span><i></i><kbd>shift</kbd><span>Take a little run</span></footer>
 <div id="joystick" aria-label="Drag to move" role="application"><span></span></div><span class="touch-hint">Drag the world to look around</span>
 <dialog id="help-dialog"><button class="dialog-close" aria-label="Close controls">×</button><span class="eyebrow">A FIELD GUIDE</span><h2>A world at your pace.</h2><p>Walk with <strong>WASD</strong> or the arrow keys. Hold <strong>Shift</strong> to run. Drag the world to look around. On touchscreens, use the thumbstick to move.</p><p>Approach a landmark to open its notebook. Walk behind it to discover the other side. You can type, select text, and scroll inside each notebook.</p><p>Your companion waits nearby. Walk up to chat, or choose a place on the island map for a guided walk.</p><button class="explore-button dialog-done">Got it. Let’s explore ↗</button></dialog><div id="notice" role="status"></div>`;
 
 const world=document.querySelector<HTMLElement>('#world')!;
-const languageControl=document.createElement('select');languageControl.id='language';languageControl.setAttribute('aria-label','Language');languageControl.innerHTML='<option value="en">English</option><option value="es">Español</option>';languageControl.value=getLanguage();
+const languageControl=createLanguageMenu();
 document.querySelector('.top-right')!.prepend(languageControl);
-const musicButton=document.createElement('button');musicButton.id='music';musicButton.className='round-button';musicButton.textContent='♫';musicButton.setAttribute('aria-pressed','false');document.querySelector('#sound')!.before(musicButton);
+const musicButton=document.querySelector<HTMLButtonElement>('#music')!;
 const jumpButton=document.createElement('button');jumpButton.id='jump';jumpButton.textContent='Jump';jumpButton.setAttribute('aria-label','Jump');document.querySelector('#joystick')!.after(jumpButton);
 const runButton=document.createElement('button');runButton.id='run';runButton.textContent='Run';runButton.setAttribute('aria-label','Hold to run');runButton.setAttribute('aria-pressed','false');jumpButton.after(runButton);
 const orientationTip=document.createElement('aside');orientationTip.id='orientation-tip';orientationTip.setAttribute('aria-label','A wider view');orientationTip.innerHTML='<span aria-hidden="true">↻</span><div><strong>A wider view</strong><p>Turn your phone sideways for more room to explore.</p><button type="button">Continue in portrait</button></div>';app.append(orientationTip);
@@ -68,10 +68,10 @@ for(const [i,landmark] of landmarks.entries()){
   const element=document.createElement('div');element.className='landmark-label';element.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span><div><small>${landmark.subtitle}</small><strong>${landmark.title}</strong></div>`;
   const label=new CSS3DSprite(element);element.style.pointerEvents='none';label.position.set(landmark.position[0],config.ui.labelHeight,landmark.position[1]+(landmark.position[1]<0?4:-4));label.scale.setScalar(config.ui.labelScale);domScene.add(label);labels.push({object:label,position:model.position,id:landmark.id,radius:landmarkLabelRadius(landmark)});
 }
-const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));let muted=true;chat.speech.setMuted(muted);
-const ambientAudio=new AmbientAudio();
+const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));let muted=false;chat.speech.setMuted(muted);
+const ambientAudio=new AmbientAudio();ambientAudio.setMuted(muted);
 const music=new MusicPlayer();music.setMuted(muted);
-const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>{chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();});input.yaw=.18;
+const input=new Input(renderer.domElement,document.querySelector('#joystick')!,unlockAudio);input.yaw=.18;
 const target=new THREE.Vector3(),desiredCamera=new THREE.Vector3();
 function cameraUpdate(dt:number,immediate=false){
   target.copy(player.model.position).y+=config.camera.height;
@@ -81,7 +81,7 @@ function cameraUpdate(dt:number,immediate=false){
 cameraUpdate(0,true);
 let started=false;const notice=document.querySelector<HTMLElement>('#notice')!;let noticeTimeout:ReturnType<typeof setTimeout>;
 const announce=(message:string)=>{notice.textContent=message;notice.classList.add('shown');clearTimeout(noticeTimeout);noticeTimeout=setTimeout(()=>notice.classList.remove('shown'),config.ui.noticeDuration);};
-function start(){if(!started){started=true;document.body.classList.add('exploring');input.clear();}chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();renderer.domElement.focus();}
+function start(){if(!started){started=true;document.body.classList.add('exploring');input.clear();}unlockAudio();renderer.domElement.focus();}
 // Start before the joystick consumes its first pointer so the new vector is retained.
 document.querySelector('#joystick')!.addEventListener('pointerdown',start,{capture:true});
 // Prevent focus transfer from cancelling an active touch joystick gesture.
@@ -92,14 +92,16 @@ runButton.addEventListener('pointerdown',event=>{if(runPointer!==null)return;eve
 const releaseRun=()=>{runPointer=null;input.keys.delete('ShiftLeft');runButton.setAttribute('aria-pressed','false');};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])runButton.addEventListener(type,releaseRun);
 window.addEventListener('blur',releaseRun);document.addEventListener('visibilitychange',releaseRun);
-function updateAudioLabels(){const button=document.querySelector('#sound')!;const soundLabel=t(muted?'Unmute audio':'Mute audio');button.setAttribute('aria-label',soundLabel);button.setAttribute('title',soundLabel);button.classList.toggle('unmuted',!muted);const musicLabel=t(music.enabled?'Pause background music':'Play background music');musicButton.setAttribute('aria-label',musicLabel);musicButton.title=musicLabel;musicButton.setAttribute('aria-pressed',String(music.enabled));}
-musicButton.addEventListener('click',async()=>{music.unlock();try{await music.setEnabled(!music.enabled);}catch{announce(t('Music could not play. Try enabling it again.'));}updateAudioLabels();});
-languageControl.addEventListener('change',()=>setLanguage(languageControl.value as Language));
-onLanguageChange(()=>{for(const element of app.children)if(element!==world)localize(element);for(const label of labels)localize(label.object.element);languageControl.value=getLanguage();if(tooltipLandmark)mapTooltip.textContent=t(tooltipLandmark.title);updateAudioLabels();});
+function updateAudioLabels(){const label=t(muted?'Unmute audio':'Mute audio');musicButton.setAttribute('aria-label',label);musicButton.title=label;musicButton.classList.toggle('unmuted',!muted);musicButton.setAttribute('aria-pressed',String(!muted));}
+let musicStarting=false;
+function unlockAudio(){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(!muted&&!music.enabled&&!musicStarting){musicStarting=true;void music.setEnabled(true).catch(()=>announce(t('Music could not play. Try enabling it again.'))).finally(()=>{musicStarting=false;});}}
+// Browsers require a user gesture before any audible playback.
+window.addEventListener('pointerdown',unlockAudio);window.addEventListener('keydown',unlockAudio);
+musicButton.addEventListener('click',()=>{muted=!muted;chat.speech.setMuted(muted);ambientAudio.setMuted(muted);music.setMuted(muted);unlockAudio();updateAudioLabels();});
+onLanguageChange(()=>{for(const element of app.children)if(element!==world)localize(element);for(const label of labels)localize(label.object.element);if(tooltipLandmark)mapTooltip.textContent=t(tooltipLandmark.title);updateAudioLabels();});
 for(const label of labels)localize(label.object.element);updateAudioLabels();
 document.querySelector('#explore')!.addEventListener('click',start);
 const dialog=document.querySelector<HTMLDialogElement>('#help-dialog')!;document.querySelector('#help')!.addEventListener('click',()=>{input.clear();dialog.showModal();});for(const el of dialog.querySelectorAll('button'))el.addEventListener('click',()=>dialog.close());
-document.querySelector('#sound')!.addEventListener('click',()=>{muted=!muted;chat.speech.unlockAudio();chat.speech.setMuted(muted);ambientAudio.unlock();ambientAudio.setMuted(muted);music.unlock();music.setMuted(muted);updateAudioLabels();});
 const list=document.querySelector<HTMLElement>('.destination-list')!,toggle=document.querySelector('#map-toggle')!;
 function toggleMap(open:boolean){list.hidden=!open;toggle.setAttribute('aria-expanded',String(open));}
 toggle.addEventListener('click',()=>toggleMap(list.hidden));document.querySelector('#map-close')!.addEventListener('click',()=>toggleMap(false));
@@ -113,10 +115,10 @@ function frame(now:number){
   const dt=Math.min((now-previous)/1000,config.performance.maxDelta);previous=now;time+=dt;
   if(!dialog.open){if(started)player.update(input,dt,time);companion.update(player.model.position,dt,time,chat.speech.snapshot.state!=='idle');}
   const mouth=companion.model.getObjectByName('speakingMouth');if(mouth){mouth.visible=chat.speech.snapshot.state==='displaying'&&!config.animation.reducedMotion;mouth.scale.y=.045*(.4+Math.abs(Math.sin(time*config.animation.speechFrequency))*.6);}
-  cameraUpdate(dt);const biome=atmosphere.update(player.model.position,dt);environment.update(time,player.model.position);panels.update(player.model.position,camera,dt);chat.update(player.model.position,companion.model.position,camera,dt);
+  cameraUpdate(dt);atmosphere.update(player.model.position,dt);environment.update(time,player.model.position);panels.update(player.model.position,camera,dt);chat.update(player.model.position,companion.model.position,camera,dt);
   ambientAudio.update(player.model.position);
   if(panels.active)discovered.add(panels.active.id);
-  document.querySelector('#discovered')!.textContent=`${discovered.size} / ${landmarks.length}`;document.querySelector('#location')!.textContent=t(biome.weight>.35?biome.landmark.title:'The greenway');
+  document.querySelector('#discovered')!.textContent=`${discovered.size} / ${landmarks.length}`;
   const dot=document.querySelector('#map-player')!;dot.setAttribute('cx',String(player.model.position.x));dot.setAttribute('cy',String(player.model.position.z));
   for(const label of labels){label.object.element.style.visibility=distance(player.model.position,label.position)<=label.radius&&panels.active?.id!==label.id?'visible':'hidden';}
   renderer.render(scene,camera);cssRenderer.render(domScene,camera);requestAnimationFrame(frame);

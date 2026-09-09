@@ -144,7 +144,7 @@ Minimap markers show a title popup on hover or keyboard focus. The small world t
 
 The supplied files remain at `assets/sound_effects/sans_voice.mp3` and `assets/music/the_smoke_decides.mp3`. Replace them at the same path to change the voice or music. If renaming, update the `new URL(...)` in `src/chat/Speech.ts` or `src/chat/MusicPlayer.ts`. Vite bundles hashed URLs in production. Voice loads and decodes once after a gesture; music loads on demand.
 
-Music starts **off** and all sound starts **muted**. Enable the soundtrack and unmute to hear it. The global mute governs every audio source. Music playback failures appear in a notice.
+Music and ambience are enabled by default and begin after the first user interaction, as required by browser autoplay rules. The single music-note button mutes/unmutes every audio source; a slash means muted. Music playback failures appear in a notice and playback retries on a later interaction.
 
 | Group | Settings and effects |
 | --- | --- |
@@ -160,7 +160,9 @@ Music starts **off** and all sound starts **muted**. Enable the soundtrack and u
 
 English source strings are fallback dictionary keys; `spanish` maps them to translations. Keep interpolation tokens such as `{title}` unchanged. `t()` translates generated strings, and `localize()` updates static DOM in place. Visitor messages, received conversations and authored panel HTML are preserved on language changes. New demo guide responses use the selected language.
 
-To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add an option to `languageControl` in `src/main.ts`. Extend `src/i18n/i18n.test.ts`. Custom panel localization is a separate content-service concern, described above.
+To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add its native label in `src/i18n/LanguageMenu.ts`. The custom dropdown uses the island palette and supports keyboard navigation. Extend `src/i18n/i18n.test.ts`. Custom panel localization is a separate content-service concern, described above.
+
+The human companion’s blonde hair colors are `palette.companionHair` and `palette.companionHairHighlights` in `src/world/models.ts`. These do not affect the panda visitor avatar.
 
 ## Landmarks, paths, and the world boundary
 

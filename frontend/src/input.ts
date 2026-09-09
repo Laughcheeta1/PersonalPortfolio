@@ -24,7 +24,7 @@ export class Input {
     document.addEventListener('visibilitychange', () => this.clear(), options);
     document.addEventListener('focusin', event => {
       // Focusing the world while dragging must not release physically held keys.
-      if((event.target as HTMLElement)?.closest('input,textarea,select,[contenteditable="true"],.world-panel,.chat-anchor,dialog'))this.clear();
+      if((event.target as HTMLElement)?.closest('input,textarea,select,[contenteditable="true"],.world-panel,.chat-anchor,dialog,.language-menu'))this.clear();
     }, options);
     let drag: { id: number; x: number; y: number } | null = null;
     surface.addEventListener('pointerdown', event => {
@@ -51,7 +51,7 @@ export class Input {
     stick.addEventListener('pointermove', event => { if (event.pointerId === stickId) move(event); }, options);
     for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) stick.addEventListener(type, () => { stickId = null; this.joystick = { x: 0, z: 0 }; (stick.firstElementChild as HTMLElement).style.transform = ''; }, options);
   }
-  get editing() { return !!document.activeElement?.closest('input,textarea,select,[contenteditable="true"]'); }
+  get editing() { return !!document.activeElement?.closest('input,textarea,select,[contenteditable="true"],.language-menu'); }
   get movement() {
     if (this.editing) return { x: 0, z: 0 };
     return { x: Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft')) + this.joystick.x, z: Number(this.keys.has('KeyS') || this.keys.has('ArrowDown')) - Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) + this.joystick.z };

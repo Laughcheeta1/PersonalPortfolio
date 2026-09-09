@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 const palette = {
   ivory: '#f3e2bb', stone: '#c6b38e', gold: '#e5ac45', dark: '#343b45',
   steel: '#bac7cd', wood: '#a87749', leaf: '#518952', rose: '#e9576e',
+  companionHair: '#c99945', companionHairHighlights: '#efd078',
 };
 const materials = new Map<string, THREE.MeshStandardMaterial>();
 function material(color: string, metalness = 0) {
@@ -448,8 +449,8 @@ export function createCharacter(companion: boolean): THREE.Group {
   const curve=new THREE.CatmullRomCurve3(smile.getPoints(12).map(p=>new THREE.Vector3(p.x,p.y+1.41,.388)));
   mesh(g,new THREE.TubeGeometry(curve,12,.013,5,false),'#704838',[0,0,0]);
   const speakingMouth=ball(g,[0,1.365,.402],[.045,.045,.016],'#613f37');speakingMouth.name='speakingMouth';speakingMouth.visible=false;
-  ball(g,[0,1.84,-.045],[.47,.31,.39],companion?'#654633':'#80533c');
-  for(let i=0;i<9;i++) { const a=i*2.4; const tuft=ball(g,[Math.sin(a)*.31,1.92+(i%3)*.05,Math.cos(a)*.24],[.2,.12,.19],companion?'#75513a':'#956143'); tuft.rotation.z=-.35; }
+  ball(g,[0,1.84,-.045],[.47,.31,.39],palette.companionHair);
+  for(let i=0;i<9;i++) { const a=i*2.4; const tuft=ball(g,[Math.sin(a)*.31,1.92+(i%3)*.05,Math.cos(a)*.24],[.2,.12,.19],palette.companionHairHighlights); tuft.rotation.z=-.35; }
   for(let i=0;i<13;i++){
     const a=i*2.39996,x=Math.sin(a)*.32,z=Math.cos(a)*.28;
     const lock=mesh(g,new THREE.ConeGeometry(.12,.34,7),'#62412e',[x,2.02+(i%3)*.035,z]);lock.rotation.z=-.55;lock.rotation.x=.3;

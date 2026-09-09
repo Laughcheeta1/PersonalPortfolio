@@ -1,5 +1,16 @@
 # Portfolio execution plan
 
+## Interface cleanup
+
+- [x] Remove location/day/scenic labels and make the human companion blonde.
+- [x] Consolidate audio into one mute toggle, defaulting to audible music and ambience after a gesture.
+- [x] Replace the native language popup with a styled accessible menu.
+- [x] Verify build, tests and browser interactions; update owner documentation.
+
+Interface verification: 79 unit tests and production build pass. Desktop Chrome regression checks pass; an additional paused-animation browser check confirms keyboard language selection, removed labels, default soundtrack playback and the unified mute/slash state. The existing Three.js bundle-size advisory remains.
+
+The full mobile regression timed out while injecting the portrait-dismissal click in software-rendered Chrome; mobile interaction verification remains incomplete for this update.
+
 ## Current update
 
 - [x] Add configurable grounded jumps and faster running, preserving collisions and panel input.
