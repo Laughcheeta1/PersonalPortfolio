@@ -3,6 +3,8 @@ import { config } from '../config';
 export type Point = { x: number; z: number };
 export type Obstacle = Point & { radius: number };
 export const roadZ = (x: number) => Math.sin(x * config.navigation.curveFrequency) * config.navigation.curveAmplitude;
+/** A title appears only inside the circle spanning its landmark-to-main-road path. */
+export const landmarkLabelRadius = (landmark: typeof landmarks[number]) => Math.abs(landmark.position[1]-roadZ(landmark.position[0]))*config.ui.labelRadiusMultiplier;
 export const roadStations = [config.navigation.roadStart, config.navigation.roadEnd];
 export const entrance = (landmark: typeof landmarks[number]): Point => ({ x: landmark.position[0], z: landmark.position[1] + (landmark.position[1] < 0 ? 1 : -1) * Math.max(config.navigation.entranceOffset, landmark.collisionRadius + config.navigation.entranceClearance) });
 export interface NavNode extends Point { id: string; neighbors: string[] }

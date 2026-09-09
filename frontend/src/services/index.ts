@@ -1,10 +1,13 @@
 import DOMPurify from 'dompurify';
 import { landmarks, type LandmarkId } from '../world/registry';
+import { t } from '../i18n';
+import { panelContent } from '../content/panels';
 
-export type PanelDefinition =
+export type PanelDefinition = (
   | { type: 'html'; html: string }
   | { type: 'iframe'; url: string; title: string }
-  | { type: 'none' };
+  | { type: 'none' }
+) & { localize?: boolean };
 export type ServiceErrorCode = 'unavailable' | 'invalid-response' | 'cancelled';
 export class ServiceError extends Error {
   constructor(public readonly code: ServiceErrorCode, message: string) {
@@ -55,6 +58,8 @@ export function createPanelContentService(): PanelContentService {
       const landmark = landmarks.find(item => item.frontPanel === panelId || item.backPanel === panelId);
       if (!landmark) return { type: 'none' };
       const back = landmark.backPanel === panelId;
+      const override = panelContent[landmark.model]?.[back ? 'back' : 'front'];
+      if (override) return { ...override, localize: false };
       const html = back
         ? `<p class="eyebrow">THE OTHER SIDE</p><h2>A little secret</h2><p>You walked around ${landmark.title}. Curiosity looks good on you.</p><p>This corner is reserved for future stories, hidden notes, and the occasional terrible joke.</p>`
         : `<p class="eyebrow">ISLAND NOTEBOOK</p><h2>${landmark.title}</h2><p>${landmark.subtitle}</p><p>This is a place for a personal story. Projects, photographs, reflections, and links will live here as the portfolio grows.</p><details><summary>About this space</summary><p>The island is a work in progress. This sample content is supplied by the local panel service and can later be managed independently of the world.</p></details><label>A note to yourself<input placeholder="Try typing here…" aria-label="A note to yourself" /></label><p class="panel-footnote">Your note stays in this panel for this visit.</p>`;
@@ -68,10 +73,10 @@ export function createChatService(): ChatService {
     async send(message, _history, signal) {
       checkSignal(signal);
       const normalized = message.toLocaleLowerCase().trim();
-      const destination = landmarks.find(item => normalized.includes(item.id) || normalized.includes(item.model) || normalized.includes(item.title.toLocaleLowerCase()) || item.title.toLocaleLowerCase().split(/\s+/).some(word => word.length > 3 && normalized.includes(word)));
+      const destination = landmarks.find(item => normalized.includes(item.id) || normalized.includes(item.model) || [item.title,t(item.title)].some(title=>normalized.includes(title.toLocaleLowerCase()) || title.toLocaleLowerCase().split(/\s+/).some(word => word.length > 3 && normalized.includes(word))));
       return validateChatReply(destination
-        ? { message: `Let's head to ${destination.title}. Follow me along the paths! ${destination.subtitle} Take a look behind the landmark, too—there is another side to every story.`, destination_object_id: destination.id }
-        : { message: `Welcome to my little island! I'm a local demo guide for now. Ask me to take you to ${landmarks.map(item => item.title).join(', ')}. You can also wander at your own pace and discover the stories at each landmark.`, destination_object_id: null });
+        ? { message: t("Let's head to {title}. Follow me along the paths! {subtitle} Take a look behind the landmark, too—there is another side to every story.",{title:t(destination.title),subtitle:t(destination.subtitle)}), destination_object_id: destination.id }
+        : { message: t("Welcome to my little island! I'm a local demo guide for now. Ask me to take you to {places}. You can also wander at your own pace and discover the stories at each landmark.",{places:landmarks.map(item => t(item.title)).join(', ')}), destination_object_id: null });
     },
   };
 }

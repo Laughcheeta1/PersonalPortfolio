@@ -22,9 +22,20 @@ export class Actor {
   }
 }
 export class Player extends Actor {
+  verticalVelocity=0;
+  grounded=true;
+  private jumpBuffered=0;
   update(input: Input, dt: number, time: number) {
+    if(input.consumeJump())this.jumpBuffered=config.player.jumpBuffer;
+    else this.jumpBuffered=Math.max(0,this.jumpBuffered-dt);
+    if(this.grounded&&this.jumpBuffered>0){this.verticalVelocity=config.player.jumpSpeed;this.grounded=false;this.jumpBuffered=0;}
     const movement = input.movement, sin = Math.sin(input.yaw), cos = Math.cos(input.yaw);
     this.move({ x: movement.x * cos + movement.z * sin, z: -movement.x * sin + movement.z * cos }, input.keys.has('ShiftLeft') || input.keys.has('ShiftRight') ? config.player.runSpeed : config.player.walkSpeed, config.player.acceleration, config.player.deceleration, config.player.rotationSpeed, dt, time);
+    if(!this.grounded){
+      this.model.position.y+=this.verticalVelocity*dt-.5*config.player.gravity*dt*dt;
+      this.verticalVelocity-=config.player.gravity*dt;
+      if(this.model.position.y<=config.world.groundHeight){this.model.position.y=config.world.groundHeight;this.verticalVelocity=0;this.grounded=true;}
+    }
   }
 }
 export type GuideState = 'IDLE' | 'FOLLOW_USER' | 'GUIDED_TRAVEL' | 'AT_DESTINATION';

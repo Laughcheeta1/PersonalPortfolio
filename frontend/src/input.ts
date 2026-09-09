@@ -5,21 +5,31 @@ export class Input {
   yaw = 0;
   pitch: number = config.camera.pitch;
   private abort = new AbortController();
+  private jumpRequested = false;
+  requestJump() { this.jumpRequested = true; }
+  consumeJump() { const requested=this.jumpRequested;this.jumpRequested=false;return !this.editing&&requested; }
   constructor(surface: HTMLElement, stick: HTMLElement, unlock: () => void) {
     const options = { signal: this.abort.signal };
     window.addEventListener('keydown', event => {
       unlock();
       if (this.editing || event.ctrlKey || event.metaKey || event.altKey) return;
+      if(event.code==='Space'){
+        if((event.target as HTMLElement)?.closest('button,a,[role="button"],summary,dialog,.world-panel,.chat-anchor'))return;
+        if(!event.repeat)this.requestJump();event.preventDefault();return;
+      }
       if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ShiftLeft', 'ShiftRight', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) { this.keys.add(event.code); event.preventDefault(); }
     }, options);
     window.addEventListener('keyup', event => this.keys.delete(event.code), options);
     window.addEventListener('blur', () => this.clear(), options);
     document.addEventListener('visibilitychange', () => this.clear(), options);
-    document.addEventListener('focusin', () => this.keys.clear(), options);
+    document.addEventListener('focusin', event => {
+      // Focusing the world while dragging must not release physically held keys.
+      if((event.target as HTMLElement)?.closest('input,textarea,select,[contenteditable="true"],.world-panel,.chat-anchor,dialog'))this.clear();
+    }, options);
     let drag: { id: number; x: number; y: number } | null = null;
     surface.addEventListener('pointerdown', event => {
       if (event.button !== 0 || drag) return;
-      (document.activeElement as HTMLElement)?.blur(); unlock();
+      if(this.editing)(document.activeElement as HTMLElement)?.blur(); unlock();
       drag = { id: event.pointerId, x: event.clientX, y: event.clientY }; surface.setPointerCapture(event.pointerId);
     }, options);
     surface.addEventListener('pointermove', event => {
@@ -46,6 +56,6 @@ export class Input {
     if (this.editing) return { x: 0, z: 0 };
     return { x: Number(this.keys.has('KeyD') || this.keys.has('ArrowRight')) - Number(this.keys.has('KeyA') || this.keys.has('ArrowLeft')) + this.joystick.x, z: Number(this.keys.has('KeyS') || this.keys.has('ArrowDown')) - Number(this.keys.has('KeyW') || this.keys.has('ArrowUp')) + this.joystick.z };
   }
-  clear() { this.keys.clear(); this.joystick = { x: 0, z: 0 }; }
+  clear() { this.keys.clear(); this.joystick = { x: 0, z: 0 }; this.jumpRequested=false; }
   dispose() { this.abort.abort(); }
 }

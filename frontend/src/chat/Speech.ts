@@ -1,5 +1,5 @@
 export interface SpeechConfig {
-  /** All durations are seconds; pitch is in Hz. */
+  /** Durations are seconds; playbackRate is a sample speed/pitch multiplier. */
   characterDelay: number;
   spaceDelay: number;
   commaDelay: number;
@@ -7,9 +7,11 @@ export interface SpeechConfig {
   lineBreakDelay: number;
   holdDuration: number;
   volume: number;
-  pitch: number;
-  pitchVariance: number;
-  toneDuration: number;
+  sampleDuration: number;
+  sampleOffset: number;
+  playbackRate: number;
+  playbackRateVariance: number;
+  minSoundInterval: number;
 }
 export type SpeechState = 'idle' | 'received' | 'displaying' | 'finished';
 export interface SpeechSnapshot {
@@ -28,6 +30,10 @@ export class SpeechQueue {
   private elapsed = 0;
   private delay = 0;
   private context: AudioContext | null = null;
+  private sample: AudioBuffer | null = null;
+  private sampleLoading: Promise<void> | null = null;
+  private source: AudioBufferSourceNode | null = null;
+  private lastSound = -Infinity;
   private muted = false;
   private disposed = false;
   private current: SpeechSnapshot = { state: 'idle', text: '', fullText: '', sequence: 0 };
@@ -70,7 +76,8 @@ export class SpeechQueue {
       const character = this.characters[this.cursor++]!;
       this.current = { ...this.current, text: this.current.text + character };
       this.delay = this.characterDelay(character);
-      if (/[\p{L}\p{N}]/u.test(character)) pronounce = true;
+      pronounce = /[\p{L}\p{N}]/u.test(character);
+      if (!pronounce) this.stopSound();
     }
     if (pronounce) this.playTone();
     if (this.cursor === this.characters.length && this.elapsed >= this.delay) {
@@ -92,27 +99,43 @@ export class SpeechQueue {
     try {
       this.context ??= new AudioContext();
       void this.context.resume().catch(() => undefined);
+      if (!this.sampleLoading) {
+        const context = this.context;
+        this.sampleLoading = fetch(new URL('../../assets/sound_effects/sans_voice.mp3', import.meta.url))
+          .then(response => { if (!response.ok) throw new Error('Voice sample unavailable'); return response.arrayBuffer(); })
+          .then(bytes => context.decodeAudioData(bytes))
+          .then(buffer => { if (!this.disposed) this.sample = buffer; })
+          .catch(() => { /* Dialogue still works if the optional audio cannot load. */ });
+      }
     } catch { /* Continue silently if audio is unsupported. */ }
   }
-  setMuted(muted: boolean): void { this.muted = muted; }
+  setMuted(muted: boolean): void { this.muted = muted; if (muted) this.stopSound(); }
+  private stopSound(): void {
+    this.source?.stop();
+    this.source = null;
+  }
   private playTone(): void {
-    if (this.muted || !this.context || this.context.state !== 'running') return;
-    const oscillator = this.context.createOscillator();
-    const gain = this.context.createGain();
+    if (this.muted || !this.context || !this.sample || this.context.state !== 'running') return;
     const start = this.context.currentTime;
-    oscillator.type = 'sine';
-    oscillator.frequency.value = Math.max(1, this.config.pitch + (Math.random() * 2 - 1) * this.config.pitchVariance);
+    if (start - this.lastSound < this.config.minSoundInterval) return;
+    this.stopSound();
+    const source = this.source = this.context.createBufferSource();
+    const gain = this.context.createGain();
+    source.buffer = this.sample;
+    source.playbackRate.value = this.config.playbackRate + (Math.random() * 2 - 1) * this.config.playbackRateVariance;
     gain.gain.setValueAtTime(this.config.volume, start);
-    gain.gain.linearRampToValueAtTime(0, start + this.config.toneDuration);
-    oscillator.connect(gain);
+    gain.gain.linearRampToValueAtTime(0, start + this.config.sampleDuration);
+    source.connect(gain);
     gain.connect(this.context.destination);
-    oscillator.start(start);
-    oscillator.stop(start + this.config.toneDuration);
-    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+    source.start(start, this.config.sampleOffset);
+    source.stop(start + this.config.sampleDuration);
+    this.lastSound = start;
+    source.onended = () => { source.disconnect(); gain.disconnect(); if (this.source === source) this.source = null; };
   }
   dispose(): void {
     this.disposed = true;
     this.queue = [];
+    this.stopSound();
     if (this.context) void this.context.close().catch(() => undefined);
     this.context = null;
   }
