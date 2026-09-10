@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { config } from '../config';
 import { isolatePanel } from '../panels';
-import { BrowserHistoryStore, createChatService, type ChatMessage } from '../services';
+import { BrowserHistoryStore, createBackendChatService, type ChatMessage } from '../services';
 import { SpeechQueue, type SpeechSnapshot } from './Speech';
 import type { LandmarkId } from '../world/registry';
 import { localize, onLanguageChange, t } from '../i18n';
@@ -16,7 +16,7 @@ export class ChatUI {
   private form:HTMLFormElement;
   private store=new BrowserHistoryStore();
   private history:ChatMessage[]=this.store.load();
-  private service=createChatService();
+  private service=createBackendChatService();
   private pending=false;
   private live:HTMLElement|null=null;
   private near=false;

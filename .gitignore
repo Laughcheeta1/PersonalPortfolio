@@ -2,3 +2,9 @@ node_modules/
 frontend/dist/
 frontend/test-results/
 frontend/playwright-report/
+backend/.env
+backend/.venv/
+backend/**/__pycache__/
+backend/**/*.pyc
+frontend/.env
+.nx/

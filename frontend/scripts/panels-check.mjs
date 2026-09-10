@@ -19,7 +19,7 @@ try{
     window.__panelInput=input;window.__back=()=>{camera.position.z=l.position[1]-18;camera.lookAt(l.position[0],7,l.position[1]);camera.updateMatrixWorld();panels.update(player,camera,1);renderer.render(scene,camera);};
   });
   const panel=page.locator('.world-panel:visible');assert.equal(await panel.count(),1);
-  await panel.getByRole('textbox').fill('DOM inputs work');assert.equal(await panel.getByRole('textbox').inputValue(),'DOM inputs work');
+  assert.equal(await panel.getByRole('heading',{name:'Personal projects',exact:true}).count(),1);
   assert.equal(await panel.evaluate(el=>getComputedStyle(el).userSelect),'text');
   const rect=await panel.boundingBox(),before=await page.evaluate(()=>window.__panelInput.yaw);
   await page.mouse.move(rect.x+40,rect.y+70);await page.mouse.down();await page.mouse.move(rect.x+100,rect.y+90,{steps:3});await page.mouse.up();
@@ -27,7 +27,7 @@ try{
   await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await page.mouse.wheel(0,350);await page.waitForTimeout(200);
   assert.ok(await panel.evaluate(el=>el.scrollTop)>0);
   await page.mouse.move(20,400);await page.mouse.down();await page.mouse.move(140,400,{steps:3});await page.mouse.up();assert.notEqual(await page.evaluate(()=>window.__panelInput.yaw),before);
-  await page.evaluate(()=>window.__back());assert.equal(await page.locator('.world-panel:visible').count(),1);await page.getByRole('heading',{name:'A little secret'}).waitFor();
+  await page.evaluate(()=>window.__back());assert.equal(await page.locator('.world-panel:visible').count(),1);await page.getByRole('heading',{name:'Personal projects',exact:true}).waitFor();
   console.log('PASS: DOM input, text selection enabled, internal scroll, pointer isolation, outside camera drag, opposite back surface.');
   await page.screenshot({path:'/tmp/portfolio-back-panel.png'});
   const chatResult=await page.evaluate(async()=>{

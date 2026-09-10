@@ -29,6 +29,8 @@ export interface HistoryStore {
   clear(): void;
 }
 
+const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+
 export function validateChatReply(value: unknown): ChatReply {
   if (!value || typeof value !== 'object') throw new ServiceError('invalid-response', 'The guide received an invalid reply.');
   const reply = value as Record<string, unknown>;
@@ -47,16 +49,42 @@ export function sanitizePanelHtml(html: string): string {
   });
 }
 
+export function validatePanelDefinition(value: unknown): PanelDefinition {
+  if (!value || typeof value !== 'object') throw new ServiceError('invalid-response', 'The notebook returned an invalid panel.');
+  const panel = value as Record<string, unknown>;
+  if (panel.type === 'none') return { type: 'none', localize: false };
+  if (panel.type === 'html' && typeof panel.html === 'string') return { type: 'html', html: panel.html, localize: panel.localize === true };
+  throw new ServiceError('invalid-response', 'The notebook returned an invalid panel.');
+}
+
 function checkSignal(signal?: AbortSignal): void {
   if (signal?.aborted) throw new ServiceError('cancelled', 'Request cancelled.');
 }
 
+function isAbort(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'AbortError';
+}
+
+async function readApiPayload(response: Response): Promise<unknown> {
+  try { return await response.json(); } catch { throw new ServiceError('invalid-response', 'The backend returned invalid JSON.'); }
+}
+
+function apiErrorMessage(payload: unknown, status: number): string {
+  if (payload && typeof payload === 'object') {
+    const body=payload as Record<string, unknown>;
+    if (typeof body.detail === 'string') return body.detail;
+    if (typeof body.message === 'string') return body.message;
+  }
+  return `The backend request failed (${status}).`;
+}
+
 export function createPanelContentService(): PanelContentService {
-  return {
+  const local: PanelContentService = {
     async get(panelId, signal) {
       checkSignal(signal);
       const landmark = landmarks.find(item => item.frontPanel === panelId || item.backPanel === panelId);
       if (!landmark) return { type: 'none' };
+      if (landmark.model === 'library') return { type: 'html', html: '<p>Empire construction in progress, you will know it in the news</p>', localize: false };
       const back = landmark.backPanel === panelId;
       const override = panelContent[landmark.model]?.[back ? 'back' : 'front'];
       if (override) return { ...override, localize: false };
@@ -66,6 +94,33 @@ export function createPanelContentService(): PanelContentService {
       return { type: 'html', html: sanitizePanelHtml(html) };
     },
   };
+  const remote = createBackendPanelContentService();
+  return {
+    async get(panelId, signal) {
+      try { return await remote.get(panelId, signal); }
+      catch (error) {
+        if (error instanceof ServiceError && error.code === 'unavailable') return local.get(panelId, signal);
+        throw error;
+      }
+    },
+  };
+}
+
+export function createBackendPanelContentService(baseUrl = apiBaseUrl): PanelContentService {
+  return {
+    async get(panelId, signal) {
+      checkSignal(signal);
+      let response: Response;
+      try { response=await fetch(`${baseUrl}/panels/${encodeURIComponent(panelId)}`,{signal}); }
+      catch (error) {
+        if (isAbort(error)) throw new ServiceError('cancelled', 'Request cancelled.');
+        throw new ServiceError('unavailable', 'The portfolio backend is unavailable.');
+      }
+      const payload=await readApiPayload(response);
+      if (!response.ok) throw new ServiceError('unavailable', apiErrorMessage(payload,response.status));
+      return validatePanelDefinition(payload);
+    },
+  };
 }
 
 export function createChatService(): ChatService {
@@ -73,10 +128,42 @@ export function createChatService(): ChatService {
     async send(message, _history, signal) {
       checkSignal(signal);
       const normalized = message.toLocaleLowerCase().trim();
-      const destination = landmarks.find(item => normalized.includes(item.id) || normalized.includes(item.model) || [item.title,t(item.title)].some(title=>normalized.includes(title.toLocaleLowerCase()) || title.toLocaleLowerCase().split(/\s+/).some(word => word.length > 3 && normalized.includes(word))));
+      const tokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
+      const matches = (term: string) => term.includes('-') ? normalized.includes(term) : tokens.includes(term);
+      const destination = landmarks.find(item => matches(item.id) || matches(item.model) || [item.title,t(item.title)].some(title=>title.toLocaleLowerCase().split(/\W+/).some(word => word.length > 3 && tokens.includes(word))));
       return validateChatReply(destination
         ? { message: t("Let's head to {title}. Follow me along the paths! {subtitle} Take a look behind the landmark, too—there is another side to every story.",{title:t(destination.title),subtitle:t(destination.subtitle)}), destination_object_id: destination.id }
         : { message: t("Welcome to my little island! I'm a local demo guide for now. Ask me to take you to {places}. You can also wander at your own pace and discover the stories at each landmark.",{places:landmarks.map(item => t(item.title)).join(', ')}), destination_object_id: null });
+    },
+  };
+}
+
+export function createBackendChatService(baseUrl = apiBaseUrl, fallback: ChatService = createChatService()): ChatService {
+  const remote: ChatService = {
+    async send(message, history, signal) {
+      checkSignal(signal);
+      const conversation = history.length && history.at(-1)?.role === 'user' && history.at(-1)?.content === message
+        ? history
+        : [...history, { role: 'user' as const, content: message }];
+      let response: Response;
+      try {
+        response=await fetch(`${baseUrl}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation}),signal});
+      } catch (error) {
+        if (isAbort(error)) throw new ServiceError('cancelled', 'Request cancelled.');
+        throw new ServiceError('unavailable', 'The portfolio backend is unavailable.');
+      }
+      const payload=await readApiPayload(response);
+      if (!response.ok) throw new ServiceError('unavailable', apiErrorMessage(payload,response.status));
+      return validateChatReply(payload);
+    },
+  };
+  return {
+    async send(message, history, signal) {
+      try { return await remote.send(message, history, signal); }
+      catch (error) {
+        if (error instanceof ServiceError && error.code === 'unavailable') return fallback.send(message, history, signal);
+        throw error;
+      }
     },
   };
 }

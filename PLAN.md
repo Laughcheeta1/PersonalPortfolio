@@ -29,6 +29,6 @@ Update verification: 79 unit tests pass. Desktop browser checks cover jumping/la
 - [x] Implement companion guidance, mock services, speech queue and persistence.
 - [x] Verify production build, behavioural tests and browser interaction.
 
-Existing deleted application files are pre-existing user changes. No third-party models or backend implementation will be introduced.
+Existing deleted application files are pre-existing user changes. No third-party models were introduced. The FastAPI/Ollama backend is tracked separately in `TASK-1.md`.
 
 Verification: 69 behavioral tests pass, including all seven complete guided journeys. Chromium checks pass desktop movement, guided commands, mobile viewport/joystick presence, DOM panel typing, selection enablement, wheel scrolling, pointer isolation, and opposite-facing back content. Original asset sheet rendered and inspected; bouquet front wrapping corrected following visual review. Software-rendered frame counts are recorded in browser output, not presented as real hardware FPS measurements. See frontend/README.md for the procedural art scope and remaining fidelity limits.

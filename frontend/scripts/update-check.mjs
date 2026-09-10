@@ -12,8 +12,8 @@ try{
   await page.keyboard.press('Escape');assert.equal(await page.locator('#language-options').isVisible(),false);
   assert.equal(await page.locator('.location-chip, .island-time, #sound').count(),0);
   assert.equal(await page.getByText('Take the scenic route ↗',{exact:true}).count(),0);
-  await page.locator('#minimap g').first().hover();assert.equal(await page.locator('#map-tooltip').textContent(),'Beyond the horizon');
-  await page.locator('#minimap g').nth(1).focus();assert.equal(await page.locator('#map-tooltip').textContent(),'Born to explore');
+  await page.locator('#minimap g').first().hover();assert.equal(await page.locator('#map-tooltip').textContent(),'Projects');
+  await page.locator('#minimap g').nth(1).focus();assert.equal(await page.locator('#map-tooltip').textContent(),'Work experience');
   await page.locator('#explore').click();await page.keyboard.press('Space');
   await page.waitForFunction(()=>window.portfolioDebug.player.y>0,{},{timeout:30000});
   await page.waitForFunction(()=>window.portfolioDebug.player.grounded,{},{timeout:30000});

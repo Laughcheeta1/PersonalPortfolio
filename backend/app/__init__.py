@@ -1,0 +1,1 @@
+"""Personal portfolio backend application."""

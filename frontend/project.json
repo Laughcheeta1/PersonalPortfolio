@@ -1,0 +1,46 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "frontend",
+  "projectType": "application",
+  "sourceRoot": "frontend/src",
+  "targets": {
+    "serve": {
+      "continuous": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node node_modules/vite/bin/vite.js --host 0.0.0.0 --port 5173 --strictPort --clearScreen false",
+        "cwd": "{projectRoot}",
+        "forwardAllArgs": false,
+        "usePty": false,
+        "streamOutput": true,
+        "color": true
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/frontend/dist"
+      ],
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "{projectRoot}",
+        "forwardAllArgs": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run test",
+        "cwd": "{projectRoot}",
+        "forwardAllArgs": false
+      }
+    },
+    "preview": {
+      "continuous": true,
+      "executor": "nx:run-script",
+      "options": {
+        "script": "preview"
+      }
+    }
+  }
+}

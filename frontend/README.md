@@ -2,17 +2,31 @@
 
 This README is also the owner’s settings guide. Start with [editing panel content](#edit-the-displayed-3d-html-panels), [gameplay settings](#gameplay-settings-reference), [audio](#audio-settings-and-your-mp3-files), or [languages](#language-settings).
 
-Frontend-only, original Three.js island portfolio. No third-party 3D models or backend requests. The visitor is a 3D panda monk; the human companion follows `references/me.png` and wears a left-arm WHOOP band.
+Original Three.js island portfolio with a FastAPI portfolio/chat backend. No third-party 3D models. The visitor is a 3D panda monk; the human companion follows `references/me.png` and wears a left-arm WHOOP band.
 
 ## Run
 
+From the repository root, install the workspace dependencies and start the
+full stack with Nx:
+
 ```sh
-cd frontend
 pnpm install
-pnpm dev
+make run
 ```
 
-`pnpm build` checks TypeScript and creates `dist/`. `pnpm test` runs the behavioral suite. The pnpm workspace explicitly declines esbuild's optional lifecycle script; the platform binary is installed as a dependency.
+`make run` copies `frontend/.env` from `.env.example` when missing, then
+starts Vite on `http://127.0.0.1:5173` and FastAPI on
+`http://127.0.0.1:8000`. Nx streams prefixed `frontend:` and `backend:`
+logs to the terminal (the Terminal UI is disabled so serve output is not
+held until the process exits). Run an individual service with
+`pnpm exec nx run frontend:serve` or `pnpm exec nx run backend:serve`.
+
+`pnpm exec nx run frontend:build` checks TypeScript and creates `dist/`.
+`pnpm exec nx run frontend:test` runs the behavioral suite. The pnpm workspace
+explicitly declines esbuild's optional lifecycle script; the platform binary
+is installed as a dependency.
+
+The backend lives in [`../backend`](../backend/README.md). Run it separately with `uv sync` and `uv run uvicorn app.main:app --reload --port 8000` from that directory. Start Ollama with `ollama serve` and pull the configured model with `ollama pull llama3.2`. Set `VITE_API_BASE_URL` to change the default `http://127.0.0.1:8000/api` endpoint.
 
 ## Edit and tune
 
@@ -21,7 +35,7 @@ pnpm dev
 - `src/world/environmentConfig.ts`: seeded environmental generation and visual budgets.
 - `src/world/models.ts`: original parametric asset geometry. Static landmarks are merged by material; mesh proportions are authored asset details, not gameplay settings.
 - `src/world/navigation.ts`: the road graph and collision-free route entry. Rendering uses this same graph. Dijkstra follows explicit road and entrance nodes; local visibility routes avoid obstacle circles.
-- `src/services/index.ts`: replace `ChatService`, `PanelContentService`, or `HistoryStore` implementations without changing the world renderer. Current portfolio copy is explicitly placeholder content; the chat is a deterministic local guide, not an LLM.
+- `src/services/index.ts`: replace `ChatService`, `PanelContentService`, or `HistoryStore` implementations without changing the world renderer. The backend adapters use the FastAPI service and retain local implementations as offline/test fallbacks.
 
 ## Panels and input
 
@@ -53,7 +67,7 @@ Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to reuse an existing Chromium binary. Brows
 
 This is a working procedural interpretation, not a pixel-identical reconstruction of the supplied illustration references. The geometry now includes curled rose petals, folded paper, statue drapery and fractures, rocket tower bracing, aircraft camouflage, gym plate markings, and library terraces/scaffolding/cranes. The environment has a level playable surface with decorative coastal cliffs and mountains; it does not reproduce the references' full network of raised terraces and waterfalls. Further sculptural refinement and device-specific GPU profiling remain appropriate before presenting it as final production art.
 
-The backend, genuine portfolio content, LLM answers, permanent server persistence, and deployment are intentionally not implemented. The build is a static site and needs no Cloud Run service yet.
+The backend is stateless and does not persist conversations; the browser keeps local conversation history. Deployment configuration is intentionally left to the host environment.
 
 ## Edit the displayed 3D HTML panels
 
@@ -109,7 +123,7 @@ front: {
 
 Use the video’s embed URL, not a watch URL. Other HTTPS webpages work only if their host permits embedding (CSP or `X-Frame-Options` may block it). Sandbox permissions are controlled in `src/panels.ts`; do not add same-origin privileges casually.
 
-HTML is sanitized: scripts, inline event handlers, inline styles and raw nested iframes are removed. Put reusable styling in `.world-panel` CSS classes in `src/style.css`. Normal buttons, links, inputs, selection and scrolling work. A form alone does not save or send data: add an explicit destination or event handler for that functionality. There is no contact backend yet.
+HTML is sanitized: scripts, inline event handlers, inline styles and raw nested iframes are removed. Put reusable styling in `.world-panel` CSS classes in `src/style.css`. Normal buttons, links, inputs, selection and scrolling work. A form alone does not save or send data: add an explicit destination or event handler for that functionality. There is no contact-form backend yet.
 
 Save while `pnpm dev` runs to see content edits. Refresh after changing gameplay, generated geometry or audio settings so existing objects/buffers are rebuilt. Production updates require `pnpm build` and deployment of the new `dist/`.
 
@@ -207,10 +221,10 @@ All fields in [`src/world/environmentConfig.ts`](src/world/environmentConfig.ts)
 
 Under `config.performance`, `maxDpr`/`mobileDpr` cap rendering pixel density; `shadowMap` is shadow texture size; `maxDelta` bounds simulated time per frame; `trees`/`flowers`/`particles` set generation counts. `lodDistance` is legacy/reserved now that title visibility has a separate path-based radius. Instancing and material batching are the active mesh optimizations. GPU budgets are not real-device FPS guarantees; profile intended devices.
 
-## Conversation persistence and future backend
+## Conversation persistence and backend
 
 `BrowserHistoryStore` in `src/services/index.ts` accepts a storage key and maximum message count (defaults: `portfolio.conversation.v1`, 100). Clear history through the chat UI. Full replies are persisted on receipt independently of visual speech completion. To change mock responses, edit `createChatService()`.
 
-Later, replace the implementations behind `ChatService`, `PanelContentService`, and `HistoryStore` without rewriting the renderer. Validate backend destination IDs and sanitize external HTML. Backend replies are complete responses, not streams. No real LLM or permanent server persistence exists yet.
+The default `ChatService` and `PanelContentService` adapters call the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api`). If the backend is unavailable, the existing local implementations keep the island usable for demos and browser checks. Validate backend destination IDs and sanitize external HTML. Backend replies are complete responses, not streams. Provider configuration and Ollama setup live in [`../backend/README.md`](../backend/README.md).
 
 `window.portfolioDebug` exposes read-only player position/grounded state, guide behavior, speech state, language, music/mute state and render counts for troubleshooting. Browser scripts need the local server and an installed Chromium; use `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to select one.

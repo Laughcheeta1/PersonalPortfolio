@@ -15,12 +15,12 @@ describe('language selection',()=>{
   it('updates subscribers without recreating application state',()=>{
     let notifications=0;const unsubscribe=onLanguageChange(()=>notifications++);
     setLanguage('es');expect(getLanguage()).toBe('es');expect(t('Jump')).toBe('Saltar');
-    expect(t('Follow your guide to {title}.',{title:t(landmarks[0].title)})).toBe('Sigue a tu guía hasta Más allá del horizonte.');
+    expect(t('Follow your guide to {title}.',{title:t(landmarks[0].title)})).toBe('Sigue a tu guía hasta Proyectos.');
     unsubscribe();setLanguage('en');expect(notifications).toBe(1);expect(t('Jump')).toBe('Jump');
   });
   it('preserves unknown future content and resolves translated mock destinations to stable IDs',async()=>{
     setLanguage('es');expect(t('Future custom content')).toBe('Future custom content');
-    const reply=await createChatService().send('Llévame a Más allá del horizonte',[]);
+    const reply=await createChatService().send('Llévame a Proyectos',[]);
     expect(reply.destination_object_id).toBe(landmarks[0].id);expect(reply.message).toContain('¡Sígueme');
   });
 });

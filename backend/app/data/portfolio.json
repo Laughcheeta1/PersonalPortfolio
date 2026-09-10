@@ -1,0 +1,533 @@
+{
+  "personal": {
+    "headline": "“I know of no better life purpose than to perish attempting the great and impossible” - Nietzsche",
+    "summary": "Highly curious, fast learner and a go-getter, Santiago thrives on asking questions and seeking meaningful answers. He is passionate about expanding his knowledge—not only in technology and academia but also in geopolitics, economics, and current events. His charisma and strong public speaking skills make him a natural leader, often taking the initiative in team settings. With a proactive mindset and extensive experience in team management, he excels at guiding teams toward success",
+    "availability": "open_to_offers",
+    "githubUrl": "https://laughcheeta1.github.io/PersonalPortfolio/",
+    "linkedinUrl": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270",
+    "hobbies": [
+      {
+        "id": "reading",
+        "slug": "reading",
+        "title": "Reading",
+        "summary": "I enjoy reading books and articles about technology.",
+        "details": ""
+      },
+      {
+        "id": "gym",
+        "slug": "gym",
+        "title": "Gym Activities",
+        "summary": "I enjoy doing gym activities like lifting weights and running.",
+        "details": ""
+      },
+      {
+        "id": "jiu-jitsu",
+        "slug": "jiu-jitsu",
+        "title": "Jiu-Jitsu",
+        "summary": "I enjoy doing jiu-jitsu as a hobby.",
+        "details": ""
+      },
+      {
+        "id": "gifts-and-surprise-parties",
+        "slug": "gifts-and-surprise-parties",
+        "title": "Making Gifts and Surprise Parties",
+        "summary": "I enjoy making gifts and surprise parties for my friends and family.",
+        "details": ""
+      },
+      {
+        "id": "motorcicle-driving",
+        "slug": "motorcicle-driving",
+        "title": "Motorcicle Driving",
+        "summary": "I enjoy driving motorcicles.",
+        "details": ""
+      }
+    ],
+    "languagesSpoken": [
+      "Spanish",
+      "English"
+    ]
+  },
+  "projects": {
+    "personalProjects": [
+      {
+        "id": "proj-nao-aeronautics",
+        "title": "NAO Aeronautics",
+        "summary": "Logistics startup concept to bring city resources to remote areas.",
+        "details": "Developed a full business plan, process architecture, and prototype. Conducted 35 outreach contacts and interviewed 15 professionals across mining, cattle raising, farming, defense, NGOs, social programs, and expeditions to identify customers, early adopters, and iterate on the product.",
+        "technologies": [],
+        "links": {}
+      },
+      {
+        "id": "proj-vcow",
+        "title": "VCOW",
+        "summary": "Mock startup project that pivoted from vertical farming for cattle-raising into a crowdfunding platform for cattle projects.",
+        "details": "Developed for the CREATE-X course (Georgia Tech). Interviewed 40+ cattle farmers to understand needs, then after pivot interviewed 10+ people to understand investment strategies and refine customer base.",
+        "technologies": [],
+        "links": {}
+      },
+      {
+        "id": "proj-absence-management",
+        "title": "Employee Absence Management Software",
+        "summary": "Web application enabling employers to manage employee absences.",
+        "details": "Defined and documented requirements, designed the architecture and database, and built backend microservices and database layers.",
+        "architectureExplanation": "Monolith architecture using Next.js + GraphQL backed by Supabase, with backend services and database layers built to support absence workflows.",
+        "technologies": [
+          "Next.js",
+          "GraphQL",
+          "PostgreSQL",
+          "Supabase"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-lookup",
+        "title": "Lookup",
+        "summary": "Multi-brand clothing catalog with CSV inventory upload and store/product geolocation.",
+        "details": "Collaboration with business students. Defined and documented requirements, designed the architecture and database, and developed backend microservices along with the database.",
+        "architectureExplanation": "REST microservice architecture with services split across Spring Boot and NestJS; React (Vite) frontend; MongoDB as the database engine.",
+        "technologies": [
+          "Spring Boot",
+          "NestJS",
+          "React",
+          "Vite",
+          "MongoDB",
+          "REST",
+          "Microservices"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-personal-portfolio",
+        "title": "Personal Portfolio",
+        "summary": "This personal portfolio website",
+        "details": "I have to finish the portfolio first to update this entry to be more accurate.",
+        "architectureExplanation": "Three.js + React frontend + Chatbot that is able to navigate the website.",
+        "technologies": [
+          "Three.js",
+          "React",
+          "LLMs",
+          "Vite"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-eia-university-hackathon",
+        "title": "EIA University Hackathon",
+        "summary": "Organized hackathon at EIA University with the sponsorship of mc2.",
+        "details": "The hackathon was about building a startup business model + a MVP of the product.",
+        "technologies": [],
+        "links": {}
+      }
+    ],
+    "workProjects": [
+      {
+        "id": "proj-employee-medical-scales-calculator-agent",
+        "title": "Medical Scales Calculator - Telepatia",
+        "summary": "Agent to calculate medical scales for patients given a transcript of a consultation",
+        "details": "This project was fundamental to increase the product market fit for doctors and specialists.",
+        "technologies": [
+          "Python",
+          "LLMs"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-employee-emr-mapping-agent",
+        "title": "EMR Mapping Agent - Telepatia",
+        "summary": "Agent to map any electronic medical record (EMR) to a standard format given its HTML file",
+        "details": "",
+        "technologies": [
+          "Python",
+          "LLMs"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-employee-chrome-extension-for-integrations",
+        "title": "Chrome Extension for Integrations - Telepatia",
+        "summary": "Designed and implemented an integrations framework and a Chrome extension to automatically create, manage, and execute integrations with EMR systems.",
+        "details": "This project was not completely finished due to time and priority constraints.",
+        "technologies": [
+          "Chrome Extensions"
+        ],
+        "links": {}
+      },
+      {
+        "id": "proj-employee-coordinate-corporation",
+        "title": "Coordinate Solution for a Corporation - Telepatia",
+        "summary": "Coordinated multiple teams after a corporation accidentally blocked access to Telepatia's product.",
+        "details": "This included coordinating multiple directives, technicians, and doctors to solve the problem in a single day.",
+        "technologies": [
+          "Java",
+          "Spring Boot"
+        ],
+        "links": {}
+      }
+    ]
+  },
+  "work": {
+    "companies": [
+      {
+        "id": "work-eia-selected-tutor-programming-fundamentals",
+        "title": "University Selected Tutor — Programming Fundamentals",
+        "summary": "Taught programming fundamentals to first-semester students.",
+        "details": "Delivered lecture-style sessions covering programming fundamentals.",
+        "companyName": "EIA University",
+        "startDate": "2024-08",
+        "endDate": "2025-07",
+        "links": {
+          "externalUrl": "https://eia.edu.co/"
+        }
+      },
+      {
+        "id": "work-telepatia-ai-engineer",
+        "title": "AI Engineer - Telepatia",
+        "summary": "Engineered AI solutions for Telepatia's products.",
+        "details": "Developed and maintained AI agents for Telepatia's products.",
+        "companyName": "Telepatia",
+        "startDate": "2025-08-11",
+        "endDate": "2026-02-09",
+        "links": {
+          "externalUrl": "https://www.telepatia.ai/"
+        }
+      }
+    ],
+    "entrepreneurship": [
+      {
+        "id": "work-elio-for-business",
+        "title": "CTO & Cofounder",
+        "summary": "Led engineering strategy, architecture, and delivery for AI-driven sales automation.",
+        "details": "Built core systems including agent-driven sales automation, multiple database layers, and scalable cloud architecture; managed a team of 7 developers.",
+        "ventureName": "elio for business",
+        "startDate": "2025-06-01",
+        "endDate": null,
+        "links": {}
+      },
+      {
+        "id": "ent-nao-aeronautics",
+        "title": "NAO Aeronautics (Venture)",
+        "summary": "Logistics startup concept focused on serving remote areas.",
+        "details": "Built business plan, process architecture, and prototype; executed extensive interview-driven discovery and iteration.",
+        "ventureName": "NAO Aeronautics",
+        "startDate": "2024-01-01",
+        "endDate": null,
+        "links": {}
+      },
+      {
+        "id": "ent-vcow",
+        "title": "VCOW (Venture)",
+        "summary": "Crowdfunding platform concept for cattle-raising projects (pivoted from vertical farming).",
+        "details": "Interview-driven validation with 40+ farmers and 10+ investors after the pivot, built for a CREATE-X course deliverable.",
+        "ventureName": "VCOW",
+        "startDate": "2024-10-01",
+        "endDate": null,
+        "links": {}
+      }
+    ],
+    "independentWork": [
+      {
+        "id": "work-mc2-university-ambassador",
+        "title": "University Ambassador",
+        "summary": "Built partnerships between mc2 and EIA University and organized a startup hackathon.",
+        "details": "Established a partnership with EIA University; organized a hackathon with 60+ participants, recruited judges, and secured support and funding.",
+        "clientOrProductName": "mc2",
+        "startDate": "2025-03-01",
+        "endDate": null,
+        "links": {}
+      },
+      {
+        "id": "eia-private-tutor-data-structures",
+        "title": "Private Tutor — Data Structures",
+        "summary": "Provided personalized tutoring for Data Structures.",
+        "details": "Tailored lesson plans to student learning preferences to improve comprehension and performance.",
+        "clientOrProductName": "EIA University (Private tutoring)",
+        "startDate": "2024-09-01",
+        "endDate": "2025-07-01",
+        "links": {}
+      },
+      {
+        "id": "ind-demo-investor-pitches",
+        "title": "Investor & Demo Pitches",
+        "summary": "Delivered multiple startup pitches and demo presentations across events and programs.",
+        "details": "Included Innovate EPM, the Conexión Entrepreneur Summit, and a demo pitch at the end of mc2 Builder's Program showcasing NAO Aeronautics progress.",
+        "clientOrProductName": "Multiple events and programs",
+        "startDate": "2024-10-01",
+        "endDate": "2025-05-01",
+        "links": {}
+      }
+    ]
+  },
+  "education": {
+    "universityEducations": [
+      {
+        "id": "edu-eia-systems-engineering",
+        "title": "Systems Engineering and Computing",
+        "summary": "Systems Engineering and Computing undergraduate program (Ninth semester out of ten).",
+        "details": "GPA: 4.45.",
+        "institution": "EIA University",
+        "degree": "Systems Engineering and Computing",
+        "startDate": "2022-01-01",
+        "endDate": "2026-11-01",
+        "links": {}
+      }
+    ],
+    "courseEducations": [
+      {
+        "id": "course-softserve-python-advanced",
+        "title": "Python Advanced Course",
+        "summary": "Advanced Python training with practical software development focus.",
+        "details": "Course completed through SoftServe (March 2025 – July 2025).",
+        "provider": "SoftServe",
+        "completionDate": "2025-07-01",
+        "links": {
+          "externalUrl": "https://career.softserveinc.com/en-us/certification/verification"
+        }
+      },
+      {
+        "id": "course-stanford-ml-regression-classification",
+        "title": "Supervised Machine Learning: Regression and Classification",
+        "summary": "Core supervised learning training focused on regression and classification.",
+        "details": "Course by Stanford University and DeepLearning.AI (January 2025).",
+        "provider": "Stanford University & DeepLearning.AI",
+        "completionDate": "2025-01-01",
+        "links": {
+          "externalUrl": "https://www.coursera.org/account/accomplishments/verify/PQ8KNO22EI1O"
+        }
+      },
+      {
+        "id": "course-harvard-cs50ai",
+        "title": "CS50 AI",
+        "summary": "Introductory AI coursework.",
+        "details": "Fundamentals of AI, from probability and statistics to machine learning, deep learning, and LLMs.",
+        "provider": "Harvard University",
+        "completionDate": "2024-07",
+        "links": {
+          "externalUrl": "https://certificates.cs50.io/c0ec4251-a812-4952-b65a-36ca53c8211f.pdf?size=letter"
+        }
+      },
+      {
+        "id": "course-harvard-cs50x",
+        "title": "CS50x",
+        "summary": "Foundational computer science introductory course.",
+        "details": "Covers programming, algorithms, and data structures.",
+        "provider": "Harvard University",
+        "completionDate": "2024-06",
+        "links": {
+          "externalUrl": "https://certificates.cs50.io/88848e26-785b-454f-80f3-5d3fe1dde262.pdf?size=letter"
+        }
+      },
+      {
+        "id": "course-eia-data-analytics-diploma",
+        "title": "Data Analytics Diploma",
+        "summary": "Structured training in data analytics fundamentals.",
+        "details": "Diploma completed at EIA University (August 2023 – November 2023).",
+        "provider": "EIA University",
+        "completionDate": "2023-11-01",
+        "links": {
+          "externalUrl": "https://wallet.xertify.co/certificates/F5A51F73A001?r=1"
+        }
+      },
+      {
+        "id": "course-mc2-builders-program",
+        "title": "mc2 Builders Program",
+        "summary": "Long-term startup building program with demos and iteration.",
+        "details": "A program providing resources and knowledge to build a startup from scratch.",
+        "provider": "mc2",
+        "completionDate": "2025-05",
+        "links": {
+          "externalUrl": "https://mc2.builders/"
+        }
+      }
+    ]
+  },
+  "skills": {
+    "1": {
+      "id": 1,
+      "slug": "python",
+      "name": "Python",
+      "category": "language",
+      "summary": "Primary language used for backend development and agent/workflow automation."
+    },
+    "4": {
+      "id": 4,
+      "slug": "typescript",
+      "name": "TypeScript",
+      "category": "language",
+      "summary": "Used for typed JavaScript development, notably with NestJS and React tooling."
+    },
+    "6": {
+      "id": 6,
+      "slug": "sql",
+      "name": "SQL",
+      "category": "language",
+      "summary": "Query language for relational databases and analytics."
+    },
+    "15": {
+      "id": 15,
+      "slug": "docker",
+      "name": "Docker",
+      "category": "tool",
+      "summary": "Containerization for reproducible builds."
+    },
+    "17": {
+      "id": 17,
+      "slug": "mongodb",
+      "name": "MongoDB",
+      "category": "database",
+      "summary": "Document database used in microservice-based systems."
+    },
+    "20": {
+      "id": 20,
+      "slug": "google-cloud",
+      "name": "Google Cloud",
+      "category": "cloud",
+      "summary": "Cloud platform used for hosting and scalable infrastructure."
+    },
+    "21": {
+      "id": 21,
+      "slug": "aws",
+      "name": "AWS",
+      "category": "cloud",
+      "summary": "Cloud platform experience."
+    },
+    "23": {
+      "id": 23,
+      "slug": "software-architecture",
+      "name": "Software Architecture",
+      "category": "architecture",
+      "summary": "Designing scalable, reliable, and maintainable systems and data flows."
+    },
+    "24": {
+      "id": 24,
+      "slug": "system-design",
+      "name": "System Design",
+      "category": "architecture",
+      "summary": "Designing system components, tradeoffs, and scalability patterns."
+    },
+    "26": {
+      "id": 26,
+      "slug": "agent-development",
+      "name": "AI Agent Development",
+      "category": "ai",
+      "summary": "Developing agents to automate workflows including messaging, negotiation, CRM, quoting, and payments."
+    },
+    "27": {
+      "id": 27,
+      "slug": "leadership",
+      "name": "Leadership",
+      "category": "soft-skill",
+      "summary": "Leading teams and technical direction."
+    },
+    "29": {
+      "id": 29,
+      "slug": "communication",
+      "name": "Communication",
+      "category": "soft-skill",
+      "summary": "Clear written and verbal communication across technical and non-technical audiences."
+    },
+    "30": {
+      "id": 30,
+      "slug": "public-speaking",
+      "name": "Public Speaking",
+      "category": "soft-skill",
+      "summary": "Presenting demos, pitches, and public talks."
+    },
+    "31": {
+      "id": 31,
+      "slug": "tutoring",
+      "name": "Tutoring",
+      "category": "soft-skill",
+      "summary": "Teaching and supporting students through structured learning."
+    },
+    "32": {
+      "id": 32,
+      "slug": "product-validation",
+      "name": "Product Validation",
+      "category": "startup",
+      "summary": "Validating product ideas via interviews, iteration, and market discovery."
+    },
+    "35": {
+      "id": 35,
+      "slug": "entrepreneurship",
+      "name": "Entrepreneurship",
+      "category": "startup",
+      "summary": "Building ventures, pitches, and product iteration from early stages."
+    }
+  },
+  "honors": {
+    "awards": [
+      {
+        "id": "award-sistecredito-hackathon-1st-3rd",
+        "title": "First Place — Sistecredito's Third Hackathon",
+        "summary": "Won first place at Sistecredito's third hackathon.",
+        "details": "Built a smart product management solution for retailers with demand prediction using LSTM models, a NestJS and MongoDB backend on AWS, and a Next.js frontend on Vercel.",
+        "date": "2024-11-01"
+      },
+      {
+        "id": "award-sistecredito-hackathon-1st-2nd",
+        "title": "First Place — Sistecredito's Second Hackathon",
+        "summary": "Won first place at a Sistecredito hackathon.",
+        "details": "Designed a fraud-detection system for 1.7M labeled transactions using a multi-model approach tailored to individual spending habits.",
+        "date": "2024-08-01"
+      },
+      {
+        "id": "award-isa-intercolombia-hackathon-1st",
+        "title": "First Place — ISA Intercolombia's Hackathon",
+        "summary": "Won first place at ISA Intercolombia's hackathon.",
+        "details": "Created a data-driven logistics and optimization concept for predicting powerline failures and improving routing and stock allocation.",
+        "date": "2024-05-01"
+      }
+    ],
+    "honors": [
+      {
+        "id": "leadership-recognition-eia-university",
+        "title": "Recognition of Leadership — EIA University",
+        "summary": "Recognized for representing the undergraduate program in systems and computer engineering.",
+        "details": "",
+        "date": "2026-02-12"
+      },
+      {
+        "id": "award-sistecredito-hackathon-mentor-judge-4th",
+        "title": "Mentor and Judge — Sistecredito's Fourth Hackathon",
+        "summary": "Selected as mentor and judge for Sistecredito's fourth hackathon.",
+        "details": "The hackathon focused on AI agents used as debt negotiators.",
+        "date": "2025-03"
+      },
+      {
+        "id": "honor-icpc-represented-eia-2024",
+        "title": "Regional ICPC EIA Representative — 2024",
+        "summary": "Represented EIA University in ICPC and advanced to the regional round.",
+        "details": "",
+        "date": "2024"
+      },
+      {
+        "id": "honor-icpc-represented-eia-2023",
+        "title": "Local ICPC EIA Representative — 2023",
+        "summary": "Represented EIA University in ICPC.",
+        "details": "",
+        "date": "2023"
+      },
+      {
+        "id": "honor-icpc-represented-eia-2022",
+        "title": "Local ICPC EIA Representative — 2022",
+        "summary": "Represented EIA University in ICPC.",
+        "details": "",
+        "date": "2022"
+      },
+      {
+        "id": "honor-eia-deans-list-2023-02",
+        "title": "Dean's List — Second Semester",
+        "summary": "Recognized for academic performance in the second semester of university.",
+        "details": "",
+        "date": "2023-02-01"
+      },
+      {
+        "id": "honor-eia-deans-list-2022-10",
+        "title": "Dean's List — First Semester",
+        "summary": "Recognized for academic performance in the first semester of university.",
+        "details": "",
+        "date": "2022-10-01"
+      }
+    ]
+  }
+}
