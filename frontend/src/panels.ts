@@ -3,7 +3,7 @@ import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { config } from './config';
 import { landmarks, type Landmark } from './world/registry';
 import { distance } from './world/navigation';
-import { createPanelContentService, sanitizePanelHtml, type PanelDefinition } from './services';
+import { apiOrigin, createPanelContentService, sanitizePanelHtml, type PanelDefinition } from './services';
 import { localize, onLanguageChange, t } from './i18n';
 export type PanelState = 'inactive' | 'opening' | 'active' | 'closing';
 export function choosePanel(player:{x:number;z:number},current:Landmark|null):Landmark|null {
@@ -19,8 +19,12 @@ export async function renderContent(element:HTMLElement, definition:PanelDefinit
   element.replaceChildren();
   if(definition.type==='html')element.innerHTML=sanitizePanelHtml(definition.html);
   if(definition.type==='iframe') {
-    try {const url=new URL(definition.url);if(url.protocol!=='https:')throw new Error();
-      const iframe=document.createElement('iframe');iframe.src=url.href;iframe.title=definition.title;iframe.sandbox.add('allow-scripts','allow-forms','allow-presentation');iframe.referrerPolicy='no-referrer';iframe.loading='lazy';iframe.allow='fullscreen';element.append(iframe);
+    try {
+      const url=new URL(definition.url,document.baseURI);
+      const sameOrigin=url.origin===window.location.origin;
+      const panelApiOrigin=url.origin===apiOrigin;
+      if(!sameOrigin&&!panelApiOrigin&&url.protocol!=='https:')throw new Error();
+      const iframe=document.createElement('iframe');iframe.src=url.href;iframe.title=definition.title;iframe.sandbox.add('allow-scripts','allow-forms','allow-presentation','allow-popups','allow-popups-to-escape-sandbox');iframe.referrerPolicy='no-referrer';iframe.loading='eager';iframe.allow='fullscreen';iframe.style.display='block';iframe.style.width='100%';iframe.style.height='100%';iframe.style.border='0';element.style.padding='0';element.style.border='0';element.style.background='transparent';element.style.boxShadow='none';element.style.overflow='hidden';element.append(iframe);
     } catch { element.textContent=t('This embedded page is not available.'); }
   }
 }

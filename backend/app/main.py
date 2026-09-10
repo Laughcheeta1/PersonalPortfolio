@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 
 from .chat import InvalidProviderResponse, PortfolioChat
 from .config import Settings, get_settings
-from .panels import render_panel
+from .panel_documents import read_panel_document
 from .portfolio import PortfolioRepository
 from .providers.base import ProviderError, ProviderUnavailable, LLMProvider
 from .providers.ollama import OllamaProvider
-from .schemas import ChatReply, ChatRequest, PanelDefinition
+from .schemas import ChatReply, ChatRequest
 
 
 def create_app(
@@ -24,6 +25,11 @@ def create_app(
         base_url=str(resolved_settings.ollama_base_url),
         model=resolved_settings.ollama_model,
         timeout_seconds=resolved_settings.ollama_timeout_seconds,
+        api_key=(
+            resolved_settings.ollama_api_key.get_secret_value()
+            if resolved_settings.ollama_api_key is not None
+            else None
+        ),
     )
     chat = PortfolioChat(resolved_provider, resolved_portfolio)
 
@@ -41,10 +47,10 @@ def create_app(
     async def health() -> dict[str, str]:
         return {"status": "ok"}
 
-    @app.get("/api/panels/{panel_id}", response_model=PanelDefinition)
-    async def panel(panel_id: str) -> PanelDefinition:
+    @app.get("/api/panels/{panel_id}", response_class=HTMLResponse)
+    async def panel(panel_id: str) -> HTMLResponse:
         try:
-            return render_panel(panel_id, resolved_portfolio)
+            return HTMLResponse(read_panel_document(panel_id))
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="Panel not found.") from exc
 

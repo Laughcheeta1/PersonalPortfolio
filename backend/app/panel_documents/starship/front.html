@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Projects · Personal projects</title>
+  <style>
+    :root{color-scheme:dark;--ink:#e7f0ff;--muted:#9db2d0;--line:#385274;--accent:#ffb84d}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
+    body{background:radial-gradient(circle at 85% 0,#294d72 0,#152b4b 35%,#0b1529 78%);color:var(--ink);padding:24px;overflow:auto}
+    main{max-width:650px;margin:auto}.eyebrow{color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+    h1{font-size:clamp(30px,7vw,48px);line-height:.98;letter-spacing:-.06em;margin:10px 0 14px}.intro{color:var(--muted);font-size:14px;line-height:1.6;margin:0 0 22px}
+    .orbit{display:flex;gap:7px;margin:0 0 20px}.orbit i{display:block;width:42px;height:5px;border-radius:99px;background:var(--line)}.orbit i:first-child{background:var(--accent)}
+    .section{margin:20px 0}.section h2{color:#ffcf7a;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin:0 0 9px}.grid{display:grid;gap:10px}.card{background:linear-gradient(135deg,#182b49dd,#0f1b31e8);border:1px solid #3a5678;border-radius:16px;padding:15px;box-shadow:0 12px 30px #0004}
+    .card h3{font-size:17px;margin:0 0 5px}.card p{color:var(--muted);font-size:12px;line-height:1.55;margin:0}.card p+p{margin-top:8px}.tag{display:inline-block;margin-top:11px;color:#17233a;background:var(--accent);border-radius:99px;padding:4px 8px;font-size:9px;font-weight:800;letter-spacing:.08em}
+    footer{color:#7890b1;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:20px}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">01 · Personal projects</div>
+    <h1>Big ideas,<br>built to travel.</h1>
+    <p class="intro">A launch manifest of ventures, experiments, products, and work projects shaped by curiosity.</p>
+    <div class="orbit"><i></i><i></i><i></i><i></i></div>
+    <section class="section"><h2>Personal projects</h2><div class="grid">
+      <article class="card"><h3>NAO Aeronautics</h3><p>Logistics startup concept bringing city resources to remote areas. Built the business plan, process architecture, and prototype through 35 outreach contacts and 15 professional interviews.</p><span class="tag">VENTURE CONCEPT</span></article>
+      <article class="card"><h3>VCOW</h3><p>A CREATE-X project that pivoted from vertical farming for cattle-raising into a crowdfunding platform for cattle projects after interviews with farmers and investors.</p><span class="tag">PRODUCT DISCOVERY</span></article>
+      <article class="card"><h3>Employee Absence Management</h3><p>Web application enabling employers to manage employee absences. Defined requirements, architecture, database, and backend service layers.</p><p>Monolith architecture using Next.js and GraphQL backed by Supabase.</p><span class="tag">WEB APPLICATION</span></article>
+      <article class="card"><h3>Lookup</h3><p>Multi-brand clothing catalog with CSV inventory upload plus store and product geolocation.</p><p>REST microservice architecture using Spring Boot, NestJS, React, Vite, and MongoDB.</p><span class="tag">MICROSERVICES</span></article>
+      <article class="card"><h3>Personal Portfolio</h3><p>This little island: a Three.js world, a conversational guide, and a portfolio designed as a place to explore.</p><span class="tag">IN PROGRESS</span></article>
+      <article class="card"><h3>EIA University Hackathon</h3><p>Organized a startup business-model and MVP hackathon with sponsorship from mc2.</p><span class="tag">COMMUNITY</span></article>
+    </div></section>
+    <section class="section"><h2>Work projects</h2><div class="grid">
+      <article class="card"><h3>Legal_IA</h3><p>Created and deployed an AI web application now in use by a legal professional. Lawyers manage their knowledge bases, clients, and documents, then ask an AI agent questions about that private context.</p><p>Administrator pages let the owner independently change each agent's LLM provider, model, and prompt, keeping the product maintainable without engineering intervention.</p><span class="tag">DEPLOYED AI PRODUCT</span></article>
+      <article class="card"><h3>Medical Scales Calculator</h3><p>Agent that calculates medical scales from consultation transcripts to improve product-market fit for doctors and specialists.</p><span class="tag">PYTHON · LLMS</span></article>
+      <article class="card"><h3>EMR Mapping Agent</h3><p>Agent that maps any electronic medical record to a standard format from its HTML file.</p><span class="tag">PYTHON · LLMS</span></article>
+      <article class="card"><h3>Integrations Framework</h3><p>Framework and Chrome extension to create, manage, and execute integrations with EMR systems.</p><span class="tag">CHROME EXTENSIONS</span></article>
+      <article class="card"><h3>Coordinate Solution</h3><p>Coordinated multiple teams, technicians, and doctors to restore access to a product in a single day.</p><span class="tag">JAVA · SPRING BOOT</span></article>
+    </div></section>
+    <footer>Build the impossible · one orbit at a time</footer>
+  </main>
+</body>
+</html>

@@ -50,6 +50,7 @@ const spanish: Record<string, string> = {
   'LOCAL DEMO GUIDE':'GUÍA LOCAL DE DEMOSTRACIÓN','Clear history':'Borrar historial','YOUR GUIDE':'TU GUÍA',
   'Let me finish this thought first.':'Déjame terminar esta idea primero.','Thinking…':'Pensando…',
   'Welcome, wanderer. Ask me about a landmark, or choose a destination on the island map.':'Bienvenido, viajero. Pregúntame por un lugar o elige un destino en el mapa de la isla.',
+  'Welcome to my little island! Ask me about Santiago or choose a destination on the island map.':'¡Bienvenido a mi pequeña isla! Pregúntame por Santiago o elige un destino en el mapa de la isla.',
   'I could not find a clear route. Try meeting me on the path.':'No encontré una ruta despejada. Intenta reunirte conmigo en el sendero.',
   'The guide is unavailable. Please try again.':'El guía no está disponible. Inténtalo de nuevo.',
   'The guide received an invalid reply.':'El guía recibió una respuesta no válida.',

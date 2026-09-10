@@ -1,29 +1,26 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createBackendChatService,
-  createBackendPanelContentService,
+  createPanelContentService,
+  MAX_CHAT_HISTORY_MESSAGES,
+  MAX_CHAT_MESSAGE_LENGTH,
   ServiceError,
+  validateChatMessage,
   validatePanelDefinition,
 } from './services';
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe('backend service adapters', () => {
-  it('loads sanitized-compatible panel definitions from the API', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ type: 'html', html: '<h2>Projects</h2>', localize: false }),
+  it('loads standalone panel documents from the local registry', async () => {
+    const panel = await createPanelContentService().get('starship:front');
+
+    expect(panel).toEqual({
+      type: 'iframe',
+      url: 'http://127.0.0.1:8000/api/panels/starship%3Afront',
+      title: 'Projects front notebook',
+      localize: false,
     });
-    vi.stubGlobal('fetch', fetchMock);
-
-    const panel = await createBackendPanelContentService('http://backend/api').get('starship:front');
-
-    expect(panel).toEqual({ type: 'html', html: '<h2>Projects</h2>', localize: false });
-    expect(fetchMock).toHaveBeenCalledWith(
-      'http://backend/api/panels/starship%3Afront',
-      { signal: undefined },
-    );
   });
 
   it('sends the complete browser conversation and validates chat replies', async () => {
@@ -55,13 +52,46 @@ describe('backend service adapters', () => {
   it('maps network failures to the existing unavailable service error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
 
-    await expect(
-      createBackendPanelContentService('http://backend/api').get('starship:front'),
-    ).rejects.toMatchObject({ code: 'unavailable' });
+    const reply = await createBackendChatService('http://backend/api').send('Take me to starship', []);
+
+    expect(reply.destination_object_id).toBe('starship');
+  });
+
+  it('bounds messages and the outgoing browser history', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ message: 'Sure.', destination_object_id: null }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const history = Array.from({ length: MAX_CHAT_HISTORY_MESSAGES + 2 }, (_, index) => ({
+      role: 'assistant' as const,
+      content: `Earlier ${index}`,
+    }));
+    await createBackendChatService('http://backend/api').send('Hello', history);
+
+    const payload = JSON.parse(fetchMock.mock.calls[0]![1].body as string) as {
+      messages: Array<{ content: string }>;
+    };
+    expect(payload.messages).toHaveLength(MAX_CHAT_HISTORY_MESSAGES);
+    expect(payload.messages.at(-1)?.content).toBe('Hello');
+    expect(() => validateChatMessage('x'.repeat(MAX_CHAT_MESSAGE_LENGTH + 1))).toThrow(ServiceError);
   });
 
   it('rejects malformed panel responses', () => {
     expect(() => validatePanelDefinition({ type: 'html', html: 42 })).toThrow(ServiceError);
+    expect(validatePanelDefinition({
+      type: 'iframe',
+      url: 'http://backend/api/panels/starship%3Afront',
+      title: 'Projects front notebook',
+      localize: false,
+    })).toEqual({
+      type: 'iframe',
+      url: 'http://backend/api/panels/starship%3Afront',
+      title: 'Projects front notebook',
+      localize: false,
+    });
     expect(validatePanelDefinition({ type: 'none' })).toEqual({ type: 'none', localize: false });
   });
 });

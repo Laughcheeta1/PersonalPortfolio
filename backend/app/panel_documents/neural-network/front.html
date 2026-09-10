@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skills and education · Learning graph</title>
+  <style>
+    :root{--ink:#103b3d;--muted:#4f7473;--teal:#5ec9bb;--lime:#b6df8c;--cream:#f5f6dc}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:ui-sans-serif,system-ui,sans-serif}
+    body{background:radial-gradient(circle at 15% 8%,#eefac8,#b7e1c1 36%,#75b5aa 100%);color:var(--ink);padding:24px;overflow:auto}
+    main{max-width:650px;margin:auto}.eyebrow{font-size:10px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:#36766f}
+    h1{font-size:clamp(29px,7vw,47px);letter-spacing:-.07em;line-height:.98;margin:10px 0 13px}.intro{font-size:14px;line-height:1.6;color:var(--muted);margin:0 0 20px}
+    .nodes{height:54px;display:flex;align-items:center;gap:8px;margin-bottom:20px}.nodes i{display:block;width:19px;height:19px;border-radius:50%;background:var(--cream);border:4px solid var(--teal);box-shadow:0 0 0 6px #ffffff35}.nodes i:nth-child(2n){width:11px;height:11px;background:var(--lime);border:2px solid #36766f}.nodes b{height:2px;flex:1;background:#4b9e963f}
+    .section{margin-top:18px}.section h2{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#387b73;margin:0 0 9px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.card{background:#eff4d8c7;border:1px solid #fff9;border-radius:14px;padding:13px}.card h3{font-size:14px;margin:0 0 5px}.card p{font-size:11px;line-height:1.45;color:var(--muted);margin:0}.wide{grid-column:1/-1}.pill{display:inline-block;background:#d0edb2;color:#397267;border-radius:99px;padding:4px 7px;font-size:9px;font-weight:800;margin:7px 3px 0 0}
+    footer{color:#39756d;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:21px}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">03 · Skills & learning</div>
+    <h1>Keep asking<br>better questions.</h1>
+    <p class="intro">A living graph of tools, systems, habits, education, and projects gathered while building things that need to work.</p>
+    <div class="nodes"><i></i><b></b><i></i><b></b><i></i><b></b><i></i><b></b><i></i></div>
+    <section class="section"><h2>Skills</h2><div class="grid">
+      <article class="card"><h3>Python</h3><p>Backend development and agent/workflow automation.</p><span class="pill">language</span></article>
+      <article class="card"><h3>TypeScript</h3><p>Typed JavaScript development and product tooling.</p><span class="pill">language</span></article>
+      <article class="card"><h3>SQL</h3><p>Relational data and analytics.</p><span class="pill">language</span></article>
+      <article class="card"><h3>MongoDB</h3><p>Document storage for service-based systems.</p><span class="pill">database</span></article>
+      <article class="card"><h3>Docker · AWS · Google Cloud</h3><p>Reproducible builds and scalable infrastructure.</p><span class="pill">tools</span></article>
+      <article class="card"><h3>Software Architecture</h3><p>Scalable, reliable, maintainable data flows.</p><span class="pill">architecture</span></article>
+      <article class="card"><h3>System Design</h3><p>Components, tradeoffs, and scalability.</p><span class="pill">architecture</span></article>
+      <article class="card"><h3>AI Agent Development</h3><p>Agents for messaging, negotiation, CRM, quoting, and payments.</p><span class="pill">ai</span></article>
+      <article class="card"><h3>Leadership · Communication</h3><p>Teams, technical direction, and clear explanations.</p><span class="pill">people</span></article>
+      <article class="card"><h3>Public speaking · Tutoring</h3><p>Presenting demos and supporting structured learning.</p><span class="pill">people</span></article>
+      <article class="card wide"><h3>Product validation · Entrepreneurship</h3><p>Build ventures through interviews, iteration, and market discovery.</p><span class="pill">startup</span></article>
+    </div></section>
+    <section class="section"><h2>Education</h2><div class="grid">
+      <article class="card wide"><h3>Systems Engineering and Computing · EIA University</h3><p>Undergraduate program, ninth semester out of ten. GPA: 4.45.</p><span class="pill">2022 — 2026</span></article>
+      <article class="card"><h3>Python Advanced Course</h3><p>Advanced Python with practical software development.</p><span class="pill">SoftServe · 2025</span></article>
+      <article class="card"><h3>Supervised Machine Learning</h3><p>Regression and classification.</p><span class="pill">Stanford · 2025</span></article>
+      <article class="card"><h3>CS50 AI</h3><p>Probability, statistics, ML, deep learning, and LLMs.</p><span class="pill">Harvard · 2024</span></article>
+      <article class="card"><h3>CS50x</h3><p>Programming, algorithms, and data structures.</p><span class="pill">Harvard · 2024</span></article>
+      <article class="card"><h3>Data Analytics Diploma</h3><p>Analytics fundamentals.</p><span class="pill">EIA · 2023</span></article>
+      <article class="card wide"><h3>mc2 Builders Program</h3><p>Resources and knowledge for building a startup from scratch.</p><span class="pill">mc2 · 2025</span></article>
+    </div></section>
+    <section class="section"><h2>Work projects as practice</h2><div class="grid">
+      <article class="card wide"><h3>Legal_IA</h3><p>Deployed AI workspace for lawyers with knowledge bases, clients, documents, configurable LLM providers, models, and prompts.</p></article>
+      <article class="card"><h3>Medical Scales Calculator</h3><p>Transcript-to-medical-scale agent.</p></article>
+      <article class="card"><h3>EMR Mapping Agent</h3><p>HTML record to standard format.</p></article>
+      <article class="card"><h3>Integrations Framework</h3><p>EMR integration Chrome extension.</p></article>
+      <article class="card"><h3>Coordinate Solution</h3><p>Java and Spring Boot coordination system.</p></article>
+    </div></section>
+    <footer>Curiosity is a system property</footer>
+  </main>
+</body>
+</html>

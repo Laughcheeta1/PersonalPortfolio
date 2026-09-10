@@ -2,7 +2,13 @@ import * as THREE from 'three';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 import { config } from '../config';
 import { isolatePanel } from '../panels';
-import { BrowserHistoryStore, createBackendChatService, type ChatMessage } from '../services';
+import {
+  BrowserHistoryStore,
+  createBackendChatService,
+  MAX_CHAT_HISTORY_MESSAGES,
+  validateChatMessage,
+  type ChatMessage,
+} from '../services';
 import { SpeechQueue, type SpeechSnapshot } from './Speech';
 import type { LandmarkId } from '../world/registry';
 import { localize, onLanguageChange, t } from '../i18n';
@@ -23,7 +29,7 @@ export class ChatUI {
   constructor(scene:THREE.Scene,private guide:(id:LandmarkId)=>boolean) {
     this.element.className='chat-anchor';this.element.setAttribute('aria-label','Companion conversation');isolatePanel(this.element);
     this.element.style.setProperty('--chat-open-duration',`${config.panels.openDuration}s`);
-    this.element.innerHTML=`<div class="chat-full"><header><span class="guide-avatar">✦</span><div><strong>Your island guide</strong><small>A little company, a little curiosity.</small></div><span class="online-dot"></span></header><div class="chat-log" role="log" aria-label="Conversation history"></div><p class="chat-status" role="status"></p><form><input aria-label="Message your guide" placeholder="Where shall we go?" maxlength="1500" autocomplete="off"/><button aria-label="Send message" type="submit">↑</button></form><footer>LOCAL DEMO GUIDE <button type="button" class="clear-chat">Clear history</button></footer></div><div class="comic"><strong>YOUR GUIDE</strong><p></p></div>`;
+    this.element.innerHTML=`<div class="chat-full"><header><span class="guide-avatar">✦</span><div><strong>Your island guide</strong><small>A little company, a little curiosity.</small></div><span class="online-dot"></span></header><div class="chat-log" role="log" aria-label="Conversation history"></div><p class="chat-status" role="status"></p><form><input aria-label="Message your guide" placeholder="Where shall we go?" maxlength="300" autocomplete="off"/><button aria-label="Send message" type="submit">↑</button></form><footer>LOCAL DEMO GUIDE <button type="button" class="clear-chat">Clear history</button></footer></div><div class="comic"><strong>YOUR GUIDE</strong><p></p></div>`;
     this.log=this.element.querySelector('.chat-log')!;this.comic=this.element.querySelector('.comic p')!;this.status=this.element.querySelector('.chat-status')!;this.form=this.element.querySelector('form')!;
     for(const element of [this.log,this.comic,this.status])element.dataset.i18nSkip='';
     const translate=()=>{localize(this.element);this.log.setAttribute('aria-label',t('Conversation history'));const welcome=this.log.querySelector('[data-welcome]');if(welcome)welcome.textContent=t('Welcome, wanderer. Ask me about a landmark, or choose a destination on the island map.');};
@@ -33,12 +39,21 @@ export class ChatUI {
     this.element.querySelector('.clear-chat')!.addEventListener('click',()=>{if(this.speech.snapshot.state!=='idle'||this.pending){this.status.textContent=t('Let me finish this thought first.');return;}this.history=[];this.store.clear();this.renderHistory();});
     this.object=new CSS3DObject(this.element);this.element.style.userSelect='text';this.object.scale.setScalar(config.ui.chatScale);scene.add(this.object);
   }
-  private append(role:string,text:string){const p=document.createElement('p');p.className=`message ${role}`;p.textContent=text;this.log.append(p);this.log.scrollTop=this.log.scrollHeight;return p;}
+  private append(role:string,text:string){
+    const p=document.createElement('p');p.className=`message ${role}`;p.textContent=text;this.log.append(p);
+    const messages=[...this.log.querySelectorAll('.message:not([data-welcome])')];
+    while(messages.length>MAX_CHAT_HISTORY_MESSAGES)messages.shift()?.remove();
+    this.log.scrollTop=this.log.scrollHeight;return p;
+  }
   private renderHistory(){this.log.replaceChildren();if(!this.history.length)this.append('assistant',t('Welcome, wanderer. Ask me about a landmark, or choose a destination on the island map.')).dataset.welcome='';for(const message of this.history)this.append(message.role,message.content);}
   async send(message:string){
+    let normalizedMessage:string;
+    try {normalizedMessage=validateChatMessage(message);}
+    catch(error){this.status.textContent=t(error instanceof Error?error.message:'The message is too long.');return;}
     this.speech.unlockAudio();this.pending=true;this.status.textContent=t('Thinking…');this.form.querySelector('button')!.disabled=true;
-    this.history.push({role:'user',content:message});this.append('user',message);this.store.save(this.history);
-    try {const reply=await this.service.send(message,this.history);this.history.push({role:'assistant',content:reply.message});this.store.save(this.history);this.speech.enqueue(reply.message);if(reply.destination_object_id&&!this.guide(reply.destination_object_id))this.status.textContent=t('I could not find a clear route. Try meeting me on the path.');else this.status.textContent='';}
+    this.log.querySelector('[data-welcome]')?.remove();
+    this.history=[...this.history,{role:'user' as const,content:normalizedMessage}].slice(-MAX_CHAT_HISTORY_MESSAGES);this.append('user',normalizedMessage);this.store.save(this.history);
+    try {const reply=await this.service.send(normalizedMessage,this.history);this.history=[...this.history,{role:'assistant' as const,content:reply.message}].slice(-MAX_CHAT_HISTORY_MESSAGES);this.store.save(this.history);this.speech.enqueue(reply.message);if(reply.destination_object_id&&!this.guide(reply.destination_object_id))this.status.textContent=t('I could not find a clear route. Try meeting me on the path.');else this.status.textContent='';}
     catch(error){this.status.textContent=t(error instanceof Error?error.message:'The guide is unavailable. Please try again.');}
     finally{this.pending=false;this.form.querySelector('button')!.disabled=false;}
   }

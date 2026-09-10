@@ -14,3 +14,9 @@
 - Treat an explicit UI-preservation request as an immutability boundary: preserve existing visual design and 3D model geometry, and limit changes to data or service wiring unless the user explicitly expands the scope.
 - For long-running Nx serve tasks, disable the Terminal UI and stream output to stdout. TUI mode pipes `run-commands` logs until the process exits, so Vite/Uvicorn never print.
 - Do not nest `pnpm exec` under `pnpm exec nx` for serve processes. The child can block on the parent pnpm lock and never bind or log; invoke the local binary with `node` instead.
+- When explaining interactive 3D UI, distinguish scene rendering from DOM/CSS3D overlays and verify whether data is fetched during initialization or interaction.
+- Treat front/back content as separate product roles: keep all relevant information on the front and reserve backsides for explicitly requested secrets, jokes, or easter eggs.
+- When authored content is requested from the backend, keep the source documents server-side and make the frontend consume the backend contract rather than duplicating the assets.
+- Confirm the repository's available deployment refs before discussing branch operations; never suggest creating or pushing a branch unless the user explicitly requests it.
+- Distinguish a managed source deployment from a user-managed container image; honor the requested deployment abstraction and avoid adding container build artifacts when the platform can deploy the application source directly.
+- For deployment requests, prefer the smallest platform-native command that satisfies the target; do not add image registries or extra build layers unless the user asks for them.

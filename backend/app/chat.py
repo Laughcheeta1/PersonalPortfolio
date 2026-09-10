@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from typing import Any
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from .portfolio import PortfolioRepository
+from .prompt import render_system_prompt, render_user_prompt
 from .providers.base import LLMProvider
 from .schemas import ChatReply, ChatRequest
 
@@ -35,40 +37,43 @@ class PortfolioChat:
                 "role": "system",
                 "content": self._system_prompt(),
             },
-            *(
-                {
-                    "role": message.role,
-                    "content": message.content,
-                }
-                for message in request.messages
-            ),
+            {
+                "role": "user",
+                "content": render_user_prompt(request.messages),
+            },
         ]
         raw = await self.provider.complete(
             messages,
-            response_format=ChatReply.model_json_schema(),
+            response_model=ChatReply,
         )
         return self._parse_reply(raw)
 
     def _system_prompt(self) -> str:
-        ids = ", ".join(LANDMARKS)
-        return (
-            "You are the calm, helpful guide for Santiago Yepes's personal portfolio. "
-            "Answer only from the portfolio data below. Keep replies concise and natural, "
-            "use the user's language when possible, and do not invent facts. "
-            "Return only a JSON object with exactly two fields: `message` and "
-            f"`destination_object_id`. The destination must be null unless the user asks "
-            f"to visit a relevant landmark. Allowed destination IDs: {ids}. "
-            "Do not return Markdown fences or any text outside the JSON object.\n\n"
-            f"Portfolio data:\n{self.portfolio.prompt_context()}"
+        return render_system_prompt(
+            self.portfolio.data,
+            allowed_destinations=LANDMARKS,
         )
 
     @staticmethod
-    def _parse_reply(raw: str) -> ChatReply:
-        candidate = raw.strip()
-        if candidate.startswith("```") and candidate.endswith("```"):
-            candidate = candidate.split("\n", 1)[-1].rsplit("```", 1)[0].strip()
+    def _parse_reply(raw: Any) -> ChatReply:
         try:
-            payload: Any = json.loads(candidate)
+            if isinstance(raw, ChatReply):
+                return raw
+            if isinstance(raw, BaseModel):
+                return ChatReply.model_validate(raw.model_dump())
+            if isinstance(raw, Mapping):
+                payload: Any = raw
+            elif isinstance(raw, str):
+                candidate = raw.strip()
+                if candidate.startswith("```") and candidate.endswith("```"):
+                    candidate = (
+                        candidate.split("\n", 1)[-1]
+                        .rsplit("```", 1)[0]
+                        .strip()
+                    )
+                payload = json.loads(candidate)
+            else:
+                raise TypeError("The provider returned an unsupported result.")
             return ChatReply.model_validate(payload)
         except (json.JSONDecodeError, ValidationError, TypeError) as exc:
             raise InvalidProviderResponse(

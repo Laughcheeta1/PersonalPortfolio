@@ -26,7 +26,7 @@ held until the process exits). Run an individual service with
 explicitly declines esbuild's optional lifecycle script; the platform binary
 is installed as a dependency.
 
-The backend lives in [`../backend`](../backend/README.md). Run it separately with `uv sync` and `uv run uvicorn app.main:app --reload --port 8000` from that directory. Start Ollama with `ollama serve` and pull the configured model with `ollama pull llama3.2`. Set `VITE_API_BASE_URL` to change the default `http://127.0.0.1:8000/api` endpoint.
+The backend lives in [`../backend`](../backend/README.md). Run it separately with `uv sync` and `uv run uvicorn app.main:app --reload --port 8000` from that directory. Configure the Ollama Cloud URL, model, and API key in `backend/.env`. Set `VITE_API_BASE_URL` to change the default `http://127.0.0.1:8000/api` endpoint.
 
 ## Edit and tune
 
@@ -47,7 +47,7 @@ HTML is sanitized with DOMPurify at the rendering boundary. Embedded pages requi
 
 Guided travel takes priority over following, and follows actual roads to an entrance. After arrival the companion waits for both the configured hold and speech completion, then resumes normal behavior. Following starts outside the follow radius and stops at the target radius. Long catch-up trips use the road graph to bound route-search work.
 
-Complete mock responses enter a display queue (`received → displaying → finished → idle`). Punctuation pauses are separate from character timing. Leaving chat range replaces the full history UI with a three-line scrolling speech bubble. Received conversation history is stored locally independently of visual speech completion, so subsequent service calls see full conversational context; inaccessible or invalid storage does not break the scene. Speech uses your MP3 sample; ambience is synthesized locally. All audio starts muted and requires a user gesture. The sound button controls speech, ambience and the optional soundtrack.
+Complete mock responses enter a display queue (`received → displaying → finished → idle`). Punctuation pauses are separate from character timing. Leaving chat range replaces the full history UI with a three-line scrolling speech bubble. The browser stores and sends only the latest 10 conversation messages, and each message is limited to 300 characters; inaccessible or invalid storage does not break the scene. Speech uses your MP3 sample; ambience is synthesized locally. All audio starts muted and requires a user gesture. The sound button controls speech, ambience and the optional soundtrack.
 
 ## Verification and visual review
 
@@ -71,59 +71,42 @@ The backend is stateless and does not persist conversations; the browser keeps l
 
 ## Edit the displayed 3D HTML panels
 
-The “canvases” are real interactive HTML panels. Edit [`src/content/panels.ts`](src/content/panels.ts), keeping its existing imports and type declaration. Replace the empty `panelContent` object with your own front/back definitions. Omitted entries or sides keep the localized demo content.
+The “canvases” are complete HTML documents returned by the backend and
+embedded in the Three.js world through sandboxed CSS3D iframes. The source
+documents live under [`../backend/app/panel_documents`](../backend/app/panel_documents),
+not in the frontend. Each landmark has a `front.html` and a `back.html`.
 
-| Landmark | Content key |
+The front document is the complete portfolio surface for that landmark. Put all
+relevant information there. The back document is reserved for a short secret,
+joke, or easter egg; it should not be used to hide portfolio data.
+
+| Landmark | Backend documents |
 | --- | --- |
-| Starship | `rocket` |
-| F-22 | `jet` |
-| Neural network | `network` |
-| Roses | `bouquet` |
-| Victory statue | `statue` |
-| Squat rack | `gym` |
-| Pergamon library | `library` |
+| Starship | `panel_documents/starship/front.html`, `back.html` |
+| F-22 | `panel_documents/f22/front.html`, `back.html` |
+| Neural network | `panel_documents/neural-network/front.html`, `back.html` |
+| Roses | `panel_documents/roses/front.html`, `back.html` |
+| Victory statue | `panel_documents/victory-statue/front.html`, `back.html` |
+| Squat rack | `panel_documents/squat-rack/front.html`, `back.html` |
+| Pergamon library | `panel_documents/pergamon-library/front.html`, `back.html` |
 
-Example replacement:
+The backend route is:
 
-```ts
-export const panelContent: Partial<Record<Landmark['model'], {
-  front?: PanelDefinition;
-  back?: PanelDefinition;
-}>> = {
-  rocket: {
-    front: {
-      type: 'html',
-      html: `
-        <p class="eyebrow">MY PROJECTS</p>
-        <h2>Things I have built</h2>
-        <p>Replace this with your introduction.</p>
-        <a href="https://example.com">Visit my project</a>
-        <details><summary>Read more</summary><p>A longer story.</p></details>
-      `,
-    },
-    back: {
-      type: 'html',
-      html: '<h2>You found the secret!</h2><p>Your hidden message.</p>',
-    },
-  },
-};
+```text
+GET /api/panels/{landmark-id}:{front|back}
 ```
 
-Use `{ type: 'none' }` to hide a side, including its frame. Custom override HTML is shared across languages and preserved on language changes. The built-in demo content is translated. For language-specific custom definitions, extend the content service to select by locale and reload only that panel’s definition when the language changes.
+It returns the selected file as `text/html`. The frontend constructs that URL
+from the canonical landmark registry and embeds it; it does not contain the
+panel copy or styling. Each document should keep its own doctype, metadata,
+CSS, and body so it can also be opened directly from the backend URL.
 
-For a video or entire page, use an iframe definition instead:
-
-```ts
-front: {
-  type: 'iframe',
-  url: 'https://www.youtube-nocookie.com/embed/YOUR_VIDEO_ID',
-  title: 'My project demonstration',
-}
-```
-
-Use the video’s embed URL, not a watch URL. Other HTTPS webpages work only if their host permits embedding (CSP or `X-Frame-Options` may block it). Sandbox permissions are controlled in `src/panels.ts`; do not add same-origin privileges casually.
-
-HTML is sanitized: scripts, inline event handlers, inline styles and raw nested iframes are removed. Put reusable styling in `.world-panel` CSS classes in `src/style.css`. Normal buttons, links, inputs, selection and scrolling work. A form alone does not save or send data: add an explicit destination or event handler for that functionality. There is no contact-form backend yet.
+Panel HTML is not passed through the frontend fragment sanitizer because these
+documents are loaded in a sandboxed iframe. Keep scripts and external assets
+intentional, use HTTPS for remote resources, and do not add same-origin
+privileges to the iframe without a specific need. The parent panel still
+controls dimensions, proximity animation, camera-facing front/back selection,
+pointer isolation, and scrolling.
 
 Save while `pnpm dev` runs to see content edits. Refresh after changing gameplay, generated geometry or audio settings so existing objects/buffers are rebuilt. Production updates require `pnpm build` and deployment of the new `dist/`.
 
@@ -223,8 +206,25 @@ Under `config.performance`, `maxDpr`/`mobileDpr` cap rendering pixel density; `s
 
 ## Conversation persistence and backend
 
-`BrowserHistoryStore` in `src/services/index.ts` accepts a storage key and maximum message count (defaults: `portfolio.conversation.v1`, 100). Clear history through the chat UI. Full replies are persisted on receipt independently of visual speech completion. To change mock responses, edit `createChatService()`.
+`BrowserHistoryStore` in `src/services/index.ts` accepts a storage key and maximum message count (defaults: `portfolio.conversation.v1`, 10). Clear history through the chat UI. Full replies are persisted on receipt independently of visual speech completion. To change mock responses, edit `createChatService()`.
 
-The default `ChatService` and `PanelContentService` adapters call the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api`). If the backend is unavailable, the existing local implementations keep the island usable for demos and browser checks. Validate backend destination IDs and sanitize external HTML. Backend replies are complete responses, not streams. Provider configuration and Ollama setup live in [`../backend/README.md`](../backend/README.md).
+The default `ChatService` calls the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api`); panel documents are also served by that backend. If the backend is unavailable, the local chat implementation keeps the guide usable for demos, but authored panel documents cannot load. Validate backend destination IDs and keep panel documents sandboxed. Backend replies are complete responses, not streams. Provider configuration and Ollama Cloud setup live in [`../backend/README.md`](../backend/README.md).
 
 `window.portfolioDebug` exposes read-only player position/grounded state, guide behavior, speech state, language, music/mute state and render counts for troubleshooting. Browser scripts need the local server and an installed Chromium; use `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to select one.
+
+## Deploy to GitHub Pages
+
+The [`deploy-frontend.yml`](../.github/workflows/deploy-frontend.yml) workflow
+runs the frontend tests and production build, then publishes `frontend/dist`
+to GitHub Pages when `master` receives frontend or workspace build changes. It
+can also be started manually. The `github-pages` environment must provide the
+`VITE_API_BASE_URL` Actions variable, set to the Cloud Run API base URL
+including `/api`, for example:
+
+```text
+https://<cloud-run-service-url>/api
+```
+
+Production Vite builds use the `/PersonalPortfolio/` project path, while local
+development remains available at the root of the Vite server. The deployed
+site is `https://laughcheeta1.github.io/PersonalPortfolio/`.

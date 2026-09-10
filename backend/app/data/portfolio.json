@@ -1,9 +1,9 @@
 {
   "personal": {
-    "headline": "“I know of no better life purpose than to perish attempting the great and impossible” - Nietzsche",
-    "summary": "Highly curious, fast learner and a go-getter, Santiago thrives on asking questions and seeking meaningful answers. He is passionate about expanding his knowledge—not only in technology and academia but also in geopolitics, economics, and current events. His charisma and strong public speaking skills make him a natural leader, often taking the initiative in team settings. With a proactive mindset and extensive experience in team management, he excels at guiding teams toward success",
+    "headline": "AI Engineer",
+    "summary": "AI Engineer and Systems Engineering student at Universidad EIA who thrives on sharing knowledge and empowering others through education. Experienced in tutoring Data Structures and programming fundamentals, organizing hackathons, and collaborating on analytical, team-oriented projects.",
     "availability": "open_to_offers",
-    "githubUrl": "https://laughcheeta1.github.io/PersonalPortfolio/",
+    "githubUrl": "https://github.com/elio-cto",
     "linkedinUrl": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270",
     "hobbies": [
       {
@@ -18,13 +18,6 @@
         "slug": "gym",
         "title": "Gym Activities",
         "summary": "I enjoy doing gym activities like lifting weights and running.",
-        "details": ""
-      },
-      {
-        "id": "jiu-jitsu",
-        "slug": "jiu-jitsu",
-        "title": "Jiu-Jitsu",
-        "summary": "I enjoy doing jiu-jitsu as a hobby.",
         "details": ""
       },
       {
@@ -121,6 +114,20 @@
     ],
     "workProjects": [
       {
+        "id": "proj-legal-ia",
+        "title": "Legal_IA",
+        "summary": "AI knowledge-base and client-management web application built for a legal professional.",
+        "details": "Was contacted by the owner to create an AI web application for his own usage. The application was deployed and is currently in use. Each lawyer can manage their own knowledge base, clients, and corresponding documents, then ask an AI agent questions about that knowledge base and those clients.",
+        "architectureExplanation": "The application includes administrator pages where the owner can modify each agent independently, including its LLM provider, model, and prompt. This allows the product to stay maintainable and current without requiring engineering intervention.",
+        "technologies": [
+          "AI agents",
+          "Knowledge bases",
+          "LLM providers",
+          "Prompt management"
+        ],
+        "links": {}
+      },
+      {
         "id": "proj-employee-medical-scales-calculator-agent",
         "title": "Medical Scales Calculator - Telepatia",
         "summary": "Agent to calculate medical scales for patients given a transcript of a consultation",
@@ -168,25 +175,37 @@
   "work": {
     "companies": [
       {
+        "id": "work-stealth-startup-ai-engineer",
+        "title": "AI Engineer - Stealth Startup",
+        "summary": "Developing AI systems as part of a stealth startup's engineering and technical team.",
+        "details": "Current AI Engineer role at a technology startup operating in stealth.",
+        "companyName": "Stealth Startup",
+        "startDate": "2026-03",
+        "endDate": null,
+        "links": {
+          "externalUrl": "https://www.linkedin.com/company/stealth-startup-community"
+        }
+      },
+      {
         "id": "work-eia-selected-tutor-programming-fundamentals",
-        "title": "University Selected Tutor — Programming Fundamentals",
-        "summary": "Taught programming fundamentals to first-semester students.",
-        "details": "Delivered lecture-style sessions covering programming fundamentals.",
+        "title": "Programming Fundamentals Tutor",
+        "summary": "Tutored students in programming fundamentals at EIA University.",
+        "details": "Provided guidance and support to help students understand coding concepts, with positive feedback for clear explanations and an approachable teaching style.",
         "companyName": "EIA University",
-        "startDate": "2024-08",
-        "endDate": "2025-07",
+        "startDate": "2023-06",
+        "endDate": "2023-11",
         "links": {
           "externalUrl": "https://eia.edu.co/"
         }
       },
       {
         "id": "work-telepatia-ai-engineer",
-        "title": "AI Engineer - Telepatia",
-        "summary": "Engineered AI solutions for Telepatia's products.",
-        "details": "Developed and maintained AI agents for Telepatia's products.",
+        "title": "Founding Team AI Engineer Intern - Telepatia",
+        "summary": "Built AI agents and integration tooling as part of Telepatia's founding team.",
+        "details": "Built AI agents for RPA integration testing, medical-scale calculation, and clinical decision support; created evaluation tests, a Manifest V2/V3 Chrome extension, and supported codebase migration and large corporate customers as a forward-deployed engineer.",
         "companyName": "Telepatia",
-        "startDate": "2025-08-11",
-        "endDate": "2026-02-09",
+        "startDate": "2025-08",
+        "endDate": "2026-02",
         "links": {
           "externalUrl": "https://www.telepatia.ai/"
         }
@@ -207,10 +226,10 @@
         "id": "ent-nao-aeronautics",
         "title": "NAO Aeronautics (Venture)",
         "summary": "Logistics startup concept focused on serving remote areas.",
-        "details": "Built business plan, process architecture, and prototype; executed extensive interview-driven discovery and iteration.",
+        "details": "Designed the business plan, delivered investor pitches, interviewed specialists in mining and defense, networked at startup events, and designed and developed a prototype.",
         "ventureName": "NAO Aeronautics",
-        "startDate": "2024-01-01",
-        "endDate": null,
+        "startDate": "2023-08",
+        "endDate": "2025-09",
         "links": {}
       },
       {
@@ -226,14 +245,28 @@
     ],
     "independentWork": [
       {
-        "id": "work-mc2-university-ambassador",
-        "title": "University Ambassador",
-        "summary": "Built partnerships between mc2 and EIA University and organized a startup hackathon.",
-        "details": "Established a partnership with EIA University; organized a hackathon with 60+ participants, recruited judges, and secured support and funding.",
-        "clientOrProductName": "mc2",
-        "startDate": "2025-03-01",
+        "id": "work-eia-systems-engineering-student-representative",
+        "title": "Systems Engineering Student Representative",
+        "summary": "Represented Systems Engineering students and advocated for their priorities at EIA University.",
+        "details": "Helped secure the students' preferred program director through student petition efforts and executed three hackathons focused on startup business models and V0s, infrastructure, and biotechnology and AI.",
+        "clientOrProductName": "EIA University",
+        "startDate": "2025-09",
         "endDate": null,
-        "links": {}
+        "links": {
+          "externalUrl": "https://eia.edu.co/"
+        }
+      },
+      {
+        "id": "work-mc2-university-ambassador",
+        "title": "University Ambassador and Entrepreneur",
+        "summary": "Represented mc^2 at EIA University and organized events that fostered collaboration.",
+        "details": "Built university partnerships, led conferences, hackathons, and networking events, and supported brand visibility and recruitment opportunities.",
+        "clientOrProductName": "mc^2",
+        "startDate": "2025-03",
+        "endDate": "2025-09",
+        "links": {
+          "externalUrl": "https://www.linkedin.com/company/mc2-latam"
+        }
       },
       {
         "id": "eia-private-tutor-data-structures",
@@ -241,8 +274,8 @@
         "summary": "Provided personalized tutoring for Data Structures.",
         "details": "Tailored lesson plans to student learning preferences to improve comprehension and performance.",
         "clientOrProductName": "EIA University (Private tutoring)",
-        "startDate": "2024-09-01",
-        "endDate": "2025-07-01",
+        "startDate": "2024-09",
+        "endDate": "2025-07",
         "links": {}
       },
       {
@@ -262,12 +295,12 @@
       {
         "id": "edu-eia-systems-engineering",
         "title": "Systems Engineering and Computing",
-        "summary": "Systems Engineering and Computing undergraduate program (Ninth semester out of ten).",
+        "summary": "Systems Engineering and Computing undergraduate program at EIA University (2022–2026).",
         "details": "GPA: 4.45.",
         "institution": "EIA University",
         "degree": "Systems Engineering and Computing",
-        "startDate": "2022-01-01",
-        "endDate": "2026-11-01",
+        "startDate": "2022",
+        "endDate": "2026",
         "links": {}
       }
     ],
@@ -337,6 +370,33 @@
         "links": {
           "externalUrl": "https://mc2.builders/"
         }
+      },
+      {
+        "id": "course-create-x",
+        "title": "Create-X",
+        "summary": "Startup-building program completed through Georgia Institute of Technology.",
+        "details": "Completed in October 2024.",
+        "provider": "Georgia Institute of Technology",
+        "completionDate": "2024-10",
+        "links": {}
+      },
+      {
+        "id": "course-perficient-tech-camp-2023",
+        "title": "Perficient Tech Camp 2023",
+        "summary": "Technology training program completed through Perficient Latin America.",
+        "details": "Completed in December 2023.",
+        "provider": "Perficient Latin America",
+        "completionDate": "2023-12",
+        "links": {}
+      },
+      {
+        "id": "course-ruta-n-tech-marathon",
+        "title": "Ruta N Tech Marathon",
+        "summary": "Technology training program completed through Ruta N.",
+        "details": "Completed in September 2023.",
+        "provider": "Ruta N",
+        "completionDate": "2023-09",
+        "links": {}
       }
     ]
   },
@@ -452,6 +512,83 @@
       "name": "Entrepreneurship",
       "category": "startup",
       "summary": "Building ventures, pitches, and product iteration from early stages."
+    },
+    "36": {
+      "id": 36,
+      "slug": "django",
+      "name": "Django",
+      "category": "framework",
+      "summary": "Python web framework listed among backend development skills."
+    },
+    "37": {
+      "id": 37,
+      "slug": "firebase",
+      "name": "Firebase",
+      "category": "backend",
+      "summary": "Backend and application platform included in the public technical skill set."
+    },
+    "38": {
+      "id": 38,
+      "slug": "google-agent-development-kit",
+      "name": "Google Agent Development Kit",
+      "category": "ai",
+      "summary": "Agent development toolkit listed in the public technical skill set."
+    },
+    "39": {
+      "id": 39,
+      "slug": "robotic-process-automation",
+      "name": "Robotic Process Automation",
+      "category": "automation",
+      "summary": "Automating and integrating workflows with RPA systems."
+    },
+    "40": {
+      "id": 40,
+      "slug": "chrome-extensions",
+      "name": "Chrome Extensions",
+      "category": "tool",
+      "summary": "Building browser extensions for integrations and workflow automation."
+    },
+    "41": {
+      "id": 41,
+      "slug": "cloud-architecture",
+      "name": "Cloud Architecture",
+      "category": "architecture",
+      "summary": "Designing cloud-based systems and infrastructure."
+    },
+    "42": {
+      "id": 42,
+      "slug": "testing-and-evaluation",
+      "name": "Testing and Evaluation",
+      "category": "engineering",
+      "summary": "Designing tests and evaluations for AI agent systems and software."
+    },
+    "43": {
+      "id": 43,
+      "slug": "data-structures",
+      "name": "Data Structures",
+      "category": "computer-science",
+      "summary": "Teaching and applying core data structures concepts."
+    },
+    "44": {
+      "id": 44,
+      "slug": "front-end-development",
+      "name": "Front-End Development",
+      "category": "development",
+      "summary": "Building user-facing web applications and interfaces."
+    },
+    "45": {
+      "id": 45,
+      "slug": "machine-learning",
+      "name": "Machine Learning",
+      "category": "ai",
+      "summary": "Machine learning experience reflected in coursework and predictive-modeling projects."
+    },
+    "46": {
+      "id": 46,
+      "slug": "postgresql",
+      "name": "PostgreSQL",
+      "category": "database",
+      "summary": "Relational database technology used in software projects."
     }
   },
   "honors": {

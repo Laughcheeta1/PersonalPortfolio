@@ -1,5 +1,7 @@
-from collections.abc import Mapping, Sequence
-from typing import Any, Protocol, TypedDict
+from collections.abc import Sequence
+from typing import Protocol, TypedDict
+
+from pydantic import BaseModel
 
 
 class ProviderMessage(TypedDict):
@@ -15,11 +17,14 @@ class ProviderUnavailable(ProviderError):
     """The configured provider cannot currently be reached."""
 
 
+ProviderResult = BaseModel | str
+
+
 class LLMProvider(Protocol):
     async def complete(
         self,
         messages: Sequence[ProviderMessage],
         *,
-        response_format: Mapping[str, Any] | None = None,
-    ) -> str:
-        """Return the provider's textual completion."""
+        response_model: type[BaseModel] | None = None,
+    ) -> ProviderResult:
+        """Return a completion, optionally parsed into a Pydantic model."""

@@ -1,14 +1,14 @@
 import DOMPurify from 'dompurify';
 import { landmarks, type LandmarkId } from '../world/registry';
+import { panelDocumentFor } from '../content/panels';
 import { t } from '../i18n';
-import { panelContent } from '../content/panels';
 
 export type PanelDefinition = (
   | { type: 'html'; html: string }
   | { type: 'iframe'; url: string; title: string }
   | { type: 'none' }
 ) & { localize?: boolean };
-export type ServiceErrorCode = 'unavailable' | 'invalid-response' | 'cancelled';
+export type ServiceErrorCode = 'unavailable' | 'invalid-response' | 'invalid-request' | 'cancelled';
 export class ServiceError extends Error {
   constructor(public readonly code: ServiceErrorCode, message: string) {
     super(message);
@@ -17,6 +17,8 @@ export class ServiceError extends Error {
 }
 export interface ChatReply { message: string; destination_object_id: LandmarkId | null }
 export interface ChatMessage { role: 'user' | 'assistant'; content: string }
+export const MAX_CHAT_MESSAGE_LENGTH = 300;
+export const MAX_CHAT_HISTORY_MESSAGES = 10;
 export interface ChatService {
   send(message: string, history: readonly ChatMessage[], signal?: AbortSignal): Promise<ChatReply>;
 }
@@ -29,15 +31,58 @@ export interface HistoryStore {
   clear(): void;
 }
 
-const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+export const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+export const apiOrigin = new URL(apiBaseUrl).origin;
+
+function characterCount(value: string): number {
+  return Array.from(value).length;
+}
+
+export function validateChatMessage(value: string): string {
+  const message = value.trim();
+  if (!message) throw new ServiceError('invalid-request', 'Message cannot be blank.');
+  if (characterCount(message) > MAX_CHAT_MESSAGE_LENGTH) {
+    throw new ServiceError(
+      'invalid-request',
+      `Messages must be ${MAX_CHAT_MESSAGE_LENGTH} characters or fewer.`,
+    );
+  }
+  return message;
+}
+
+function isStoredChatMessage(value: unknown): value is ChatMessage {
+  if (!value || typeof value !== 'object') return false;
+  const message = value as Record<string, unknown>;
+  return (
+    (message.role === 'user' || message.role === 'assistant') &&
+    typeof message.content === 'string' &&
+    message.content.trim().length > 0 &&
+    characterCount(message.content.trim()) <= MAX_CHAT_MESSAGE_LENGTH
+  );
+}
+
+function normalizeHistory(history: readonly ChatMessage[]): ChatMessage[] {
+  const normalized = history.map(message => {
+    if (!isStoredChatMessage(message)) {
+      throw new ServiceError('invalid-request', 'The conversation contains an invalid message.');
+    }
+    return { role: message.role, content: validateChatMessage(message.content) };
+  });
+  return normalized.slice(-MAX_CHAT_HISTORY_MESSAGES);
+}
 
 export function validateChatReply(value: unknown): ChatReply {
   if (!value || typeof value !== 'object') throw new ServiceError('invalid-response', 'The guide received an invalid reply.');
   const reply = value as Record<string, unknown>;
-  if (typeof reply.message !== 'string' || !(reply.destination_object_id === null || landmarks.some(item => item.id === reply.destination_object_id))) {
+  if (
+    typeof reply.message !== 'string' ||
+    !reply.message.trim() ||
+    characterCount(reply.message.trim()) > MAX_CHAT_MESSAGE_LENGTH ||
+    !(reply.destination_object_id === null || landmarks.some(item => item.id === reply.destination_object_id))
+  ) {
     throw new ServiceError('invalid-response', 'The guide received an unknown destination or invalid message.');
   }
-  return { message: reply.message, destination_object_id: reply.destination_object_id as LandmarkId | null };
+  return { message: reply.message.trim(), destination_object_id: reply.destination_object_id as LandmarkId | null };
 }
 
 /** Keep sanitization at the trust boundary when replacing mocks with HTTP content. */
@@ -54,6 +99,9 @@ export function validatePanelDefinition(value: unknown): PanelDefinition {
   const panel = value as Record<string, unknown>;
   if (panel.type === 'none') return { type: 'none', localize: false };
   if (panel.type === 'html' && typeof panel.html === 'string') return { type: 'html', html: panel.html, localize: panel.localize === true };
+  if (panel.type === 'iframe' && typeof panel.url === 'string' && typeof panel.title === 'string') {
+    return { type: 'iframe', url: panel.url, title: panel.title, localize: panel.localize === true };
+  }
   throw new ServiceError('invalid-response', 'The notebook returned an invalid panel.');
 }
 
@@ -79,46 +127,12 @@ function apiErrorMessage(payload: unknown, status: number): string {
 }
 
 export function createPanelContentService(): PanelContentService {
-  const local: PanelContentService = {
-    async get(panelId, signal) {
-      checkSignal(signal);
-      const landmark = landmarks.find(item => item.frontPanel === panelId || item.backPanel === panelId);
-      if (!landmark) return { type: 'none' };
-      if (landmark.model === 'library') return { type: 'html', html: '<p>Empire construction in progress, you will know it in the news</p>', localize: false };
-      const back = landmark.backPanel === panelId;
-      const override = panelContent[landmark.model]?.[back ? 'back' : 'front'];
-      if (override) return { ...override, localize: false };
-      const html = back
-        ? `<p class="eyebrow">THE OTHER SIDE</p><h2>A little secret</h2><p>You walked around ${landmark.title}. Curiosity looks good on you.</p><p>This corner is reserved for future stories, hidden notes, and the occasional terrible joke.</p>`
-        : `<p class="eyebrow">ISLAND NOTEBOOK</p><h2>${landmark.title}</h2><p>${landmark.subtitle}</p><p>This is a place for a personal story. Projects, photographs, reflections, and links will live here as the portfolio grows.</p><details><summary>About this space</summary><p>The island is a work in progress. This sample content is supplied by the local panel service and can later be managed independently of the world.</p></details><label>A note to yourself<input placeholder="Try typing here…" aria-label="A note to yourself" /></label><p class="panel-footnote">Your note stays in this panel for this visit.</p>`;
-      return { type: 'html', html: sanitizePanelHtml(html) };
-    },
-  };
-  const remote = createBackendPanelContentService();
-  return {
-    async get(panelId, signal) {
-      try { return await remote.get(panelId, signal); }
-      catch (error) {
-        if (error instanceof ServiceError && error.code === 'unavailable') return local.get(panelId, signal);
-        throw error;
-      }
-    },
-  };
-}
-
-export function createBackendPanelContentService(baseUrl = apiBaseUrl): PanelContentService {
   return {
     async get(panelId, signal) {
       checkSignal(signal);
-      let response: Response;
-      try { response=await fetch(`${baseUrl}/panels/${encodeURIComponent(panelId)}`,{signal}); }
-      catch (error) {
-        if (isAbort(error)) throw new ServiceError('cancelled', 'Request cancelled.');
-        throw new ServiceError('unavailable', 'The portfolio backend is unavailable.');
-      }
-      const payload=await readApiPayload(response);
-      if (!response.ok) throw new ServiceError('unavailable', apiErrorMessage(payload,response.status));
-      return validatePanelDefinition(payload);
+      const document = panelDocumentFor(panelId);
+      if (!document) return { type: 'none', localize: false };
+      return { type: 'iframe', url: `${apiBaseUrl}${document.url}`, title: document.title, localize: false };
     },
   };
 }
@@ -127,13 +141,13 @@ export function createChatService(): ChatService {
   return {
     async send(message, _history, signal) {
       checkSignal(signal);
-      const normalized = message.toLocaleLowerCase().trim();
+      const normalized = validateChatMessage(message).toLocaleLowerCase();
       const tokens = normalized.split(/[^a-z0-9]+/).filter(Boolean);
       const matches = (term: string) => term.includes('-') ? normalized.includes(term) : tokens.includes(term);
       const destination = landmarks.find(item => matches(item.id) || matches(item.model) || [item.title,t(item.title)].some(title=>title.toLocaleLowerCase().split(/\W+/).some(word => word.length > 3 && tokens.includes(word))));
       return validateChatReply(destination
         ? { message: t("Let's head to {title}. Follow me along the paths! {subtitle} Take a look behind the landmark, too—there is another side to every story.",{title:t(destination.title),subtitle:t(destination.subtitle)}), destination_object_id: destination.id }
-        : { message: t("Welcome to my little island! I'm a local demo guide for now. Ask me to take you to {places}. You can also wander at your own pace and discover the stories at each landmark.",{places:landmarks.map(item => t(item.title)).join(', ')}), destination_object_id: null });
+        : { message: t("Welcome to my little island! Ask me about Santiago or choose a destination on the island map."), destination_object_id: null });
     },
   };
 }
@@ -142,9 +156,15 @@ export function createBackendChatService(baseUrl = apiBaseUrl, fallback: ChatSer
   const remote: ChatService = {
     async send(message, history, signal) {
       checkSignal(signal);
-      const conversation = history.length && history.at(-1)?.role === 'user' && history.at(-1)?.content === message
-        ? history
-        : [...history, { role: 'user' as const, content: message }];
+      const normalizedMessage = validateChatMessage(message);
+      const normalizedHistory = normalizeHistory(history);
+      const conversation = (
+        normalizedHistory.length &&
+        normalizedHistory.at(-1)?.role === 'user' &&
+        normalizedHistory.at(-1)?.content === normalizedMessage
+          ? normalizedHistory
+          : [...normalizedHistory, { role: 'user' as const, content: normalizedMessage }]
+      ).slice(-MAX_CHAT_HISTORY_MESSAGES);
       let response: Response;
       try {
         response=await fetch(`${baseUrl}/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:conversation}),signal});
@@ -170,16 +190,38 @@ export function createBackendChatService(baseUrl = apiBaseUrl, fallback: ChatSer
 
 /** Replaceable persistence boundary; malformed/private-mode storage fails closed. */
 export class BrowserHistoryStore implements HistoryStore {
-  constructor(private readonly key = 'portfolio.conversation.v1', private readonly maxMessages = 100) {}
+  private readonly maxMessages: number;
+
+  constructor(
+    private readonly key = 'portfolio.conversation.v1',
+    maxMessages = MAX_CHAT_HISTORY_MESSAGES,
+  ) {
+    this.maxMessages = Math.min(Math.max(1, maxMessages), MAX_CHAT_HISTORY_MESSAGES);
+  }
+
   load(): ChatMessage[] {
     try {
       const value: unknown = JSON.parse(localStorage.getItem(this.key) ?? '[]');
       if (!Array.isArray(value)) return [];
-      return value.filter((item): item is ChatMessage => !!item && typeof item === 'object' && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string').slice(-this.maxMessages).map(({ role, content }) => ({ role, content }));
+      return value
+        .filter(isStoredChatMessage)
+        .slice(-this.maxMessages)
+        .map(({ role, content }) => ({ role, content: content.trim() }));
     } catch { return []; }
   }
+
   save(messages: readonly ChatMessage[]): void {
-    try { localStorage.setItem(this.key, JSON.stringify(messages.slice(-this.maxMessages))); } catch { /* Browser storage is optional. */ }
+    try {
+      localStorage.setItem(
+        this.key,
+        JSON.stringify(
+          messages
+            .filter(isStoredChatMessage)
+            .slice(-this.maxMessages)
+            .map(({ role, content }) => ({ role, content: content.trim() })),
+        ),
+      );
+    } catch { /* Browser storage is optional. */ }
   }
   clear(): void {
     try { localStorage.removeItem(this.key); } catch { /* Browser storage is optional. */ }
