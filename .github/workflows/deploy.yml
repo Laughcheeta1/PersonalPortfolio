@@ -1,0 +1,298 @@
+name: Deploy application
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths:
+      - frontend/**
+      - backend/**
+      - package.json
+      - pnpm-lock.yaml
+      - pnpm-workspace.yaml
+      - nx.json
+      - .github/workflows/deploy.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: application-deployment
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changed applications
+    runs-on: ubuntu-latest
+    outputs:
+      frontend_changed: ${{ steps.detect.outputs.frontend_changed }}
+      backend_changed: ${{ steps.detect.outputs.backend_changed }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect changed applications
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          zero_sha="0000000000000000000000000000000000000000"
+          empty_tree="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+
+          if [[ "${EVENT_NAME}" == "push" && "${BEFORE_SHA}" != "${zero_sha}" ]]; then
+            changed_files="$(git diff --name-only "${BEFORE_SHA}" "${CURRENT_SHA}")"
+          elif [[ "${EVENT_NAME}" == "push" ]]; then
+            changed_files="$(git diff --name-only "${empty_tree}" "${CURRENT_SHA}")"
+          elif git rev-parse "${CURRENT_SHA}^" >/dev/null 2>&1; then
+            changed_files="$(git diff --name-only "${CURRENT_SHA}^" "${CURRENT_SHA}")"
+          else
+            changed_files="$(git diff --name-only "${empty_tree}" "${CURRENT_SHA}")"
+          fi
+
+          echo "Changed files:"
+          if [[ -n "${changed_files}" ]]; then
+            printf '%s\n' "${changed_files}"
+          else
+            echo "(none)"
+          fi
+
+          frontend_changed=false
+          backend_changed=false
+          while IFS= read -r file; do
+            case "${file}" in
+              frontend/*|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|nx.json)
+                frontend_changed=true
+                ;;
+              backend/*)
+                backend_changed=true
+                ;;
+            esac
+          done <<< "${changed_files}"
+
+          echo "frontend_changed=${frontend_changed}" >> "${GITHUB_OUTPUT}"
+          echo "backend_changed=${backend_changed}" >> "${GITHUB_OUTPUT}"
+
+  frontend:
+    name: Test and build frontend
+    needs: changes
+    if: needs.changes.outputs.frontend_changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.15.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate frontend API URL
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${VITE_API_BASE_URL}" ]; then
+            echo "::error::Missing github-pages variable: VITE_API_BASE_URL"
+            exit 1
+          fi
+          case "${VITE_API_BASE_URL}" in
+            https://*) ;;
+            *)
+              echo "::error::VITE_API_BASE_URL must use HTTPS in production."
+              exit 1
+              ;;
+          esac
+          case "${VITE_API_BASE_URL}" in
+            */api) ;;
+            *)
+              echo "::error::VITE_API_BASE_URL must end with /api."
+              exit 1
+              ;;
+          esac
+
+      - name: Run frontend tests
+        run: pnpm exec nx run frontend:test
+
+      - name: Build frontend
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+        run: pnpm exec nx run frontend:build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+
+  deploy-frontend:
+    name: Deploy GitHub Pages
+    needs:
+      - changes
+      - frontend
+    if: needs.changes.outputs.frontend_changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  backend:
+    name: Test backend
+    needs: changes
+    if: needs.changes.outputs.backend_changed == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Run backend tests
+        run: uv run pytest
+
+  deploy-backend:
+    name: Deploy backend
+    needs:
+      - changes
+      - backend
+    if: needs.changes.outputs.backend_changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: backend
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Validate deployment configuration
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.GCP_REGION }}
+          CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
+          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
+          OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
+          ALLOWED_CORS_ORIGIN: ${{ secrets.ALLOWED_CORS_ORIGIN }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+        run: |
+          set -euo pipefail
+          for variable in \
+            GCP_PROJECT_ID \
+            GCP_REGION \
+            CLOUD_RUN_SERVICE \
+            GCP_SERVICE_ACCOUNT \
+            WIF_PROVIDER \
+            OLLAMA_BASE_URL \
+            OLLAMA_MODEL \
+            OLLAMA_TIMEOUT_SECONDS \
+            ALLOWED_CORS_ORIGIN \
+            OLLAMA_API_KEY
+          do
+            if [ -z "${!variable}" ]; then
+              echo "::error::Missing backend deployment setting: ${variable}"
+              exit 1
+            fi
+          done
+          case "${ALLOWED_CORS_ORIGIN}" in
+            https://*) ;;
+            *)
+              echo "::error::ALLOWED_CORS_ORIGIN must use HTTPS."
+              exit 1
+              ;;
+          esac
+          origin_host="${ALLOWED_CORS_ORIGIN#https://}"
+          if [ -z "${origin_host}" ] || [[ "${origin_host}" == */* ]]; then
+            echo "::error::ALLOWED_CORS_ORIGIN must contain only an origin."
+            exit 1
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: >-
+            ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy backend source to Cloud Run
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.GCP_REGION }}
+          CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+          OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
+          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
+          OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
+          ALLOWED_CORS_ORIGIN: ${{ secrets.ALLOWED_CORS_ORIGIN }}
+          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+        run: |
+          set -euo pipefail
+          env_vars="^|||^OLLAMA_BASE_URL=${OLLAMA_BASE_URL}"
+          env_vars="${env_vars}|||OLLAMA_MODEL=${OLLAMA_MODEL}"
+          env_vars="${env_vars}|||OLLAMA_TIMEOUT_SECONDS=${OLLAMA_TIMEOUT_SECONDS}"
+          env_vars="${env_vars}|||CORS_ORIGINS=[\"${ALLOWED_CORS_ORIGIN}\"]"
+          env_vars="${env_vars}|||OLLAMA_API_KEY=${OLLAMA_API_KEY}"
+          gcloud run deploy "${CLOUD_RUN_SERVICE}" \
+            --project "${GCP_PROJECT_ID}" \
+            --region "${GCP_REGION}" \
+            --source ./backend \
+            --allow-unauthenticated \
+            --set-env-vars "${env_vars}"
