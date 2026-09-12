@@ -104,6 +104,16 @@
         "links": {}
       },
       {
+        "id": "proj-review-vscode-extension",
+        "title": "Review VS Code Extension",
+        "summary": "VS Code extension for tracking fast, line-by-line code changes without constant Git commits.",
+        "details": "Built for the era of coding agents, this extension helps developers keep control of live changes and review updates as they happen.",
+        "technologies": [
+          "VS Code Extensions"
+        ],
+        "links": {}
+      },
+      {
         "id": "proj-eia-university-hackathon",
         "title": "EIA University Hackathon",
         "summary": "Organized hackathon at EIA University with the sponsorship of mc2.",
@@ -212,16 +222,6 @@
       }
     ],
     "entrepreneurship": [
-      {
-        "id": "work-elio-for-business",
-        "title": "CTO & Cofounder",
-        "summary": "Led engineering strategy, architecture, and delivery for AI-driven sales automation.",
-        "details": "Built core systems including agent-driven sales automation, multiple database layers, and scalable cloud architecture; managed a team of 7 developers.",
-        "ventureName": "elio for business",
-        "startDate": "2025-06-01",
-        "endDate": null,
-        "links": {}
-      },
       {
         "id": "ent-nao-aeronautics",
         "title": "NAO Aeronautics (Venture)",

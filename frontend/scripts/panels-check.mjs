@@ -35,7 +35,7 @@ try{
   await page.screenshot({path:'/tmp/portfolio-back-panel.png'});
   const chatResult=await page.evaluate(async()=>{
     const THREE=await import('/node_modules/three/build/three.module.js'),{ChatUI}=await import('/src/chat/ChatUI.ts'),{landmarks}=await import('/src/world/registry.ts');
-    localStorage.clear();const chat=new ChatUI(new THREE.Scene(),()=>true);chat.speech.setMuted(true);
+    localStorage.clear();const chat=new ChatUI(new THREE.Scene(),()=>true);
     await chat.send(`Take me to ${landmarks[0].id}`);await chat.send(`Take me to ${landmarks[1].id}`);
     const history=JSON.parse(localStorage.getItem('portfolio.conversation.v1'));
     const beforeFinish=chat.speech.snapshot.state,first=chat.speech.snapshot.fullText;

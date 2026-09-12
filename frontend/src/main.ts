@@ -20,7 +20,7 @@ import { distance, landmarkLabelRadius } from './world/navigation';
 
 const app=document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML=`<main id="world" aria-label="Interactive island portfolio"></main>
-<header class="masthead"><a href="#" class="brand" aria-label="A little world home"><span class="brand-mark">✳</span><span>a little world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><button id="music" class="round-button unmuted" aria-label="Mute audio" title="Mute audio">♫<span class="mute-slash" aria-hidden="true">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
+<header class="masthead"><a href="#" class="brand" aria-label="A little world home"><span class="brand-mark">✳</span><span>a little world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><button id="music" class="round-button" aria-label="Play background music" title="Play background music" aria-pressed="false">♫<span class="mute-slash" aria-hidden="true">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
 <aside class="welcome"><span class="eyebrow"><span class="tiny-star">✦</span> WELCOME TO MY CORNER OF THE WORLD</span><h1>Big ideas.<br>A little island.</h1><p>Follow your curiosity. Every path<br>has a story to tell.</p><button id="explore" class="explore-button">Let’s wander <span>↗</span></button><div class="welcome-foot">7 places to discover <span>·</span> Make yourself at home</div></aside>
 <div class="guide-hint"><span>✦</span><p>A friend for the journey<small>Walk up to your guide to say hello.</small></p></div>
 <aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 181 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span></div></aside>
@@ -68,10 +68,11 @@ for(const [i,landmark] of landmarks.entries()){
   const element=document.createElement('div');element.className='landmark-label';element.innerHTML=`<span>${String(i+1).padStart(2,'0')}</span><div><small>${landmark.subtitle}</small><strong>${landmark.title}</strong></div>`;
   const label=new CSS3DSprite(element);element.style.pointerEvents='none';label.position.set(landmark.position[0],config.ui.labelHeight,landmark.position[1]+(landmark.position[1]<0?4:-4));label.scale.setScalar(config.ui.labelScale);domScene.add(label);labels.push({object:label,position:model.position,id:landmark.id,radius:landmarkLabelRadius(landmark)});
 }
-const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));let muted=false;chat.speech.setMuted(muted);
-const ambientAudio=new AmbientAudio();ambientAudio.setMuted(muted);
-const music=new MusicPlayer();music.setMuted(muted);
-const input=new Input(renderer.domElement,document.querySelector('#joystick')!,unlockAudio);input.yaw=.18;
+const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));
+const ambientAudio=new AmbientAudio();
+const music=new MusicPlayer();
+const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicButton.contains(target);
+const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>unlockAudio(document.activeElement!==musicButton));input.yaw=.18;
 const target=new THREE.Vector3(),desiredCamera=new THREE.Vector3();
 function cameraUpdate(dt:number,immediate=false){
   target.copy(player.model.position).y+=config.camera.height;
@@ -92,14 +93,16 @@ runButton.addEventListener('pointerdown',event=>{if(runPointer!==null)return;eve
 const releaseRun=()=>{runPointer=null;input.keys.delete('ShiftLeft');runButton.setAttribute('aria-pressed','false');};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])runButton.addEventListener(type,releaseRun);
 window.addEventListener('blur',releaseRun);document.addEventListener('visibilitychange',releaseRun);
-function updateAudioLabels(){const label=t(muted?'Unmute audio':'Mute audio');musicButton.setAttribute('aria-label',label);musicButton.title=label;musicButton.classList.toggle('unmuted',!muted);musicButton.setAttribute('aria-pressed',String(!muted));}
+function updateMusicButton(){const playing=music.enabled;const label=t(playing?'Pause background music':'Play background music');musicButton.setAttribute('aria-label',label);musicButton.title=label;musicButton.classList.toggle('music-playing',playing);musicButton.setAttribute('aria-pressed',String(playing));}
 let musicStarting=false;
-function unlockAudio(){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(!muted&&!music.enabled&&!musicStarting){musicStarting=true;void music.setEnabled(true).catch(()=>announce(t('Music could not play. Try enabling it again.'))).finally(()=>{musicStarting=false;});}}
+let musicPreference:boolean|null=null;
+function setMusicEnabled(enabled:boolean):Promise<void>{const request=music.setEnabled(enabled).catch(()=>{announce(t('Music could not play. Try enabling it again.'));}).finally(updateMusicButton);updateMusicButton();return request;}
+function unlockAudio(startMusic=true){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(startMusic&&musicPreference!==false&&!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
 // Browsers require a user gesture before any audible playback.
-window.addEventListener('pointerdown',unlockAudio);window.addEventListener('keydown',unlockAudio);
-musicButton.addEventListener('click',()=>{muted=!muted;chat.speech.setMuted(muted);ambientAudio.setMuted(muted);music.setMuted(muted);unlockAudio();updateAudioLabels();});
-onLanguageChange(()=>{for(const element of app.children)if(element!==world)localize(element);for(const label of labels)localize(label.object.element);if(tooltipLandmark)mapTooltip.textContent=t(tooltipLandmark.title);updateAudioLabels();});
-for(const label of labels)localize(label.object.element);updateAudioLabels();
+window.addEventListener('pointerdown',event=>unlockAudio(!isMusicControl(event.target)));window.addEventListener('keydown',event=>unlockAudio(!isMusicControl(event.target)));
+musicButton.addEventListener('click',()=>{const enabled=!music.enabled;musicPreference=enabled;unlockAudio(false);void setMusicEnabled(enabled);});
+onLanguageChange(()=>{for(const element of app.children)if(element!==world)localize(element);for(const label of labels)localize(label.object.element);if(tooltipLandmark)mapTooltip.textContent=t(tooltipLandmark.title);updateMusicButton();});
+for(const label of labels)localize(label.object.element);updateMusicButton();
 document.querySelector('#explore')!.addEventListener('click',start);
 const dialog=document.querySelector<HTMLDialogElement>('#help-dialog')!;document.querySelector('#help')!.addEventListener('click',()=>{input.clear();dialog.showModal();});for(const el of dialog.querySelectorAll('button'))el.addEventListener('click',()=>dialog.close());
 const list=document.querySelector<HTMLElement>('.destination-list')!,toggle=document.querySelector('#map-toggle')!;
@@ -125,4 +128,4 @@ function frame(now:number){
 }
 requestAnimationFrame(frame);
 // Read-only telemetry makes real-device performance and controls verifiable.
-Object.defineProperty(window,'portfolioDebug',{get:()=>({player:{x:player.model.position.x,y:player.model.position.y,z:player.model.position.z,grounded:player.grounded},companion:{x:companion.model.position.x,z:companion.model.position.z,state:companion.state,destination:companion.destination},camera:{yaw:input.yaw,pitch:input.pitch},panel:panels.active?.id??null,speech:chat.speech.snapshot,language:getLanguage(),music:music.enabled,muted,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});
+Object.defineProperty(window,'portfolioDebug',{get:()=>({player:{x:player.model.position.x,y:player.model.position.y,z:player.model.position.z,grounded:player.grounded},companion:{x:companion.model.position.x,z:companion.model.position.z,state:companion.state,destination:companion.destination},camera:{yaw:input.yaw,pitch:input.pitch},panel:panels.active?.id??null,speech:chat.speech.snapshot,language:getLanguage(),music:music.enabled,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});

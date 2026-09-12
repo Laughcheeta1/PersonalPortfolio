@@ -61,6 +61,7 @@ async def test_health_and_panel_routes() -> None:
     assert "Empire construction in progress" in library.text
     assert "NAO Aeronautics" in projects.text
     assert "Legal_IA" in projects.text
+    assert "Review VS Code Extension" in projects.text
     assert "No astronauts were harmed" in secret.text
     assert "Legal_IA" not in secret.text
     assert missing.status_code == 404
@@ -111,6 +112,7 @@ async def test_chat_route_validates_structured_provider_reply() -> None:
     assert "<portfolio_guide>" in provider.messages[0]["content"]
     assert "NAO Aeronautics" in provider.messages[0]["content"]
     assert "Legal_IA" in provider.messages[0]["content"]
+    assert "Review VS Code Extension" in provider.messages[0]["content"]
     assert "<conversation_messages>" in provider.messages[1]["content"]
 
 

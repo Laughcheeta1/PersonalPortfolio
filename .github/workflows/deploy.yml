@@ -23,11 +23,11 @@ concurrency:
 
 jobs:
   changes:
-    name: Detect changed applications
+    name: Filter changed applications
     runs-on: ubuntu-latest
     outputs:
-      frontend_changed: ${{ steps.detect.outputs.frontend_changed }}
-      backend_changed: ${{ steps.detect.outputs.backend_changed }}
+      frontend_changed: ${{ steps.filter.outputs.frontend }}
+      backend_changed: ${{ steps.filter.outputs.backend }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -35,50 +35,20 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect changed applications
-        id: detect
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE_SHA: ${{ github.event.before }}
-          CURRENT_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          zero_sha="0000000000000000000000000000000000000000"
-          empty_tree="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
-
-          if [[ "${EVENT_NAME}" == "push" && "${BEFORE_SHA}" != "${zero_sha}" ]]; then
-            changed_files="$(git diff --name-only "${BEFORE_SHA}" "${CURRENT_SHA}")"
-          elif [[ "${EVENT_NAME}" == "push" ]]; then
-            changed_files="$(git diff --name-only "${empty_tree}" "${CURRENT_SHA}")"
-          elif git rev-parse "${CURRENT_SHA}^" >/dev/null 2>&1; then
-            changed_files="$(git diff --name-only "${CURRENT_SHA}^" "${CURRENT_SHA}")"
-          else
-            changed_files="$(git diff --name-only "${empty_tree}" "${CURRENT_SHA}")"
-          fi
-
-          echo "Changed files:"
-          if [[ -n "${changed_files}" ]]; then
-            printf '%s\n' "${changed_files}"
-          else
-            echo "(none)"
-          fi
-
-          frontend_changed=false
-          backend_changed=false
-          while IFS= read -r file; do
-            case "${file}" in
-              frontend/*|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|nx.json)
-                frontend_changed=true
-                ;;
-              backend/*)
-                backend_changed=true
-                ;;
-            esac
-          done <<< "${changed_files}"
-
-          echo "frontend_changed=${frontend_changed}" >> "${GITHUB_OUTPUT}"
-          echo "backend_changed=${backend_changed}" >> "${GITHUB_OUTPUT}"
+      - name: Filter changed applications
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            frontend:
+              - 'frontend/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'nx.json'
+            backend:
+              - 'backend/**'
 
   frontend:
     name: Test and build frontend

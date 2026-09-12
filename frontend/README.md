@@ -47,7 +47,7 @@ HTML is sanitized with DOMPurify at the rendering boundary. Embedded pages requi
 
 Guided travel takes priority over following, and follows actual roads to an entrance. After arrival the companion waits for both the configured hold and speech completion, then resumes normal behavior. Following starts outside the follow radius and stops at the target radius. Long catch-up trips use the road graph to bound route-search work.
 
-Complete mock responses enter a display queue (`received → displaying → finished → idle`). Punctuation pauses are separate from character timing. Leaving chat range replaces the full history UI with a three-line scrolling speech bubble. The browser stores and sends only the latest 10 conversation messages, and each message is limited to 300 characters; inaccessible or invalid storage does not break the scene. Speech uses your MP3 sample; ambience is synthesized locally. All audio starts muted and requires a user gesture. The sound button controls speech, ambience and the optional soundtrack.
+Complete mock responses enter a display queue (`received → displaying → finished → idle`). Punctuation pauses are separate from character timing. Leaving chat range replaces the full history UI with a three-line scrolling speech bubble. The browser stores and sends only the latest 10 conversation messages, and each message is limited to 300 characters; inaccessible or invalid storage does not break the scene. Speech uses your MP3 sample; ambience is synthesized locally. Audio initialization requires a user gesture. Speech and ambience stay enabled, while the music button controls only the optional jazz soundtrack.
 
 ## Verification and visual review
 
@@ -141,7 +141,7 @@ Minimap markers show a title popup on hover or keyboard focus. The small world t
 
 The supplied files remain at `assets/sound_effects/sans_voice.mp3` and `assets/music/the_smoke_decides.mp3`. Replace them at the same path to change the voice or music. If renaming, update the `new URL(...)` in `src/chat/Speech.ts` or `src/chat/MusicPlayer.ts`. Vite bundles hashed URLs in production. Voice loads and decodes once after a gesture; music loads on demand.
 
-Music and ambience are enabled by default and begin after the first user interaction, as required by browser autoplay rules. The single music-note button mutes/unmutes every audio source; a slash means muted. Music playback failures appear in a notice and playback retries on a later interaction.
+Music and ambience are enabled by default and begin after the first user interaction, as required by browser autoplay rules. The music-note button plays/pauses only the jazz soundtrack; a slash means the soundtrack is paused. Speech and ambience are unaffected. Music playback failures appear in a notice and playback retries on a later interaction.
 
 | Group | Settings and effects |
 | --- | --- |
@@ -210,13 +210,14 @@ Under `config.performance`, `maxDpr`/`mobileDpr` cap rendering pixel density; `s
 
 The default `ChatService` calls the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api`); panel documents are also served by that backend. If the backend is unavailable, the local chat implementation keeps the guide usable for demos, but authored panel documents cannot load. Validate backend destination IDs and keep panel documents sandboxed. Backend replies are complete responses, not streams. Provider configuration and Ollama Cloud setup live in [`../backend/README.md`](../backend/README.md).
 
-`window.portfolioDebug` exposes read-only player position/grounded state, guide behavior, speech state, language, music/mute state and render counts for troubleshooting. Browser scripts need the local server and an installed Chromium; use `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to select one.
+`window.portfolioDebug` exposes read-only player position/grounded state, guide behavior, speech state, language, music playback state and render counts for troubleshooting. Browser scripts need the local server and an installed Chromium; use `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to select one.
 
 ## Deploy to GitHub Pages
 
 The [`deploy.yml`](../.github/workflows/deploy.yml) workflow is the repository's
-single deployment workflow. It uses Git to detect changed paths, then runs the
-frontend tests, production build, and GitHub Pages deployment only when
+single deployment workflow. It uses the `dorny/paths-filter` action to identify
+applications, then runs the frontend tests, production build, and GitHub Pages
+deployment only when
 frontend or shared workspace build files changed. It can also be started
 manually. The `github-pages` environment must provide the `VITE_API_BASE_URL`
 Actions variable, set to the Cloud Run API base URL including `/api`, for

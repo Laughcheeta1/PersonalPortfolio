@@ -34,7 +34,6 @@ export class SpeechQueue {
   private sampleLoading: Promise<void> | null = null;
   private source: AudioBufferSourceNode | null = null;
   private lastSound = -Infinity;
-  private muted = false;
   private disposed = false;
   private current: SpeechSnapshot = { state: 'idle', text: '', fullText: '', sequence: 0 };
   constructor(private readonly config: SpeechConfig, private readonly onUpdate: (snapshot: SpeechSnapshot) => void) {}
@@ -109,13 +108,12 @@ export class SpeechQueue {
       }
     } catch { /* Continue silently if audio is unsupported. */ }
   }
-  setMuted(muted: boolean): void { this.muted = muted; if (muted) this.stopSound(); }
   private stopSound(): void {
     this.source?.stop();
     this.source = null;
   }
   private playTone(): void {
-    if (this.muted || !this.context || !this.sample || this.context.state !== 'running') return;
+    if (!this.context || !this.sample || this.context.state !== 'running') return;
     const start = this.context.currentTime;
     if (start - this.lastSound < this.config.minSoundInterval) return;
     this.stopSound();

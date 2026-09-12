@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 from .chat import InvalidProviderResponse, PortfolioChat
 from .config import Settings, get_settings
+from .database import (
+    connect_database,
+    create_database_engine,
+    dispose_database_engine,
+)
 from .panel_documents import read_panel_document
 from .portfolio import PortfolioRepository
 from .providers.base import ProviderError, ProviderUnavailable, LLMProvider
@@ -32,8 +41,34 @@ def create_app(
         ),
     )
     chat = PortfolioChat(resolved_provider, resolved_portfolio)
+    database_engine = create_database_engine(
+        resolved_settings.database_url.get_secret_value()
+        if resolved_settings.database_url is not None
+        else None
+    )
 
-    app = FastAPI(title="Personal Portfolio API", version="0.1.0")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        connection_task = asyncio.create_task(connect_database(database_engine))
+        app.state.database_connection_task = connection_task
+        try:
+            yield
+        finally:
+            if not connection_task.done():
+                connection_task.cancel()
+            try:
+                await connection_task
+            except asyncio.CancelledError:
+                pass
+            dispose_database_engine(database_engine)
+
+    app = FastAPI(
+        title="Personal Portfolio API",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+    app.state.database_engine = database_engine
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=resolved_settings.cors_origins,

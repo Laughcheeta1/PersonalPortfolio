@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    database_url: SecretStr | None = None
     ollama_base_url: AnyHttpUrl = "https://ollama.com"
     ollama_model: str = "gpt-oss:120b"
     ollama_api_key: SecretStr | None = None

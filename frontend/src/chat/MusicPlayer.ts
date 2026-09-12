@@ -1,9 +1,8 @@
 import { config } from '../config';
 
-/** User-selected soundtrack, independent of ambient sound and subject to global mute. */
+/** User-selected soundtrack, independent of ambient sound and speech effects. */
 export class MusicPlayer {
   private audio: HTMLAudioElement | null = null;
-  private muted = true;
   private active = false;
   private disposed = false;
   get enabled(): boolean { return this.active; }
@@ -13,7 +12,6 @@ export class MusicPlayer {
     this.audio.loop = true;
     this.audio.preload = 'none';
     this.audio.volume = config.audio.musicVolume;
-    this.audio.muted = this.muted;
   }
   async setEnabled(enabled: boolean): Promise<void> {
     if (this.disposed) return;
@@ -26,10 +24,6 @@ export class MusicPlayer {
     this.active = true;
     try { await this.audio!.play(); }
     catch (error) { this.active = false; throw error; }
-  }
-  setMuted(muted: boolean): void {
-    this.muted = muted;
-    if (this.audio) this.audio.muted = muted;
   }
   dispose(): void {
     this.disposed = true;

@@ -24,7 +24,7 @@ function audioHarness() {
 }
 
 describe('sampled speech audio', () => {
-  it('loads the supplied clip once, stops on spaces and immediately mutes a playing syllable', async () => {
+  it('loads the supplied clip once and stops a playing syllable on spaces', async () => {
     const { context, sources } = audioHarness();
     const fetcher = vi.fn().mockResolvedValue({ ok: true, arrayBuffer: async () => new ArrayBuffer(0) });
     vi.stubGlobal('fetch', fetcher);
@@ -39,8 +39,6 @@ describe('sampled speech audio', () => {
     context.currentTime = 1;
     speech.tick(config.speech.spaceDelay);
     expect(sources).toHaveLength(2);
-    speech.setMuted(true);
-    expect(sources[1]!.stop).toHaveBeenCalledTimes(2);
     expect(fetcher).toHaveBeenCalledOnce();
     expect(String(fetcher.mock.calls[0]![0])).toContain('sans_voice.mp3');
     speech.dispose();
@@ -48,32 +46,29 @@ describe('sampled speech audio', () => {
 });
 
 describe('ambient biome audio', () => {
-  it('mixes a layer for every biome, changes with proximity and immediately silences all layers', () => {
+  it('mixes an always-on layer for every biome and changes with proximity', () => {
     const { gains, sources } = audioHarness();
-    const ambient = new AmbientAudio(); ambient.unlock(); ambient.setMuted(false);
+    const ambient = new AmbientAudio(); ambient.unlock();
     expect(sources).toHaveLength(landmarks.length + 1);
     for (const landmark of landmarks) {
       ambient.update({ x: landmark.position[0], z: landmark.position[1] });
       const layer = gains[landmarks.indexOf(landmark) + 1]!;
       expect(layer.gain.setTargetAtTime.mock.lastCall![0]).toBeGreaterThan(0);
     }
-    ambient.setMuted(true);
-    for (const gain of gains) expect(gain.gain.setValueAtTime).toHaveBeenLastCalledWith(0, 0);
     ambient.dispose();
     for (const source of sources) expect(source.stop).toHaveBeenCalledOnce();
   });
 });
 
 describe('optional music', () => {
-  it('does not autoplay, preserves global mute and reports playback failure', async () => {
+  it('does not autoplay, stays audible, and reports playback failure', async () => {
     const audio = { loop: false, preload: '', muted: false, volume: 0, play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), removeAttribute: vi.fn(), load: vi.fn() };
     vi.stubGlobal('Audio', vi.fn(function () { return audio; }));
     const music = new MusicPlayer(); music.unlock();
     expect(audio.play).not.toHaveBeenCalled();
     expect(music.enabled).toBe(false);
     await music.setEnabled(true);
-    expect(audio.loop).toBe(true); expect(audio.muted).toBe(true); expect(music.enabled).toBe(true);
-    music.setMuted(false); expect(audio.muted).toBe(false);
+    expect(audio.loop).toBe(true); expect(audio.muted).toBe(false); expect(music.enabled).toBe(true);
     await music.setEnabled(false); expect(audio.pause).toHaveBeenCalledOnce();
     audio.play.mockRejectedValueOnce(new Error('Playback unavailable'));
     await expect(music.setEnabled(true)).rejects.toThrow('Playback unavailable');

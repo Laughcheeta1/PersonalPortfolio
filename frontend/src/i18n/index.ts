@@ -9,7 +9,7 @@ const spanish: Record<string, string> = {
   'Interactive island portfolio':'Portafolio de una isla interactiva',
   'A little world home':'Inicio de un pequeño mundo', 'a little world':'un pequeño mundo',
   'A PERSONAL PORTFOLIO':'UN PORTAFOLIO PERSONAL', 'A GOOD DAY TO EXPLORE':'UN BUEN DÍA PARA EXPLORAR',
-  'Unmute audio':'Activar sonido','Mute audio':'Silenciar sonido','Show controls':'Ver controles',
+  'Show controls':'Ver controles',
   'Play background music':'Activar música de fondo','Pause background music':'Pausar música de fondo',
   'Music could not play. Try enabling it again.':'No se pudo reproducir la música. Intenta activarla de nuevo.',
   'Language':'Idioma','WELCOME TO MY CORNER OF THE WORLD':'BIENVENIDO A MI RINCÓN DEL MUNDO',

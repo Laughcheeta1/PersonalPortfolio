@@ -66,9 +66,10 @@ uv run pytest
 ## Deploy to Cloud Run
 
 The [`deploy.yml`](../.github/workflows/deploy.yml) workflow is the repository's
-single deployment workflow. It uses Git to detect changed paths, then runs
-backend tests and deploys the `backend/` source directly to Cloud Run only
-when backend files changed. The `Procfile` supplies the FastAPI/Uvicorn
+single deployment workflow. It uses the `dorny/paths-filter` action to identify
+applications, then runs backend tests and deploys the `backend/` source
+directly to Cloud Run only when backend files changed. The `Procfile` supplies
+the FastAPI/Uvicorn
 entrypoint. The workflow can also be started manually. The `backend` GitHub
 environment must provide:
 

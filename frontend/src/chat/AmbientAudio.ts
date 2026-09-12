@@ -7,7 +7,6 @@ interface Layer { source: AudioBufferSourceNode; gain: GainNode; filter: BiquadF
 export class AmbientAudio {
   private context: AudioContext | null = null;
   private layers = new Map<string, Layer>();
-  private muted = true;
   private disposed = false;
   unlock(): void {
     if (this.disposed) return;
@@ -48,13 +47,6 @@ export class AmbientAudio {
     source.start();
     return { source, filter, gain };
   }
-  setMuted(muted: boolean): void {
-    this.muted = muted;
-    if (muted && this.context) for (const { gain } of this.layers.values()) {
-      gain.gain.cancelScheduledValues(this.context.currentTime);
-      gain.gain.setValueAtTime(0, this.context.currentTime);
-    }
-  }
   update(position: { x: number; z: number }): void {
     if (!this.context) return;
     const { weights } = biomeWeights(position);
@@ -64,7 +56,7 @@ export class AmbientAudio {
     for (const [name, layer] of this.layers) {
       const weight = name === 'surf' ? 1 - lunar * ambientSynthesis.lunarSurfAttenuation : weights.find(b => b.landmark.biome === name)?.weight ?? 0;
       const volume = name === 'surf' ? config.audio.ambientVolume : config.audio.biomeVolume;
-      layer.gain.gain.setTargetAtTime(this.muted ? 0 : volume * weight, now, config.audio.blendTime);
+      layer.gain.gain.setTargetAtTime(volume * weight, now, config.audio.blendTime);
     }
     this.layers.get('surf')?.filter.frequency.setTargetAtTime(
       config.audio.baseFilter + (config.audio.altitudeFilter - config.audio.baseFilter) * altitude + (config.audio.lunarFilter - config.audio.baseFilter) * lunar,
