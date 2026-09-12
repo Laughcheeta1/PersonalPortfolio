@@ -6,6 +6,7 @@ import httpx
 import pytest
 from pydantic import BaseModel
 
+from app.chat import PortfolioChat
 from app.config import Settings
 from app.main import create_app
 from app.providers.base import ProviderUnavailable
@@ -113,7 +114,67 @@ async def test_chat_route_validates_structured_provider_reply() -> None:
     assert "NAO Aeronautics" in provider.messages[0]["content"]
     assert "Legal_IA" in provider.messages[0]["content"]
     assert "Review VS Code Extension" in provider.messages[0]["content"]
+    assert "do not append category" in provider.messages[0]["content"]
     assert "<conversation_messages>" in provider.messages[1]["content"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("message", "destination", "expected"),
+    [
+        (
+            "¡Claro! Vamos al Starship, donde podrás explorar los proyectos de Santiago.",
+            "starship",
+            "¡Claro! Vamos al Starship.",
+        ),
+        (
+            "Sure! Heading to the Work (F22) area where Santiago's companies, entrepreneurship, and independent work are showcased.",
+            "f22",
+            "Sure! Heading to the Work (F22) area.",
+        ),
+        (
+            "¡Vamos! Te llevo al monumento Victory Statue donde están los honores y premios de Santiago.",
+            "victory-statue",
+            "¡Vamos! Te llevo al monumento Victory Statue.",
+        ),
+        (
+            "Absolutely! Let’s walk over to the Pergamon Library—your gateway to Santiago's knowledge and achievements.",
+            "pergamon-library",
+            "Absolutely! Let’s walk over to the Pergamon Library.",
+        ),
+    ],
+)
+async def test_chat_route_removes_navigation_explanations(
+    message: str,
+    destination: str,
+    expected: str,
+) -> None:
+    provider = FakeProvider(
+        json.dumps({"message": message, "destination_object_id": destination})
+    )
+    async with client_for(provider) as client:
+        response = await client.post(
+            "/api/chat",
+            json={"messages": [{"role": "user", "content": "Take me there"}]},
+        )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == expected
+    assert response.json()["destination_object_id"] == destination
+
+
+def test_structured_chat_reply_is_sanitized() -> None:
+    reply = PortfolioChat._parse_reply(
+        ChatReply(
+            message="Absolutely! Let’s walk over to the Pergamon Library—your gateway to Santiago's knowledge and achievements.",
+            destination_object_id="pergamon-library",
+        )
+    )
+
+    assert reply == ChatReply(
+        message="Absolutely! Let’s walk over to the Pergamon Library.",
+        destination_object_id="pergamon-library",
+    )
 
 
 @pytest.mark.asyncio

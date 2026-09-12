@@ -14,11 +14,7 @@ export function createLanguageMenu(): HTMLElement {
   trigger.setAttribute('aria-controls', 'language-options');
   trigger.setAttribute('aria-expanded', 'false');
   const selectedName = document.createElement('span');
-  const chevron = document.createElement('span');
-  chevron.className = 'language-chevron';
-  chevron.textContent = '⌄';
-  chevron.setAttribute('aria-hidden', 'true');
-  trigger.append(selectedName, chevron);
+  trigger.append(selectedName);
 
   const menu = document.createElement('div');
   menu.id = 'language-options';

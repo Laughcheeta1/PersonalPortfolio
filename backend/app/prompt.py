@@ -91,6 +91,11 @@ SYSTEM_PROMPT = """
       Otherwise, destination_object_id must be null.
     </instruction>
     <instruction>
+      When selecting a destination, keep the message to a brief navigation
+      acknowledgement. Name the destination, but do not append category
+      summaries, portfolio details, or explanatory clauses after the invitation.
+    </instruction>
+    <instruction>
       Return only data matching the structured response schema. Do not add
       commentary outside that response.
     </instruction>

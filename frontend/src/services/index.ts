@@ -34,6 +34,15 @@ export interface HistoryStore {
 export const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
 export const apiOrigin = new URL(apiBaseUrl).origin;
 
+/** Wake a scale-to-zero backend without making page initialization dependent on it. */
+export async function warmBackend(origin = apiOrigin): Promise<void> {
+  try {
+    await fetch(`${origin}/health`, { method: 'GET', cache: 'no-store' });
+  } catch {
+    // Backend warming is best-effort; the local chat fallback remains available.
+  }
+}
+
 function characterCount(value: string): number {
   return Array.from(value).length;
 }
@@ -146,7 +155,7 @@ export function createChatService(): ChatService {
       const matches = (term: string) => term.includes('-') ? normalized.includes(term) : tokens.includes(term);
       const destination = landmarks.find(item => matches(item.id) || matches(item.model) || [item.title,t(item.title)].some(title=>title.toLocaleLowerCase().split(/\W+/).some(word => word.length > 3 && tokens.includes(word))));
       return validateChatReply(destination
-        ? { message: t("Let's head to {title}. Follow me along the paths! {subtitle} Take a look behind the landmark, too—there is another side to every story.",{title:t(destination.title),subtitle:t(destination.subtitle)}), destination_object_id: destination.id }
+        ? { message: t("Let's head to {title}. Follow me along the paths!",{title:t(destination.title)}), destination_object_id: destination.id }
         : { message: t("Welcome to my little island! Ask me about Santiago or choose a destination on the island map."), destination_object_id: null });
     },
   };
