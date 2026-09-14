@@ -203,89 +203,194 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
 ];
 
+export type EducationEntryType = 'language' | 'course' | 'general' | 'university' | 'formal';
+
 export interface EducationEntry {
   id: string;
   title: string;
+  provider: string;
+  date: string;
   copy: string;
-  label: string;
-  type: 'education' | 'language';
+  type: EducationEntryType;
 }
 
-export const educationEntries: readonly EducationEntry[] = [
-  {
-    id: 'eia-systems-engineering',
-    title: 'Systems Engineering and Computing · Universidad EIA',
-    copy: 'Undergraduate program.',
-    label: 'January 2022 — November 2026',
-    type: 'education',
-  },
-  { id: 'create-x', title: 'Create-X', copy: 'Startup-building program.', label: 'certification', type: 'education' },
-  {
-    id: 'mc2-builders',
-    title: 'mc^2 Builders Program',
-    copy: 'Entrepreneurship and startup-building program.',
-    label: 'certification',
-    type: 'education',
-  },
-  {
-    id: 'perficient-tech-camp',
-    title: 'Certification Perficient Tech Camp 2023',
-    copy: 'Technology training program.',
-    label: 'certification',
-    type: 'education',
-  },
-  {
-    id: 'cs50-ai',
-    title: 'CS50 AI',
-    copy: 'Artificial intelligence course.',
-    label: 'certification',
-    type: 'education',
-  },
-  {
-    id: 'supervised-machine-learning',
-    title: 'Supervised Machine Learning: Regression and Classification',
-    copy: 'Supervised machine learning certification.',
-    label: 'certification',
-    type: 'education',
-  },
-];
-
-export const languageEntries: readonly EducationEntry[] = [
-  {
-    id: 'spanish',
-    title: 'Spanish',
-    copy: 'Native or bilingual proficiency.',
-    label: 'language',
-    type: 'language',
-  },
-  {
-    id: 'english',
-    title: 'English',
-    copy: 'Native or bilingual proficiency.',
-    label: 'language',
-    type: 'language',
-  },
-];
-
-export interface ProfileLine {
+export interface EducationLayer {
+  id: string;
   label: string;
-  value: string;
+  descriptor: string;
+  role: 'input' | 'hidden' | 'university' | 'output';
+  entries: readonly EducationEntry[];
 }
 
-export const profileLines: readonly ProfileLine[] = [
-  { label: 'Name', value: 'Santiago Yepes Mesa' },
-  { label: 'Role', value: 'AI Engineer · Founder' },
-  { label: 'Location', value: 'Medellín Metropolitan Area' },
-  { label: 'Availability', value: 'Open to offers' },
-  { label: 'Languages', value: 'Spanish · English · Native or bilingual' },
-  { label: 'Top skills', value: 'Leadership · Microsoft Excel · Microsoft Power BI' },
-];
-
-export const personalInterests: readonly ProfileLine[] = [
-  { label: 'Reading', value: 'Technology books and articles' },
-  { label: 'Gym activities', value: 'Lifting weights and running' },
-  { label: 'Making gifts and surprise parties', value: 'For friends and family' },
-  { label: 'Motorcycle driving', value: 'Finding a different route home' },
+export const educationLayers: readonly EducationLayer[] = [
+  {
+    id: 'languages',
+    label: 'Languages',
+    descriptor: 'Input layer',
+    role: 'input',
+    entries: [
+      {
+        id: 'spanish',
+        title: 'Spanish',
+        provider: 'Language proficiency',
+        date: 'Native / bilingual',
+        copy: 'Native or bilingual proficiency.',
+        type: 'language',
+      },
+      {
+        id: 'english',
+        title: 'English',
+        provider: 'Language proficiency',
+        date: 'Native / bilingual',
+        copy: 'Native or bilingual proficiency.',
+        type: 'language',
+      },
+    ],
+  },
+  {
+    id: 'technical-courses',
+    label: 'Technical courses',
+    descriptor: 'Hidden layer 01',
+    role: 'hidden',
+    entries: [
+      {
+        id: 'perficient-tech-camp',
+        title: 'Certification Perficient Tech Camp 2023',
+        provider: 'Perficient Latin America',
+        date: 'December 2023',
+        copy: 'Technology training program completed through Perficient Latin America.',
+        type: 'course',
+      },
+      {
+        id: 'supervised-machine-learning',
+        title: 'Supervised Machine Learning: Regression and Classification',
+        provider: 'DeepLearning.AI',
+        date: 'January 2025',
+        copy: 'Supervised machine learning course covering regression and classification.',
+        type: 'course',
+      },
+      {
+        id: 'python-advanced',
+        title: 'Python Advanced Course',
+        provider: 'SoftServe',
+        date: 'July 2025',
+        copy: 'Advanced Python course completed through SoftServe.',
+        type: 'course',
+      },
+      {
+        id: 'advanced-learning-algorithms',
+        title: 'Advanced Learning Algorithms',
+        provider: 'DeepLearning.AI',
+        date: 'April 2026',
+        copy: 'Advanced learning algorithms course completed through DeepLearning.AI.',
+        type: 'course',
+      },
+    ],
+  },
+  {
+    id: 'general-learning',
+    label: 'General learning',
+    descriptor: 'Hidden layer 02',
+    role: 'hidden',
+    entries: [
+      {
+        id: 'ruta-n-tech-marathon',
+        title: 'Certification Ruta N Tech Marathon',
+        provider: 'Ruta N Medellín',
+        date: 'September 2023',
+        copy: 'Technology and innovation marathon certification from Ruta N Medellín.',
+        type: 'general',
+      },
+      {
+        id: 'mc2-builders',
+        title: 'mc^2 Builders Program',
+        provider: 'mc^2',
+        date: 'May 2025',
+        copy: 'Entrepreneurship and startup-building program completed through mc^2.',
+        type: 'general',
+      },
+    ],
+  },
+  {
+    id: 'university-learning',
+    label: 'University learning',
+    descriptor: 'University layer',
+    role: 'university',
+    entries: [
+      {
+        id: 'icpc-2023',
+        title: 'Participation ICPC 2023',
+        provider: 'ICPC – International Collegiate Programming Contest',
+        date: 'October 2023',
+        copy: 'Participation in the 2023 International Collegiate Programming Contest.',
+        type: 'university',
+      },
+      {
+        id: 'cs50x',
+        title: 'CS50x',
+        provider: 'Harvard University',
+        date: 'June 2024',
+        copy: 'Harvard University introduction to computer science course.',
+        type: 'university',
+      },
+      {
+        id: 'cs50-ai',
+        title: 'CS50 AI',
+        provider: 'Harvard University',
+        date: 'July 2024',
+        copy: 'Harvard University artificial intelligence course.',
+        type: 'university',
+      },
+      {
+        id: 'create-x',
+        title: 'Create-X',
+        provider: 'Georgia Institute of Technology',
+        date: 'October 2024',
+        copy: 'Startup-building program from the Georgia Institute of Technology.',
+        type: 'university',
+      },
+    ],
+  },
+  {
+    id: 'formal-education',
+    label: 'Formal education',
+    descriptor: 'Output layer',
+    role: 'output',
+    entries: [
+      {
+        id: 'eia-systems-engineering',
+        title: 'Systems Engineering',
+        provider: 'Escuela de Ingeniería de Antioquia',
+        date: 'January 2022 — November 2026',
+        copy: 'University degree in Systems Engineering, in progress at Escuela de Ingeniería de Antioquia.',
+        type: 'formal',
+      },
+      {
+        id: 'data-analytics-diplomat',
+        title: 'Data Analytics Diplomat',
+        provider: 'Escuela de Ingeniería de Antioquia',
+        date: 'November 2023',
+        copy: 'Data analytics diploma from Escuela de Ingeniería de Antioquia.',
+        type: 'formal',
+      },
+      {
+        id: 'icpc-2024',
+        title: 'Participation ICPC 2024',
+        provider: 'ICPC – International Collegiate Programming Contest',
+        date: 'October 2024',
+        copy: 'Participation in the 2024 International Collegiate Programming Contest.',
+        type: 'formal',
+      },
+      {
+        id: 'leadership-diplomat',
+        title: 'Leadership Diplomat',
+        provider: 'Escuela de Ingeniería de Antioquia',
+        date: 'May 2026',
+        copy: 'Leadership diploma from Escuela de Ingeniería de Antioquia.',
+        type: 'formal',
+      },
+    ],
+  },
 ];
 
 export interface Hobby {
@@ -293,32 +398,49 @@ export interface Hobby {
   number: string;
   title: string;
   copy: string;
+  star: {
+    x: string;
+    y: string;
+    size: number;
+    delay: number;
+  };
 }
 
 export const hobbies: readonly Hobby[] = [
   {
-    id: 'reading',
+    id: 'learning',
     number: '01',
-    title: 'Reading',
-    copy: 'Books and articles about technology—especially the ones that turn a familiar problem sideways.',
+    title: 'Learning new things',
+    copy: 'Following questions wherever they lead—through technology, ideas, and the small details that make the world feel larger.',
+    star: { x: '20%', y: '22%', size: 27, delay: 0 },
   },
   {
     id: 'gym',
     number: '02',
-    title: 'Gym activities',
-    copy: 'Lifting weights and running. Repetition, patience, and showing up also belong in the engineering toolkit.',
+    title: 'Gym',
+    copy: 'Lifting weights and running. Repetition, patience, and showing up turn effort into momentum.',
+    star: { x: '48%', y: '14%', size: 23, delay: 1.1 },
   },
   {
     id: 'gifts',
     number: '03',
-    title: 'Gifts and surprise parties',
-    copy: 'Making gifts and surprise parties for friends and family.',
+    title: 'Making Gifts and surprise parties',
+    copy: 'Planning handmade gifts and surprise parties for friends and family. The surprise is part of the craft.',
+    star: { x: '68%', y: '42%', size: 25, delay: 2.2 },
   },
   {
     id: 'motorcycle',
     number: '04',
     title: 'Motorcycle driving',
-    copy: 'Driving motorcycles and taking the scenic route when the destination can wait.',
+    copy: 'Riding motorcycles and taking a different route home whenever there is time to explore.',
+    star: { x: '81%', y: '23%', size: 29, delay: .6 },
+  },
+  {
+    id: 'working',
+    number: '05',
+    title: 'Working',
+    copy: 'Yes, really. I truly love working—the satisfaction of solving hard problems and making something useful keeps me energized.',
+    star: { x: '34%', y: '39%', size: 31, delay: 1.8 },
   },
 ];
 
@@ -356,6 +478,92 @@ export const achievements: readonly Achievement[] = [
   },
 ];
 
+export type FitnessStatAccent = 'strength' | 'running' | 'cycling' | 'swimming';
+
+export interface FitnessStat {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  accent: FitnessStatAccent;
+}
+
+export const fitnessStats: readonly FitnessStat[] = [
+  {
+    id: 'deadlift',
+    label: 'Deadlift',
+    value: '120 kg',
+    detail: 'A heavy pull, built one session at a time.',
+    accent: 'strength',
+  },
+  {
+    id: 'squat',
+    label: 'Squat',
+    value: '100 kg',
+    detail: 'Leg day has entered the chat.',
+    accent: 'strength',
+  },
+  {
+    id: 'bench-press',
+    label: 'Bench press',
+    value: '75 kg × 2 reps',
+    detail: 'Two clean repetitions in the log.',
+    accent: 'strength',
+  },
+  {
+    id: 'five-kilometre-run',
+    label: '5 km run',
+    value: '< 20 min',
+    detail: 'A sub-twenty-minute run.',
+    accent: 'running',
+  },
+  {
+    id: 'longest-run',
+    label: 'Longest run',
+    value: '15 km',
+    detail: 'After 40 minutes on a static bike.',
+    accent: 'running',
+  },
+  {
+    id: 'longest-bike-ride',
+    label: 'Longest bike ride',
+    value: '61 km',
+    detail: '+1,000 m elevation · after years away from a real bicycle; I haven’t touched another since JAJAJA.',
+    accent: 'cycling',
+  },
+  {
+    id: 'swim',
+    label: 'Swim',
+    value: '25 m',
+    detail: 'Without getting completely gassed out 🤙',
+    accent: 'swimming',
+  },
+];
+
+export interface ProfileMemoryPanel {
+  theme: string;
+  eyebrow: string;
+  icon: string;
+  title: string;
+  song: string;
+  videoUrl: string;
+  embedUrl: string;
+  story: string;
+  closing: string;
+}
+
+export const profileMemory: ProfileMemoryPanel = {
+  theme: 'secret-garden',
+  eyebrow: 'fun fact · behind the profile',
+  icon: '✿',
+  title: 'Fun fact:',
+  song: 'Baile Inolvidable - Bad Bunny',
+  videoUrl: 'https://www.youtube.com/watch?v=a1Femq4NPxs&list=RDa1Femq4NPxs&start_radio=1',
+  embedUrl: 'https://www.youtube-nocookie.com/embed/a1Femq4NPxs?list=RDa1Femq4NPxs&start=1',
+  story: 'I paid 366 USD just to be able to go to his concert and hear it live.',
+  closing: 'I would do it again.',
+};
+
 export interface SecretPanel {
   theme: string;
   eyebrow: string;
@@ -363,6 +571,11 @@ export interface SecretPanel {
   title: string;
   copy: string;
   signature: string;
+  additionalCopy?: string;
+  image?: {
+    src: string;
+    alt: string;
+  };
 }
 
 export const secretPanels: Readonly<Record<string, SecretPanel>> = {
@@ -370,56 +583,54 @@ export const secretPanels: Readonly<Record<string, SecretPanel>> = {
     theme: 'secret-launch',
     eyebrow: 'classified · behind the launchpad',
     icon: '🚀',
-    title: 'You found the other side.',
-    copy: 'Every ambitious project begins with a suspicious amount of tabs, snacks, and “one last tiny improvement.”',
-    signature: 'No astronauts were harmed in this portfolio',
+    title: 'Ship Baby Ship!',
+    copy: "I loved so much Telpatia's CEO motto that I now have it as my phone wallpaper.",
+    signature: '',
   },
   f22: {
     theme: 'secret-flight',
     eyebrow: 'classified · turbulence ahead',
     icon: '✈︎',
-    title: 'Plot twist: the runway is optional.',
-    copy: 'A good plan is helpful. A curious teammate, a whiteboard, and enough coffee are the emergency equipment.',
-    signature: 'Please return the aircraft with full imagination',
+    title: 'I live by two sacred phrases in my life:',
+    copy: '1. Either you come and give it all, or do not come',
+    signature: '2. Not really a phrase, but rather this image:',
+    image: {
+      src: 'panels/f22/so_you_want_pilot.png',
+      alt: 'A pilot in a cockpit holding a sign that reads “So You Want to Be a Pilot.”',
+    },
   },
   'neural-network': {
     theme: 'secret-node',
     eyebrow: 'private connection',
     icon: '✺',
-    title: 'Knowledge is just curiosity with a memory.',
-    copy: 'If you ever find a missing node, it is probably off learning something new—or taking a very serious snack break.',
-    signature: 'signal still strong',
-  },
-  roses: {
-    theme: 'secret-garden',
-    eyebrow: 'quietly hidden in the petals',
-    icon: '✿',
-    title: 'Plot twist: the flower has opinions.',
-    copy: 'Some ideas need a spreadsheet. Others need cake, a dramatic walk, and exactly the right playlist.',
-    signature: 'water the curiosity',
+    title: 'The infinite Why.',
+    copy: 'The thing I love most about AI is not the productivity and the possibility of just letting my wildest dreams come true quicker, but rather that I can finally ask infinite “Why” questions at someone, and that someone not getting angry at me for questioning everything.',
+    signature: '',
   },
   'victory-statue': {
     theme: 'secret-pedestal',
     eyebrow: 'inscription on the hidden side',
     icon: '♛',
-    title: 'The statue demands snacks.',
-    copy: 'Victory is temporary. The post-hackathon pizza order is a permanent architectural decision.',
-    signature: 'please applaud responsibly',
+    title: 'A different kind of achievement.',
+    copy: "In reality my greatest achievement comes to me when I find myself saying something that an old friend, or person I used to know, said. It reminds me that a small piece of everyone I've loved still lives with me, regardless of anything that may have happened between us.",
+    additionalCopy: 'In another fun fact, I stopped participating in university hackathons because the program director asked me and my team to stop participating, and instead become mentors so that other people could win.',
+    signature: '',
   },
   'squat-rack': {
     theme: 'secret-training',
-    eyebrow: 'unauthorized training log',
-    icon: '⚙',
-    title: 'One more repetition.',
-    copy: 'The official unit of progress is not kilograms. It is “I came back after debugging that thing.”',
-    signature: 'stretch before refactoring',
+    eyebrow: 'personal stats · still growing',
+    icon: '↗',
+    title: 'Progress, not perfection.',
+    copy: 'I want to use this panel to show a little bit about my stats. There is still a lot of room to grow, but I am happy with what I have accomplished:',
+    signature: 'keep showing up',
   },
   'pergamon-library': {
     theme: 'secret-archive',
     eyebrow: 'sealed archive · do not cite',
     icon: '📜',
-    title: 'The architect misplaced the blueprint.',
-    copy: 'Construction resumes immediately after someone remembers which drawer contains the “final-final-real” version.',
-    signature: 'knowledge is under renovation',
+    title: 'A desk full of ideas.',
+    copy: 'My desk is constantly filled with post-it notes of things I have to do, and learning of things I have done.',
+    additionalCopy: 'This is genuinely a problem, there are way too many post-its!',
+    signature: '',
   },
 };

@@ -4,7 +4,6 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
@@ -12,21 +11,23 @@ import {
 } from 'react';
 import {
   achievements,
-  educationEntries,
+  educationLayers,
+  fitnessStats,
   hobbies,
-  languageEntries,
-  personalInterests,
   personalProjects,
-  profileLines,
+  profileMemory,
   secretPanels,
   workProjects,
   workTimeline,
   type EducationEntry,
+  type Hobby,
   type ProjectCard,
   type SecretPanel,
   type TimelineEntry,
 } from './data';
 import './styles.css';
+
+const publicAssetBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.BASE_URL ?? '/');
 
 interface PanelPageProps {
   theme: string;
@@ -396,269 +397,121 @@ function WorkPanel(): ReactElement {
   );
 }
 
-interface GraphNode extends EducationEntry {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+interface EducationConnection {
+  id: string;
+  fromId: string;
+  toId: string;
+  from: { x: number; y: number };
+  to: { x: number; y: number };
 }
 
-const graphNodeWidth = 118;
-const graphNodeHeight = 60;
-const graphTargetDistance = 142;
-const graphNodeGap = 8;
+const networkLayerX = (layerIndex: number): number => 10 + layerIndex * 20;
 
-function initialGraphNodes(width: number, height: number): GraphNode[] {
-  const entries = [...educationEntries, ...languageEntries];
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const radiusX = Math.max(72, Math.min(width * 0.34, 130));
-  const radiusY = Math.max(74, Math.min(height * 0.35, 130));
+function networkNodeY(nodeIndex: number, nodeCount: number): number {
+  if (nodeCount <= 1) return 50;
+  const span = nodeCount === 2 ? 44 : nodeCount === 3 ? 60 : 68;
+  return 50 - span / 2 + nodeIndex * span / (nodeCount - 1);
+}
 
-  return entries.map((entry, index) => {
-    const angle = -Math.PI / 2 + (index / entries.length) * Math.PI * 2;
-    return {
-      ...entry,
-      x: centerX + Math.cos(angle) * radiusX,
-      y: centerY + Math.sin(angle) * radiusY,
-      vx: 0,
-      vy: 0,
-    };
+const educationConnections: readonly EducationConnection[] = educationLayers
+  .slice(0, -1)
+  .flatMap((layer, layerIndex) => {
+    const nextLayer = educationLayers[layerIndex + 1];
+    if (!nextLayer) return [];
+    return layer.entries.flatMap((entry, entryIndex) => nextLayer.entries.map((nextEntry, nextIndex) => ({
+      id: `${entry.id}-${nextEntry.id}`,
+      fromId: entry.id,
+      toId: nextEntry.id,
+      from: { x: networkLayerX(layerIndex), y: networkNodeY(entryIndex, layer.entries.length) },
+      to: { x: networkLayerX(layerIndex + 1), y: networkNodeY(nextIndex, nextLayer.entries.length) },
+    })));
   });
+
+const allEducationEntries: readonly EducationEntry[] = educationLayers.flatMap(layer => layer.entries);
+
+function connectionPath(connection: EducationConnection): string {
+  const bend = (connection.to.x - connection.from.x) * .45;
+  return `M ${connection.from.x} ${connection.from.y} C ${connection.from.x + bend} ${connection.from.y}, ${connection.to.x - bend} ${connection.to.y}, ${connection.to.x} ${connection.to.y}`;
 }
 
 function EducationGraph(): ReactElement {
-  const graphRef = useRef<HTMLDivElement>(null);
-  const sizeRef = useRef({ width: 360, height: 360 });
-  const draggingRef = useRef<{
-    id: string;
-    pointerId: number;
-    clientX: number;
-    clientY: number;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [size, setSize] = useState(sizeRef.current);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [nodes, setNodes] = useState<GraphNode[]>(() => initialGraphNodes(360, 360));
-  const nodesRef = useRef(nodes);
-
-  useEffect(() => {
-    nodesRef.current = nodes;
-  }, [nodes]);
-
-  useEffect(() => {
-    const element = graphRef.current;
-    if (!element || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(entries => {
-      const rect = entries[0]?.contentRect;
-      if (!rect?.width || !rect.height) return;
-      sizeRef.current = { width: rect.width, height: rect.height };
-      setSize(sizeRef.current);
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
-    let previous = performance.now();
-
-    const tick = (now: number) => {
-      const dt = Math.min(.035, Math.max(.008, (now - previous) / 1000));
-      previous = now;
-      const current = nodesRef.current.map(node => ({ ...node }));
-      const dragged = draggingRef.current?.id;
-
-      for (let first = 0; first < current.length; first += 1) {
-        for (let second = first + 1; second < current.length; second += 1) {
-          const a = current[first];
-          const b = current[second];
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const distance = Math.max(1, Math.hypot(dx, dy));
-          const nx = dx / distance;
-          const ny = dy / distance;
-          const force = (distance - graphTargetDistance) * .72;
-          if (a.id !== dragged) {
-            a.vx += nx * force * dt;
-            a.vy += ny * force * dt;
-          }
-          if (b.id !== dragged) {
-            b.vx -= nx * force * dt;
-            b.vy -= ny * force * dt;
-          }
-        }
-      }
-
-      const centerX = size.width / 2;
-      const centerY = size.height / 2;
-      const minX = graphNodeWidth / 2 + 5;
-      const maxX = Math.max(minX, size.width - graphNodeWidth / 2 - 5);
-      const minY = graphNodeHeight / 2 + 5;
-      const maxY = Math.max(minY, size.height - graphNodeHeight / 2 - 5);
-
-      for (const node of current) {
-        if (node.id === dragged) continue;
-        node.vx += (centerX - node.x) * .62 * dt;
-        node.vy += (centerY - node.y) * .62 * dt;
-        const damping = Math.pow(.12, dt);
-        node.vx *= damping;
-        node.vy *= damping;
-        node.x += node.vx * dt;
-        node.y += node.vy * dt;
-        if (node.x < minX || node.x > maxX) {
-          node.x = Math.max(minX, Math.min(maxX, node.x));
-          node.vx *= -.35;
-        }
-        if (node.y < minY || node.y > maxY) {
-          node.y = Math.max(minY, Math.min(maxY, node.y));
-          node.vy *= -.35;
-        }
-      }
-
-      // Resolve the actual card rectangles after integrating the soft forces.
-      // Repeated passes let neighboring cards move together without overlapping.
-      for (let pass = 0; pass < 20; pass += 1) {
-        for (let first = 0; first < current.length; first += 1) {
-          for (let second = first + 1; second < current.length; second += 1) {
-            const a = current[first];
-            const b = current[second];
-            const dx = b.x - a.x;
-            const dy = b.y - a.y;
-            const overlapX = graphNodeWidth + graphNodeGap - Math.abs(dx);
-            const overlapY = graphNodeHeight + graphNodeGap - Math.abs(dy);
-            if (overlapX <= 0 || overlapY <= 0) continue;
-            const aShare = a.id === dragged ? 0 : b.id === dragged ? 1 : .5;
-            const bShare = 1 - aShare;
-            if (overlapX < overlapY) {
-              const shift = (dx >= 0 ? 1 : -1) * overlapX;
-              a.x -= shift * aShare;
-              b.x += shift * bShare;
-              a.vx = 0;
-              b.vx = 0;
-            } else {
-              const shift = (dy >= 0 ? 1 : -1) * overlapY;
-              a.y -= shift * aShare;
-              b.y += shift * bShare;
-              a.vy = 0;
-              b.vy = 0;
-            }
-          }
-        }
-        for (const node of current) {
-          node.x = Math.max(minX, Math.min(maxX, node.x));
-          node.y = Math.max(minY, Math.min(maxY, node.y));
-        }
-      }
-
-      nodesRef.current = current;
-      setNodes(current);
-      frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [size.height, size.width]);
-
-  const moveDraggedNode = (event: ReactPointerEvent) => {
-    const dragging = draggingRef.current;
-    const rect = graphRef.current?.getBoundingClientRect();
-    if (!dragging || dragging.pointerId !== event.pointerId || !rect?.width || !rect.height) return;
-    // Preserve the grab offset and map screen movement into the scaled panel.
-    const point = {
-      x: dragging.x + (event.clientX - dragging.clientX) * size.width / rect.width,
-      y: dragging.y + (event.clientY - dragging.clientY) * size.height / rect.height,
-    };
-    const minX = graphNodeWidth / 2 + 5;
-    const maxX = Math.max(minX, size.width - graphNodeWidth / 2 - 5);
-    const minY = graphNodeHeight / 2 + 5;
-    const maxY = Math.max(minY, size.height - graphNodeHeight / 2 - 5);
-    const next = nodesRef.current.map(node => node.id === dragging.id
-      ? { ...node, x: Math.max(minX, Math.min(maxX, point.x)), y: Math.max(minY, Math.min(maxY, point.y)), vx: 0, vy: 0 }
-      : node);
-    nodesRef.current = next;
-    setNodes(next);
-  };
-
-  const releaseDraggedNode = () => {
-    draggingRef.current = null;
-    setDraggingId(null);
-  };
-
-  const startDragging = (event: ReactPointerEvent<HTMLButtonElement>, id: string) => {
-    const node = nodesRef.current.find(candidate => candidate.id === id);
-    if (!node) return;
-    event.preventDefault();
-    event.stopPropagation();
-    draggingRef.current = {
-      id, pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY,
-      x: node.x, y: node.y,
-    };
-    setDraggingId(id);
-    setSelectedId(id);
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const nudgeNode = (event: ReactKeyboardEvent<HTMLButtonElement>, id: string) => {
-    const moves: Record<string, [number, number]> = {
-      ArrowUp: [0, -18],
-      ArrowDown: [0, 18],
-      ArrowLeft: [-18, 0],
-      ArrowRight: [18, 0],
-    };
-    const move = moves[event.key];
-    if (!move) return;
-    event.preventDefault();
-    const minX = graphNodeWidth / 2 + 5;
-    const maxX = Math.max(minX, size.width - graphNodeWidth / 2 - 5);
-    const minY = graphNodeHeight / 2 + 5;
-    const maxY = Math.max(minY, size.height - graphNodeHeight / 2 - 5);
-    const next = nodesRef.current.map(node => node.id === id
-      ? { ...node, x: Math.max(minX, Math.min(maxX, node.x + move[0])), y: Math.max(minY, Math.min(maxY, node.y + move[1])), vx: 0, vy: 0 }
-      : node);
-    nodesRef.current = next;
-    setNodes(next);
-  };
-
-  const selected = nodes.find(node => node.id === selectedId);
+  const selected = allEducationEntries.find(entry => entry.id === selectedId);
 
   return (
     <>
       <div
-        aria-label="Education and language graph. Drag nodes to explore."
+        aria-label="Education neural network. Languages feed courses, university learning, and formal education."
         className="education-graph"
-        onPointerCancel={releaseDraggedNode}
-        onPointerMove={moveDraggedNode}
-        onPointerUp={releaseDraggedNode}
-        ref={graphRef}
-        role="application"
+        data-testid="education-network"
+        role="group"
       >
-        <div className="education-graph__orbit" aria-hidden="true" />
-        {nodes.map(node => (
-          <button
-            aria-label={`${node.title}, ${node.label}`}
-            aria-pressed={selectedId === node.id}
-            className={`education-node education-node--${node.type}${draggingId === node.id ? ' is-dragging' : ''}`}
-            key={node.id}
-            onClick={() => setSelectedId(node.id)}
-            onFocus={() => setSelectedId(node.id)}
-            onKeyDown={event => nudgeNode(event, node.id)}
-            onPointerDown={event => startDragging(event, node.id)}
-            style={{ left: node.x, top: node.y }}
-            type="button"
-          >
-            <span className="education-node__kind">{node.type}</span>
-            <strong>{node.title}</strong>
-            <small>{node.label}</small>
-          </button>
-        ))}
+        <svg aria-hidden="true" className="education-graph__connections" preserveAspectRatio="none" viewBox="0 0 100 100">
+          {educationConnections.map(connection => {
+            const active = selectedId === connection.fromId || selectedId === connection.toId;
+            return (
+              <path
+                className={`education-connection${active ? ' is-active' : ''}`}
+                data-from={connection.fromId}
+                data-to={connection.toId}
+                d={connectionPath(connection)}
+                key={connection.id}
+              />
+            );
+          })}
+        </svg>
+        <div className="education-graph__layers">
+          {educationLayers.map((layer, layerIndex) => (
+            <section
+              aria-labelledby={`education-layer-${layer.id}`}
+              className={`education-layer education-layer--${layer.role}`}
+              data-layer-id={layer.id}
+              data-role={layer.role}
+              key={layer.id}
+              style={{ left: `${networkLayerX(layerIndex)}%` }}
+            >
+              <div className="education-layer__heading">
+                <h3 id={`education-layer-${layer.id}`}>{layer.label}</h3>
+                <span>{layer.descriptor}</span>
+              </div>
+              <div className="education-layer__nodes">
+                {layer.entries.map((entry, entryIndex) => (
+                  <button
+                    aria-describedby={selectedId === entry.id ? 'education-graph-detail' : undefined}
+                    aria-label={`${entry.title}; ${entry.provider}; ${entry.date}`}
+                    aria-pressed={selectedId === entry.id}
+                    className={`education-node education-node--${entry.type}${selectedId === entry.id ? ' is-selected' : ''}`}
+                    data-entry-id={entry.id}
+                    data-testid="education-node"
+                    key={entry.id}
+                    onClick={() => setSelectedId(entry.id)}
+                    onFocus={() => setSelectedId(entry.id)}
+                    onPointerEnter={event => {
+                      if (event.pointerType === 'mouse') setSelectedId(entry.id);
+                    }}
+                    style={{ top: `${networkNodeY(entryIndex, layer.entries.length)}%` }}
+                    type="button"
+                  >
+                    <span aria-hidden="true" className="education-node__core" />
+                    <span className="education-node__kind">{entry.type}</span>
+                    <strong title={entry.title}>{entry.title}</strong>
+                    <span className="education-node__provider" title={entry.provider}>{entry.provider}</span>
+                    <span className="education-node__date">{entry.date}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </div>
-      <section className="education-graph__detail" aria-live="polite" aria-atomic="true">
-        <h3>{selected?.title ?? 'Explore a learning node'}</h3>
-        {selected ? <small>{selected.label}</small> : null}
-        <p>{selected?.copy ?? 'Select or focus a node to read its full details.'}</p>
+      <section className="education-graph__detail" id="education-graph-detail" aria-live="polite" aria-atomic="true">
+        <div className="education-graph__detail-meta">
+          <span>{selected?.type ?? 'network signal'}</span>
+          {selected ? <span>{selected.date}</span> : null}
+        </div>
+        <h3>{selected?.title ?? 'Follow the signal'}</h3>
+        {selected ? <small>{selected.provider}</small> : null}
+        <p>{selected?.copy ?? 'Hover, select, or focus a neuron to trace the learning behind it.'}</p>
       </section>
     </>
   );
@@ -670,32 +523,19 @@ function EducationPanel(): ReactElement {
       theme="panel-education"
       eyebrow="03 · Education & learning"
       title={<>Keep asking<br />better questions.</>}
-      intro="A living constellation of education and languages gathered while building things that need to work."
+      intro="A neural network of languages, courses, university learning, and formal education gathered while building things that need to work."
       footer="Curiosity is a system property"
     >
       <div className="panel-nodes" aria-hidden="true"><i /><b /><i /><b /><i /><b /><i /><b /><i /></div>
       <section className="panel-section education-section">
         <div className="education-section__heading">
-          <h2>Learning graph</h2>
-          <span>drag to rearrange</span>
+          <h2>Learning network</h2>
+          <span>5 layers · 4 max</span>
         </div>
         <EducationGraph />
-        <p className="education-graph__hint">Nodes have a soft gravity. Pull one away and the constellation follows; bring them together and they make room.</p>
+        <p className="education-graph__hint">Follow the signal from language input through independent learning and university study to the formal record.</p>
       </section>
     </PanelPage>
-  );
-}
-
-function ProfileLines({ lines }: { lines: readonly { label: string; value: string }[] }): ReactElement {
-  return (
-    <div className="profile-lines">
-      {lines.map(line => (
-        <div className="profile-line" key={line.label}>
-          <span>{line.label}</span>
-          <strong>{line.value}</strong>
-        </div>
-      ))}
-    </div>
   );
 }
 
@@ -705,7 +545,6 @@ function AboutPanel(): ReactElement {
       theme="panel-about"
       eyebrow="04 · Profile & curiosity"
       title={<>A little company.<br />A lot of curiosity.</>}
-      footer="Make room for wonder"
     >
       <h2>About me · A curious builder.</h2>
       <div className="panel-flower" aria-hidden="true">✿</div>
@@ -713,15 +552,12 @@ function AboutPanel(): ReactElement {
         “I know of no better life purpose than to perish attempting the great and impossible.”
         <small>— Friedrich Nietzsche</small>
       </div>
-      <p className="panel-intro">
-        Highly curious, fast-learning, and always looking for meaningful answers across technology, academia, geopolitics, economics, and current events. Charisma, public speaking, initiative, and team management help turn that curiosity into movement.
-      </p>
-      <ProfileLines lines={profileLines} />
+      {/* Reserved for a future personal note. */}
+      <section className="profile-personal-space" aria-label="Reserved space for a future personal note" />
       <nav className="panel-links" aria-label="Profile links">
-        <a href="mailto:santiagoyepesmesa0224@gmail.com">Email ↗</a>
         <a href="https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270" rel="noreferrer" target="_blank">LinkedIn ↗</a>
+        <a href="https://github.com/Laughcheeta1" rel="noreferrer" target="_blank">GitHub ↗</a>
       </nav>
-      <ProfileLines lines={personalInterests} />
     </PanelPage>
   );
 }
@@ -913,25 +749,132 @@ function AchievementsPanel(): ReactElement {
   );
 }
 
+function HobbyConstellation(): ReactElement {
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const activeHobby: Hobby | undefined = hobbies.find(hobby => hobby.id === activeId);
+
+  return (
+    <section
+      aria-label="Hobby star field"
+      className="hobby-sky"
+      data-testid="hobby-sky"
+    >
+      <svg aria-hidden="true" className="hobby-sky__scene" preserveAspectRatio="none" viewBox="0 0 160 100">
+        <defs>
+          <linearGradient id="hobby-sky-gradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stopColor="#030b1b" />
+            <stop offset="0.48" stopColor="#0a1730" />
+            <stop offset="1" stopColor="#18233a" />
+          </linearGradient>
+          <linearGradient id="hobby-horizon-gradient" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stopColor="#e8b45c" stopOpacity=".9" />
+            <stop offset=".22" stopColor="#9a5d48" stopOpacity=".48" />
+            <stop offset="1" stopColor="#172238" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <rect fill="url(#hobby-sky-gradient)" height="100" width="160" />
+        <path className="hobby-sky__milky-way" d="M-8 23C25 4 47 12 72 27s43 22 96-13" />
+        <path className="hobby-sky__milky-way-core" d="M-8 23C25 4 47 12 72 27s43 22 96-13" />
+        <g className="hobby-sky__ambient-stars">
+          <circle cx="8" cy="13" r=".45" /><circle cx="16" cy="35" r=".28" /><circle cx="25" cy="9" r=".7" />
+          <circle cx="34" cy="29" r=".35" /><circle cx="43" cy="17" r=".5" /><circle cx="53" cy="7" r=".3" />
+          <circle cx="61" cy="36" r=".55" /><circle cx="70" cy="13" r=".35" /><circle cx="83" cy="24" r=".42" />
+          <circle cx="93" cy="8" r=".3" /><circle cx="103" cy="32" r=".65" /><circle cx="112" cy="16" r=".3" />
+          <circle cx="124" cy="7" r=".5" /><circle cx="137" cy="29" r=".35" /><circle cx="148" cy="12" r=".62" />
+          <circle cx="155" cy="39" r=".3" /><circle cx="5" cy="48" r=".25" /><circle cx="28" cy="43" r=".28" />
+          <circle cx="47" cy="39" r=".24" /><circle cx="90" cy="42" r=".32" /><circle cx="119" cy="40" r=".25" />
+        </g>
+        <path className="hobby-sky__horizon-light" d="M0 70C30 64 57 68 79 65s55-2 81 4v31H0Z" />
+        <path className="hobby-sky__far-mountains" d="M0 69 15 59 27 66 43 50 58 64 77 43 95 64 114 48 132 63 149 53 160 59v41H0Z" />
+        <path className="hobby-sky__near-mountains" d="M0 81 19 68 36 74 53 61 72 75 91 57 109 74 126 64 143 77 160 68v32H0Z" />
+        <path className="hobby-sky__valley" d="M0 84c27-9 43-7 63-2 15 4 28 2 43-4 18-7 35-6 54 1v21H0Z" />
+        <path className="hobby-sky__city-road" d="M116 100c-11-9-19-13-25-16-7-4-13-7-19-12" />
+        <g className="hobby-sky__city-lights">
+          <circle cx="95" cy="84" r=".55" /><circle cx="101" cy="87" r=".4" /><circle cx="108" cy="83" r=".65" />
+          <circle cx="114" cy="89" r=".35" /><circle cx="121" cy="86" r=".55" /><circle cx="127" cy="91" r=".42" />
+          <circle cx="134" cy="87" r=".62" /><circle cx="140" cy="92" r=".32" /><circle cx="147" cy="89" r=".48" />
+          <circle cx="104" cy="94" r=".38" /><circle cx="113" cy="96" r=".62" /><circle cx="123" cy="95" r=".35" />
+          <circle cx="131" cy="97" r=".5" /><circle cx="143" cy="96" r=".34" /><circle cx="151" cy="94" r=".54" />
+        </g>
+        <path className="hobby-sky__foreground" d="M0 91c16-5 26-3 39 1 11 4 22 4 33 1 12-4 24-3 35 2 14 6 31 4 53-3v8H0Z" />
+        <g className="hobby-sky__figure">
+          <ellipse className="hobby-sky__figure-shadow" cx="70" cy="99" rx="32" ry="5" />
+          <path className="hobby-sky__figure-body" d="M57 100c2-13 1-23 7-29 5-6 13-7 20-3 7 4 10 17 12 32Z" />
+          <circle className="hobby-sky__figure-skin" cx="70" cy="64" r="5" />
+          <path className="hobby-sky__figure-hair" d="M65 65c-1-6 3-10 9-10 5 0 8 4 8 9-3-3-7-2-10 1-2 2-5 2-7 0Z" />
+          <path className="hobby-sky__figure-knee" d="M77 82c7-5 17-2 24 5l11 9-6 6-13-8-12 5Z" />
+          <path className="hobby-sky__figure-leg" d="M61 87c-9 2-18 6-27 13l5 5h25l8-9Z" />
+          <path className="hobby-sky__figure-arm" d="M76 75c7 4 13 8 19 15l-3 3c-7-5-12-8-19-11Z" />
+          <path className="hobby-sky__figure-shoe" d="M39 96h-9c-4 1-5 4-1 5h15Z" />
+          <path className="hobby-sky__figure-highlight" d="M67 59c-2 2-2 5-1 7m-4 17c-1 6-1 10 0 15" />
+        </g>
+      </svg>
+      <p className="hobby-sky__caption">A lookout above the noise · five stars, five ways to stay hopeful</p>
+      <div className="hobby-sky__star-field" role="list">
+        {hobbies.map(hobby => (
+          <span
+            className="hobby-star-item"
+            key={hobby.id}
+            role="listitem"
+            style={{
+              '--hobby-star-delay': `${hobby.star.delay}s`,
+              '--hobby-star-size': `${hobby.star.size}px`,
+              '--hobby-star-x': hobby.star.x,
+              '--hobby-star-y': hobby.star.y,
+            } as CSSProperties}
+          >
+            <button
+              aria-describedby={activeId === hobby.id ? 'hobby-star-detail' : undefined}
+              aria-label={`Hobby star ${hobby.number}: ${hobby.title}`}
+              aria-pressed={activeId === hobby.id}
+              className={`hobby-star${activeId === hobby.id ? ' is-active' : ''}`}
+              data-hobby-id={hobby.id}
+              data-testid="hobby-star"
+              onBlur={event => {
+                if (!event.relatedTarget || !event.currentTarget.contains(event.relatedTarget as Node)) setActiveId(null);
+              }}
+              onClick={() => setActiveId(hobby.id)}
+              onFocus={() => setActiveId(hobby.id)}
+              onPointerEnter={event => {
+                if (event.pointerType === 'mouse') setActiveId(hobby.id);
+              }}
+              onPointerLeave={event => {
+                if (event.pointerType === 'mouse') setActiveId(current => current === hobby.id ? null : current);
+              }}
+              type="button"
+            >
+              <span aria-hidden="true" className="hobby-star__halo" />
+              <span aria-hidden="true" className="hobby-star__glyph">✦</span>
+              <span aria-hidden="true" className="hobby-star__number">{hobby.number}</span>
+            </button>
+          </span>
+        ))}
+      </div>
+      {activeHobby ? (
+        <aside aria-live="polite" className="hobby-star-detail" id="hobby-star-detail" role="tooltip" data-testid="hobby-details">
+          <div className="hobby-star-detail__topline">
+            <span>{activeHobby.number} · hobby star</span>
+            <span>signal received</span>
+          </div>
+          <h3>{activeHobby.title}</h3>
+          <p>{activeHobby.copy}</p>
+        </aside>
+      ) : null}
+      <p className="hobby-sky__hint">Hover, focus, or tap a bright star to read its story.</p>
+    </section>
+  );
+}
+
 function HobbiesPanel(): ReactElement {
   return (
     <PanelPage
       theme="panel-hobbies"
-      eyebrow="06 · Life beyond code"
-      title={<>Life beyond<br />the build.</>}
-      intro="The other projects keep the builder human. Here are a few things that make time away from code feel well spent."
-      footer="Rest is part of the system"
+      eyebrow="06 · Hobbies"
+      title={<>Keep looking<br />up.</>}
+      intro="A quiet lookout for the things that keep me hopeful, curious, and moving."
+      footer="There is always another star"
     >
-      <div className="panel-bars" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></div>
-      <div className="hobby-list">
-        {hobbies.map(hobby => (
-          <article className="panel-card hobby-card" key={hobby.id}>
-            <span className="hobby-number">{hobby.number}</span>
-            <h2>{hobby.title}</h2>
-            <p>{hobby.copy}</p>
-          </article>
-        ))}
-      </div>
+      <HobbyConstellation />
     </PanelPage>
   );
 }
@@ -945,9 +888,66 @@ function LibraryPanel(): ReactElement {
       intro="A future home for long-form notes, references, and the kind of ideas that deserve a quiet room."
     >
       <div className="panel-columns" aria-hidden="true"><i /><i /><i /></div>
-      <p className="panel-note">The shelves are not ready yet. The blueprint is ambitious, the scaffolding is dignified, and the next chapter is being prepared.</p>
+      <p className="panel-note">Go big or go home</p>
       <div className="panel-status">You will know it in the news</div>
     </PanelPage>
+  );
+}
+
+function FitnessStatsPanel(): ReactElement {
+  const panel = secretPanels['squat-rack'];
+
+  return (
+    <main className={`panel-page secret-panel fitness-stats-panel ${panel.theme}`} data-testid="fitness-stats-panel">
+      <div className="panel-eyebrow">{panel.eyebrow}</div>
+      <div className="fitness-stats__emblem" aria-hidden="true">{panel.icon}</div>
+      <h1>{panel.title}</h1>
+      <p className="fitness-stats__copy">{panel.copy}</p>
+      <ul className="fitness-stats__grid" aria-label="Fitness and endurance statistics">
+        {fitnessStats.map((stat, index) => (
+          <li className={`fitness-stat fitness-stat--${stat.accent}`} data-testid="fitness-stat" key={stat.id}>
+            <div className="fitness-stat__head">
+              <span className="fitness-stat__index">{String(index + 1).padStart(2, '0')}</span>
+              <span className="fitness-stat__category">{stat.accent}</span>
+            </div>
+            <strong className="fitness-stat__value">{stat.value}</strong>
+            <span className="fitness-stat__label">{stat.label}</span>
+            <p>{stat.detail}</p>
+          </li>
+        ))}
+      </ul>
+      <div className="fitness-stats__signature">{panel.signature}</div>
+    </main>
+  );
+}
+
+function ProfileMemoryPanel(): ReactElement {
+  return (
+    <main className={`panel-page secret-panel profile-memory-panel ${profileMemory.theme}`} data-testid="profile-memory-panel">
+      <div className="panel-eyebrow">{profileMemory.eyebrow}</div>
+      <div className="profile-memory__seal" aria-hidden="true">{profileMemory.icon}</div>
+      <h1>{profileMemory.title}</h1>
+      <p className="profile-memory__song-lead">My favourite song is</p>
+      <div className="profile-memory__song">{profileMemory.song}</div>
+      <figure className="profile-memory__player">
+        <div className="profile-memory__screen">
+          <iframe
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+            loading="lazy"
+            src={profileMemory.embedUrl}
+            title={`YouTube player for ${profileMemory.song}`}
+          />
+        </div>
+        <figcaption>
+          <span>Play it here · relive the moment</span>
+          <a href={profileMemory.videoUrl} rel="noreferrer" target="_blank">Open on YouTube ↗</a>
+        </figcaption>
+      </figure>
+      <p className="profile-memory__story">{profileMemory.story}</p>
+      <div className="profile-memory__ellipsis" aria-hidden="true">···</div>
+      <p className="profile-memory__closing">{profileMemory.closing}</p>
+    </main>
   );
 }
 
@@ -965,7 +965,13 @@ function SecretPanel({ panel }: { panel: SecretPanel }): ReactElement {
       ) : panel.icon}</div>
       <h1>{panel.title}</h1>
       <p className="secret-panel__copy">{panel.copy}</p>
-      <div className="secret-panel__signature">{panel.signature}</div>
+      {panel.additionalCopy ? <p className="secret-panel__copy secret-panel__copy--secondary">{panel.additionalCopy}</p> : null}
+      {panel.signature ? <div className="secret-panel__signature">{panel.signature}</div> : null}
+      {panel.image ? (
+        <figure className="secret-panel__image-frame">
+          <img alt={panel.image.alt} data-testid="secret-panel-image" src={`${publicAssetBaseUrl}${panel.image.src}`} />
+        </figure>
+      ) : null}
     </main>
   );
 }
@@ -980,11 +986,11 @@ const panelRegistry: Readonly<Record<string, PanelComponent>> = {
   'neural-network:front': EducationPanel,
   'neural-network:back': () => <SecretPanel panel={secretPanels['neural-network']} />,
   'roses:front': AboutPanel,
-  'roses:back': () => <SecretPanel panel={secretPanels.roses} />,
+  'roses:back': ProfileMemoryPanel,
   'victory-statue:front': AchievementsPanel,
   'victory-statue:back': () => <SecretPanel panel={secretPanels['victory-statue']} />,
   'squat-rack:front': HobbiesPanel,
-  'squat-rack:back': () => <SecretPanel panel={secretPanels['squat-rack']} />,
+  'squat-rack:back': FitnessStatsPanel,
   'pergamon-library:front': LibraryPanel,
   'pergamon-library:back': () => <SecretPanel panel={secretPanels['pergamon-library']} />,
 };
