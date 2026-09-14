@@ -185,9 +185,9 @@ describe('navigation and physical boundaries', () => {
     expect(guidedRoute({ x: 0, z: 6 }, destination.navigationNode, obstacles, config.player.radius).at(-1)).toEqual(entrance(destination));
   });
   it('prevents shoreline and structure penetration while allowing sliding', () => {
-    const boundary = { x: config.world.centerX + config.world.radiusX - config.world.shoreline - config.player.radius, z: 0 };
+    const boundary = { x: config.world.centerX - config.world.radiusX + config.world.shoreline + config.player.radius, z: 0 };
     expect(onIsland(boundary)).toBe(true);
-    expect(moveWithCollisions(boundary, { x: 1, z: 0 }, [], config.player.radius)).toEqual(boundary);
+    expect(moveWithCollisions(boundary, { x: -1, z: 0 }, [], config.player.radius)).toEqual(boundary);
     const moved = moveWithCollisions({ x: -2, z: 0 }, { x: 1, z: .5 }, [{ x: 0, z: 0, radius: 1 }], .45);
     expect(moved).toEqual({ x: -2, z: .5 });
   });

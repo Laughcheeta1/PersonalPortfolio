@@ -4,6 +4,7 @@ import { landmarks, biomes } from './registry';
 import { environmentTuning } from './environmentConfig';
 import { entrance, navigation, roadZ } from './navigation';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { onBugHuntApproach } from './bugHuntConfig';
 
 export function createEnvironment() {
   const group = new THREE.Group(); group.name = 'Original procedural island';
@@ -40,7 +41,7 @@ export function createEnvironment() {
   const roadPoints:Array<[number,number]>=navigation.filter(node=>node.id.startsWith('road:')).map(node=>[node.x,node.z]);strip(roadPoints,w.roadWidth);
   for(const l of landmarks){const target=entrance(l);strip([[l.position[0],roadZ(l.position[0])],[target.x,target.z]],w.pathWidth);}
   const roadGeometry=new THREE.BufferGeometry();roadGeometry.setAttribute('position',new THREE.Float32BufferAttribute(roadPositions,3));roadGeometry.computeVertexNormals();mats.road.side=THREE.DoubleSide;add(roadGeometry,mats.road,0,0,0).castShadow=false;
-  const clear=(x:number,z:number)=>Math.abs(z-roadZ(x))>t.routeClearance && !landmarks.some(l=>Math.hypot(x-l.position[0],z-l.position[1])<t.landmarkClearance || (Math.abs(x-l.position[0])<t.routeClearance && z>Math.min(roadZ(x),l.position[1])-2 && z<Math.max(roadZ(x),l.position[1])+2));
+  const clear=(x:number,z:number)=>!onBugHuntApproach(x,z) && Math.abs(z-roadZ(x))>t.routeClearance && !landmarks.some(l=>Math.hypot(x-l.position[0],z-l.position[1])<t.landmarkClearance || (Math.abs(x-l.position[0])<t.routeClearance && z>Math.min(roadZ(x),l.position[1])-2 && z<Math.max(roadZ(x),l.position[1])+2));
   const dummy=new THREE.Object3D();
   const instance=(geo:THREE.BufferGeometry,mat:THREE.Material,count:number)=>{const m=new THREE.InstancedMesh(geo,mat,count);m.castShadow=true;m.receiveShadow=true;group.add(m);return m;};
   const put=(m:THREE.InstancedMesh,i:number,x:number,y:number,z:number,sx:number,sy=sx,sz=sx)=>{dummy.position.set(x,y,z);dummy.rotation.set(0,random()*Math.PI*2,0);dummy.scale.set(sx,sy,sz);dummy.updateMatrix();m.setMatrixAt(i,dummy.matrix);};
@@ -80,7 +81,7 @@ export function createEnvironment() {
   curbs.count=curbCount;
   for(let x=-78;x<28;x+=t.fenceSpacing){if(landmarks.some(l=>Math.abs(l.position[0]-x)<4))continue;const z=roadZ(x)+3.1;for(const dx of [-t.fenceLength/2,t.fenceLength/2]){add(box,mats.wood,x+dx,.55,z,.18,1.1,.18);obstacles.push({x:x+dx,z,radius:.2});}for(const y of [.4,.8])add(box,mats.wood,x,y,z,t.fenceLength,.11,.12);for(let dx=-t.fenceLength/2;dx<t.fenceLength/2;dx+=.5)obstacles.push({x:x+dx,z,radius:.28});}
   const rocks=instance(new THREE.IcosahedronGeometry(1,0),mats.cliff,t.rocks+t.shoreRocks);let rockCount=0;
-  for(let i=0;i<t.shoreRocks;i++){const a=i/t.shoreRocks*Math.PI*2,x=w.centerX+Math.cos(a)*(w.radiusX+.3),z=Math.sin(a)*(w.radiusZ+.3);put(rocks,rockCount++,x,-1.5,z,1.4+random()*1.8,2+random()*1.5,1.4+random());}
+  for(let i=0;i<t.shoreRocks;i++){const a=i/t.shoreRocks*Math.PI*2,x=w.centerX+Math.cos(a)*(w.radiusX+.3),z=Math.sin(a)*(w.radiusZ+.3);if(onBugHuntApproach(x,z))continue;put(rocks,rockCount++,x,-1.5,z,1.4+random()*1.8,2+random()*1.5,1.4+random());}
   for(let i=0;i<t.rocks;i++){const x=w.centerX+(random()*2-1)*w.radiusX*.85,z=(random()*2-1)*w.radiusZ*.8;if(!clear(x,z)||((x-w.centerX)/w.radiusX)**2+(z/w.radiusZ)**2>.8)continue;const s=.5+random()*.65;put(rocks,rockCount++,x,s*.4,z,s,s*.75,s);obstacles.push({x,z,radius:s});}rocks.count=rockCount;
   for(let x=roadPoints[0][0]+5;x<roadPoints.at(-1)![0];x+=t.lampSpacing){const z=roadZ(x)-t.routeClearance;if(landmarks.some(l=>Math.abs(l.position[0]-x)<w.pathWidth))continue;add(column,mats.dark,x,1.3,z,.2,2.6,.2);add(new THREE.CylinderGeometry(.2,.3,.16,10),mats.dark,x,.08,z);add(box,mats.white,x,2.6,z,.36,.5,.36);for(const dx of [-.2,.2])for(const dz of [-.2,.2])add(box,mats.dark,x+dx,2.6,z+dz,.045,.58,.045);add(new THREE.ConeGeometry(.35,.3,4),mats.dark,x,3,z);add(sphere,mats.dark,x,3.2,z,.08,.12,.08);obstacles.push({x,z,radius:t.lampRadius});}
   // Each small biome set is authored here from primitives, never downloaded models.

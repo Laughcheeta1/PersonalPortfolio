@@ -5,7 +5,7 @@ try{
   if(!process.env.CHECK_MOBILE_ONLY){
   const context=await browser.newContext({viewport:{width:900,height:650},locale:'es-CO'});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
+  await page.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Pausar música de fondo');
   await page.locator('#music').click();await page.waitForFunction(()=>!window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Activar música de fondo');
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);
@@ -40,7 +40,7 @@ try{
   const mobile=await mobileContext.newPage();
   // Let software-rendered frames settle before sending touch events in headless CI.
   await mobile.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=callback=>{window.__lastFrame=callback;return window.__pauseFrames?0:raf(callback);};window.__resumeFrames=()=>{window.__pauseFrames=false;raf(window.__lastFrame);};});
-  await mobile.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
+  await mobile.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
   assert.equal(await mobile.locator('#orientation-tip').isVisible(),true);
   await mobile.locator('#orientation-tip button').click();assert.equal(await mobile.locator('#orientation-tip').isVisible(),false);
   assert.equal(await mobile.locator('#jump').isVisible(),true);assert.equal(await mobile.locator('#run').isVisible(),true);

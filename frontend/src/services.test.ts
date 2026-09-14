@@ -2,13 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createBackendChatService,
   createChatService,
-  createPanelContentService,
   MAX_CHAT_HISTORY_MESSAGES,
   MAX_CHAT_MESSAGE_LENGTH,
   ServiceError,
   warmBackend,
   validateChatMessage,
-  validatePanelDefinition,
 } from './services';
 import { setLanguage } from './i18n';
 
@@ -31,17 +29,6 @@ describe('backend service adapters', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
 
     await expect(warmBackend('https://backend.example')).resolves.toBeUndefined();
-  });
-
-  it('loads standalone panel documents from the local registry', async () => {
-    const panel = await createPanelContentService().get('starship:front');
-
-    expect(panel).toEqual({
-      type: 'iframe',
-      url: 'http://127.0.0.1:8000/api/panels/starship%3Afront',
-      title: 'Projects front notebook',
-      localize: false,
-    });
   });
 
   it('sends the complete browser conversation and validates chat replies', async () => {
@@ -115,19 +102,4 @@ describe('backend service adapters', () => {
     expect(() => validateChatMessage('x'.repeat(MAX_CHAT_MESSAGE_LENGTH + 1))).toThrow(ServiceError);
   });
 
-  it('rejects malformed panel responses', () => {
-    expect(() => validatePanelDefinition({ type: 'html', html: 42 })).toThrow(ServiceError);
-    expect(validatePanelDefinition({
-      type: 'iframe',
-      url: 'http://backend/api/panels/starship%3Afront',
-      title: 'Projects front notebook',
-      localize: false,
-    })).toEqual({
-      type: 'iframe',
-      url: 'http://backend/api/panels/starship%3Afront',
-      title: 'Projects front notebook',
-      localize: false,
-    });
-    expect(validatePanelDefinition({ type: 'none' })).toEqual({ type: 'none', localize: false });
-  });
 });

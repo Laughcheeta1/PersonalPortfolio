@@ -1,7 +1,12 @@
 import { config } from '../config';
 import type { Point, Obstacle } from './navigation';
+import { bugHuntConfig } from './bugHuntConfig';
 export function onIsland(p: Point, padding: number = config.player.radius): boolean {
-  return ((p.x - config.world.centerX) / (config.world.radiusX - config.world.shoreline - padding)) ** 2 + (p.z / (config.world.radiusZ - config.world.shoreline - padding)) ** 2 <= 1;
+  const { island, bridge } = bugHuntConfig;
+  const onMainIsland = ((p.x - config.world.centerX) / (config.world.radiusX - config.world.shoreline - padding)) ** 2 + (p.z / (config.world.radiusZ - config.world.shoreline - padding)) ** 2 <= 1;
+  const onMiniIsland = Math.hypot(p.x - island.x, p.z - island.z) <= island.radius - .8 - padding;
+  const onBridge = p.x >= bridge.startX && p.x <= bridge.endX && Math.abs(p.z - bridge.z) <= bridge.width / 2 - padding;
+  return onMainIsland || onMiniIsland || onBridge;
 }
 export function moveWithCollisions(position: Point, delta: Point, obstacles: Obstacle[], radius: number): Point {
   const next = { ...position };

@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+import { createElement } from 'react';
+import { createRoot } from 'react-dom/client';
 import { config } from './config';
 import { landmarks, type Landmark } from './world/registry';
 import { distance } from './world/navigation';
-import { apiOrigin, createPanelContentService, sanitizePanelHtml, type PanelDefinition } from './services';
-import { localize, onLanguageChange, t } from './i18n';
+import { PanelContent } from './panel-content';
+import { localize, onLanguageChange } from './i18n';
 export type PanelState = 'inactive' | 'opening' | 'active' | 'closing';
 export function choosePanel(player:{x:number;z:number},current:Landmark|null):Landmark|null {
   if(current&&distance(player,{x:current.position[0],z:current.position[1]})<=config.panels.deactivationRadius)return current;
@@ -13,24 +15,19 @@ export function choosePanel(player:{x:number;z:number},current:Landmark|null):La
 export function isolatePanel(element:HTMLElement) {
   for(const event of ['pointerdown','pointermove','pointerup','wheel','keydown','keyup'])element.addEventListener(event,e=>e.stopPropagation());
 }
-export async function renderContent(element:HTMLElement, definition:PanelDefinition) {
-  element.dataset.panelType=definition.type;
-  if(definition.localize===false)element.dataset.i18nSkip='';else delete element.dataset.i18nSkip;
+export function renderContent(element:HTMLElement, panelId:string) {
+  element.dataset.panelType='react';
+  delete element.dataset.i18nSkip;
   element.replaceChildren();
-  if(definition.type==='html')element.innerHTML=sanitizePanelHtml(definition.html);
-  if(definition.type==='iframe') {
-    try {
-      const url=new URL(definition.url,document.baseURI);
-      const sameOrigin=url.origin===window.location.origin;
-      const panelApiOrigin=url.origin===apiOrigin;
-      if(!sameOrigin&&!panelApiOrigin&&url.protocol!=='https:')throw new Error();
-      const iframe=document.createElement('iframe');iframe.src=url.href;iframe.title=definition.title;iframe.sandbox.add('allow-scripts','allow-forms','allow-presentation','allow-popups','allow-popups-to-escape-sandbox');iframe.referrerPolicy='no-referrer';iframe.loading='eager';iframe.allow='fullscreen';iframe.style.display='block';iframe.style.width='100%';iframe.style.height='100%';iframe.style.border='0';element.style.padding='0';element.style.border='0';element.style.background='transparent';element.style.boxShadow='none';element.style.overflow='hidden';element.append(iframe);
-    } catch { element.textContent=t('This embedded page is not available.'); }
-  }
+  element.classList.add('world-panel--react');
+  const host=document.createElement('div');
+  host.className='panel-react-root';
+  host.dataset.i18nSkip='';
+  element.append(host);
+  createRoot(host).render(createElement(PanelContent,{panelId}));
 }
 interface Surface {landmark:Landmark;group:THREE.Group;elements:HTMLElement[];state:PanelState;progress:number}
 export class PanelSystem {
-  private service=createPanelContentService();
   private surfaces:Surface[]=[];
   active:Landmark|null=null;
   constructor(scene:THREE.Scene) {
@@ -40,7 +37,7 @@ export class PanelSystem {
         const el=document.createElement('article');el.className='world-panel';el.setAttribute('aria-label',`${landmark.title} ${index?'back':'front'}`);isolatePanel(el);el.textContent='Opening the notebook…';
         el.style.width=`${config.panels.width}px`;el.style.height=`${config.panels.height}px`;
         const object=new CSS3DObject(el);el.style.userSelect='text';object.rotation.y=landmark.rotation+index*Math.PI;object.position.z=index?-.02:.02;group.add(object);elements.push(el);
-        this.service.get(id).then(async def=>{await renderContent(el,def);localize(el);}).catch(()=>{el.textContent=t('This notebook could not be opened. Approach again or reload to retry.');});
+        renderContent(el,id);
       }
       this.surfaces.push({landmark,group,elements,state:'inactive',progress:0});
     }

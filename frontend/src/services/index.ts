@@ -1,13 +1,6 @@
-import DOMPurify from 'dompurify';
 import { landmarks, type LandmarkId } from '../world/registry';
-import { panelDocumentFor } from '../content/panels';
 import { t } from '../i18n';
 
-export type PanelDefinition = (
-  | { type: 'html'; html: string }
-  | { type: 'iframe'; url: string; title: string }
-  | { type: 'none' }
-) & { localize?: boolean };
 export type ServiceErrorCode = 'unavailable' | 'invalid-response' | 'invalid-request' | 'cancelled';
 export class ServiceError extends Error {
   constructor(public readonly code: ServiceErrorCode, message: string) {
@@ -22,16 +15,13 @@ export const MAX_CHAT_HISTORY_MESSAGES = 10;
 export interface ChatService {
   send(message: string, history: readonly ChatMessage[], signal?: AbortSignal): Promise<ChatReply>;
 }
-export interface PanelContentService {
-  get(panelId: string, signal?: AbortSignal): Promise<PanelDefinition>;
-}
 export interface HistoryStore {
   load(): ChatMessage[];
   save(messages: readonly ChatMessage[]): void;
   clear(): void;
 }
 
-export const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api').replace(/\/+$/, '');
+export const apiBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL ?? 'http://127.0.0.1:58000/api').replace(/\/+$/, '');
 export const apiOrigin = new URL(apiBaseUrl).origin;
 
 /** Wake a scale-to-zero backend without making page initialization dependent on it. */
@@ -94,26 +84,6 @@ export function validateChatReply(value: unknown): ChatReply {
   return { message: reply.message.trim(), destination_object_id: reply.destination_object_id as LandmarkId | null };
 }
 
-/** Keep sanitization at the trust boundary when replacing mocks with HTTP content. */
-export function sanitizePanelHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    USE_PROFILES: { html: true },
-    FORBID_TAGS: ['iframe', 'style', 'script'],
-    FORBID_ATTR: ['style'],
-  });
-}
-
-export function validatePanelDefinition(value: unknown): PanelDefinition {
-  if (!value || typeof value !== 'object') throw new ServiceError('invalid-response', 'The notebook returned an invalid panel.');
-  const panel = value as Record<string, unknown>;
-  if (panel.type === 'none') return { type: 'none', localize: false };
-  if (panel.type === 'html' && typeof panel.html === 'string') return { type: 'html', html: panel.html, localize: panel.localize === true };
-  if (panel.type === 'iframe' && typeof panel.url === 'string' && typeof panel.title === 'string') {
-    return { type: 'iframe', url: panel.url, title: panel.title, localize: panel.localize === true };
-  }
-  throw new ServiceError('invalid-response', 'The notebook returned an invalid panel.');
-}
-
 function checkSignal(signal?: AbortSignal): void {
   if (signal?.aborted) throw new ServiceError('cancelled', 'Request cancelled.');
 }
@@ -133,17 +103,6 @@ function apiErrorMessage(payload: unknown, status: number): string {
     if (typeof body.message === 'string') return body.message;
   }
   return `The backend request failed (${status}).`;
-}
-
-export function createPanelContentService(): PanelContentService {
-  return {
-    async get(panelId, signal) {
-      checkSignal(signal);
-      const document = panelDocumentFor(panelId);
-      if (!document) return { type: 'none', localize: false };
-      return { type: 'iframe', url: `${apiBaseUrl}${document.url}`, title: document.title, localize: false };
-    },
-  };
 }
 
 export function createChatService(): ChatService {

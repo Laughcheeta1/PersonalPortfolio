@@ -47,25 +47,14 @@ def client_for(
 
 
 @pytest.mark.asyncio
-async def test_health_and_panel_routes() -> None:
+async def test_health_route_does_not_serve_panels() -> None:
     provider = FakeProvider("{}")
     async with client_for(provider) as client:
         health = await client.get("/health")
-        library = await client.get("/api/panels/pergamon-library:front")
-        projects = await client.get("/api/panels/starship:front")
-        secret = await client.get("/api/panels/starship:back")
-        missing = await client.get("/api/panels/unknown:front")
+        panels = await client.get("/api/panels/starship:front")
 
     assert health.json() == {"status": "ok"}
-    assert library.status_code == 200
-    assert library.headers["content-type"].startswith("text/html")
-    assert "Empire construction in progress" in library.text
-    assert "NAO Aeronautics" in projects.text
-    assert "Legal_IA" in projects.text
-    assert "Review VS Code Extension" in projects.text
-    assert "No astronauts were harmed" in secret.text
-    assert "Legal_IA" not in secret.text
-    assert missing.status_code == 404
+    assert panels.status_code == 404
 
 
 @pytest.mark.asyncio

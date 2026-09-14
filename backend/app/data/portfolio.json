@@ -1,10 +1,18 @@
 {
   "personal": {
-    "headline": "AI Engineer",
+    "fullName": "Santiago Yepes Mesa",
+    "headline": "AI Engineer | Founder",
+    "location": "Medellín Metropolitan Area",
+    "email": "santiagoyepesmesa0224@gmail.com",
     "summary": "AI Engineer and Systems Engineering student at Universidad EIA who thrives on sharing knowledge and empowering others through education. Experienced in tutoring Data Structures and programming fundamentals, organizing hackathons, and collaborating on analytical, team-oriented projects.",
     "availability": "open_to_offers",
     "githubUrl": "https://github.com/elio-cto",
     "linkedinUrl": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270",
+    "topSkills": [
+      "Leadership",
+      "Microsoft Excel",
+      "Microsoft Power BI"
+    ],
     "hobbies": [
       {
         "id": "reading",
@@ -38,6 +46,17 @@
     "languagesSpoken": [
       "Spanish",
       "English"
+    ],
+    "languageProficiency": {
+      "Spanish": "Native or Bilingual",
+      "English": "Native or Bilingual"
+    },
+    "certifications": [
+      "Create-X",
+      "mc^2 Builders Program",
+      "Certification Perficient Tech Camp 2023",
+      "CS50 AI",
+      "Supervised Machine Learning: Regression and Classification"
     ]
   },
   "projects": {
@@ -46,7 +65,7 @@
         "id": "proj-nao-aeronautics",
         "title": "NAO Aeronautics",
         "summary": "Logistics startup concept to bring city resources to remote areas.",
-        "details": "Developed a full business plan, process architecture, and prototype. Conducted 35 outreach contacts and interviewed 15 professionals across mining, cattle raising, farming, defense, NGOs, social programs, and expeditions to identify customers, early adopters, and iterate on the product.",
+        "details": "Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and designed and developed a prototype.",
         "technologies": [],
         "links": {}
       },
@@ -140,8 +159,8 @@
       {
         "id": "proj-employee-medical-scales-calculator-agent",
         "title": "Medical Scales Calculator - Telepatia",
-        "summary": "Agent to calculate medical scales for patients given a transcript of a consultation",
-        "details": "This project was fundamental to increase the product market fit for doctors and specialists.",
+        "summary": "AI agent to calculate complex medical scales from consultation context and chat.",
+        "details": "Developed as part of Telepatia's work on AI systems for medical support.",
         "technologies": [
           "Python",
           "LLMs"
@@ -162,8 +181,8 @@
       {
         "id": "proj-employee-chrome-extension-for-integrations",
         "title": "Chrome Extension for Integrations - Telepatia",
-        "summary": "Designed and implemented an integrations framework and a Chrome extension to automatically create, manage, and execute integrations with EMR systems.",
-        "details": "This project was not completely finished due to time and priority constraints.",
+        "summary": "Chrome extension for RPA integrations compatible with Manifest V2 and V3.",
+        "details": "Designed and implemented integration tooling for Telepatia's RPA workflows.",
         "technologies": [
           "Chrome Extensions"
         ],
@@ -187,8 +206,8 @@
       {
         "id": "work-stealth-startup-ai-engineer",
         "title": "AI Engineer - Stealth Startup",
-        "summary": "Developing AI systems as part of a stealth startup's engineering and technical team.",
-        "details": "Current AI Engineer role at a technology startup operating in stealth.",
+        "summary": "AI Engineer at a stealth startup.",
+        "details": "Current AI Engineer role at a technology startup operating in stealth in Colombia.",
         "companyName": "Stealth Startup",
         "startDate": "2026-03",
         "endDate": null,
@@ -197,22 +216,10 @@
         }
       },
       {
-        "id": "work-eia-selected-tutor-programming-fundamentals",
-        "title": "Programming Fundamentals Tutor",
-        "summary": "Tutored students in programming fundamentals at EIA University.",
-        "details": "Provided guidance and support to help students understand coding concepts, with positive feedback for clear explanations and an approachable teaching style.",
-        "companyName": "EIA University",
-        "startDate": "2023-06",
-        "endDate": "2023-11",
-        "links": {
-          "externalUrl": "https://eia.edu.co/"
-        }
-      },
-      {
         "id": "work-telepatia-ai-engineer",
-        "title": "Founding Team AI Engineer Intern - Telepatia",
-        "summary": "Built AI agents and integration tooling as part of Telepatia's founding team.",
-        "details": "Built AI agents for RPA integration testing, medical-scale calculation, and clinical decision support; created evaluation tests, a Manifest V2/V3 Chrome extension, and supported codebase migration and large corporate customers as a forward-deployed engineer.",
+        "title": "Founding Team | AI Engineer Intern",
+        "summary": "AI Engineer Intern on Telepatia's founding team.",
+        "details": "Worked on AI agents for RPA integration testing, complex medical-scale calculation, and medical decision support; created tests and evaluations for AI agent systems, built a Manifest V2/V3 Chrome extension, supported codebase migration, and worked as a forward-deployed engineer providing direct support to large corporate customers.",
         "companyName": "Telepatia",
         "startDate": "2025-08",
         "endDate": "2026-02",
@@ -224,9 +231,9 @@
     "entrepreneurship": [
       {
         "id": "ent-nao-aeronautics",
-        "title": "NAO Aeronautics (Venture)",
+        "title": "CEO and Founder · NAO Aeronautics",
         "summary": "Logistics startup concept focused on serving remote areas.",
-        "details": "Designed the business plan, delivered investor pitches, interviewed specialists in mining and defense, networked at startup events, and designed and developed a prototype.",
+        "details": "Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and designed and developed a prototype.",
         "ventureName": "NAO Aeronautics",
         "startDate": "2023-08",
         "endDate": "2025-09",
@@ -248,10 +255,10 @@
         "id": "work-eia-systems-engineering-student-representative",
         "title": "Systems Engineering Student Representative",
         "summary": "Represented Systems Engineering students and advocated for their priorities at EIA University.",
-        "details": "Helped secure the students' preferred program director through student petition efforts and executed three hackathons focused on startup business models and V0s, infrastructure, and biotechnology and AI.",
+        "details": "Helped, through student petition pressure, institute the program director the students wanted. Executed three hackathons focused on business-model creation and V0s of startups, infrastructure, and biotechnology and AI.",
         "clientOrProductName": "EIA University",
         "startDate": "2025-09",
-        "endDate": null,
+        "endDate": "2026-09",
         "links": {
           "externalUrl": "https://eia.edu.co/"
         }
@@ -260,7 +267,7 @@
         "id": "work-mc2-university-ambassador",
         "title": "University Ambassador and Entrepreneur",
         "summary": "Represented mc^2 at EIA University and organized events that fostered collaboration.",
-        "details": "Built university partnerships, led conferences, hackathons, and networking events, and supported brand visibility and recruitment opportunities.",
+        "details": "Represented mc^2 at EIA University, fostered connections, organized conferences, hackathons, and networking events, and facilitated partnerships that enhanced brand visibility and recruitment opportunities.",
         "clientOrProductName": "mc^2",
         "startDate": "2025-03",
         "endDate": "2025-09",
@@ -279,6 +286,18 @@
         "links": {}
       },
       {
+        "id": "work-eia-programming-fundamentals-tutor",
+        "title": "Programming Fundamentals Tutor",
+        "summary": "Tutored students in programming fundamentals at EIA University.",
+        "details": "Provided guidance and support to help students grasp coding concepts effectively, receiving positive feedback for clear explanations and an approachable teaching style.",
+        "clientOrProductName": "EIA University",
+        "startDate": "2023-06",
+        "endDate": "2023-11",
+        "links": {
+          "externalUrl": "https://eia.edu.co/"
+        }
+      },
+      {
         "id": "ind-demo-investor-pitches",
         "title": "Investor & Demo Pitches",
         "summary": "Delivered multiple startup pitches and demo presentations across events and programs.",
@@ -295,12 +314,12 @@
       {
         "id": "edu-eia-systems-engineering",
         "title": "Systems Engineering and Computing",
-        "summary": "Systems Engineering and Computing undergraduate program at EIA University (2022–2026).",
-        "details": "GPA: 4.45.",
-        "institution": "EIA University",
+        "summary": "Systems Engineering and Computing undergraduate program at Universidad EIA.",
+        "details": "January 2022 – November 2026.",
+        "institution": "Universidad EIA - Escuela de Ingeniería de Antioquia",
         "degree": "Systems Engineering and Computing",
-        "startDate": "2022",
-        "endDate": "2026",
+        "startDate": "2022-01",
+        "endDate": "2026-11",
         "links": {}
       }
     ],
@@ -362,7 +381,7 @@
       },
       {
         "id": "course-mc2-builders-program",
-        "title": "mc2 Builders Program",
+        "title": "mc^2 Builders Program",
         "summary": "Long-term startup building program with demos and iteration.",
         "details": "A program providing resources and knowledge to build a startup from scratch.",
         "provider": "mc2",
@@ -589,6 +608,20 @@
       "name": "PostgreSQL",
       "category": "database",
       "summary": "Relational database technology used in software projects."
+    },
+    "47": {
+      "id": 47,
+      "slug": "microsoft-excel",
+      "name": "Microsoft Excel",
+      "category": "productivity",
+      "summary": "Top skill listed in the current profile."
+    },
+    "48": {
+      "id": 48,
+      "slug": "microsoft-power-bi",
+      "name": "Microsoft Power BI",
+      "category": "analytics",
+      "summary": "Top skill listed in the current profile."
     }
   },
   "honors": {
@@ -602,9 +635,9 @@
       },
       {
         "id": "award-sistecredito-hackathon-1st-2nd",
-        "title": "First Place — Sistecredito's Second Hackathon",
+        "title": "First Place — Sistecredito Hackathon",
         "summary": "Won first place at a Sistecredito hackathon.",
-        "details": "Designed a fraud-detection system for 1.7M labeled transactions using a multi-model approach tailored to individual spending habits.",
+        "details": "First place recognition listed in the profile.",
         "date": "2024-08-01"
       },
       {
@@ -653,15 +686,15 @@
       },
       {
         "id": "honor-eia-deans-list-2023-02",
-        "title": "Dean's List — Second Semester",
-        "summary": "Recognized for academic performance in the second semester of university.",
+        "title": "Academic Recognition — Second Semester",
+        "summary": "Academic recognition for the second semester.",
         "details": "",
         "date": "2023-02-01"
       },
       {
         "id": "honor-eia-deans-list-2022-10",
-        "title": "Dean's List — First Semester",
-        "summary": "Recognized for academic performance in the first semester of university.",
+        "title": "Academic Recognition — First Semester",
+        "summary": "Academic recognition for the first semester.",
         "details": "",
         "date": "2022-10-01"
       }

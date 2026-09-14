@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DSprite } from 'three/addons/renderers/CSS3DRenderer.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { config } from './config';
+import { BugHunt } from './bug-hunt/BugHunt';
 import { landmarks, type LandmarkId } from './world/registry';
 import { createLandmark } from './world/models';
 import { createEnvironment } from './world/environment';
@@ -24,7 +25,7 @@ void warmBackend();
 app.innerHTML=`<main id="world" aria-label="Interactive island portfolio"></main>
 <header class="masthead"><a href="#" class="brand" aria-label="My world home"><span class="brand-mark">✳</span><span>My world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><button id="music" class="round-button" aria-label="Play background music" title="Play background music" aria-pressed="false">♫<span class="mute-slash" aria-hidden="true">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
 <aside class="welcome"><span class="eyebrow"><span class="tiny-star">✦</span> Welcome to my ever expanding world</span><h1>A piece of me</h1><button id="explore" class="explore-button">Let’s wander <span>↗</span></button></aside>
-<aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 181 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span></div></aside>
+<aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 204 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<path d="M29 2H74" stroke="#fff0ce" stroke-width="3"/><circle cx="74" cy="0" r="12" fill="#b9cda4"/><text x="74" y="1" text-anchor="middle" style="font-size:4px">BUGS</text><circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span></div></aside>
 <nav class="destination-list" aria-label="Guide destinations" hidden><header><span>WHERE TO?</span><button id="map-close" aria-label="Close destinations">×</button></header><p>Your guide will lead the way.</p>${landmarks.map((l,i)=>`<button data-destination="${l.id}"><span class="destination-number" style="background:${l.color}">${i+1}</span><span><strong>${l.title}</strong></span><span>↗</span></button>`).join('')}</nav>
 <footer class="controls"><span><kbd>W</kbd><span class="keys-row"><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span>Move</span><i></i><span class="mouse-icon">↔</span><span>Drag to look</span><i></i><kbd>shift</kbd><span>Take a little run</span></footer>
 <div id="joystick" aria-label="Drag to move" role="application"><span></span></div><span class="touch-hint">Drag the world to look around</span>
@@ -114,11 +115,13 @@ renderer.domElement.setAttribute('tabindex','0');renderer.domElement.setAttribut
 window.addEventListener('keydown',event=>{if(event.code==='Escape')toggleMap(false);const uiTarget=(event.target as HTMLElement)?.closest('button,a,[role="button"],summary,dialog,.world-panel,.chat-anchor');if(!started&&!uiTarget&&['KeyW','KeyA','KeyS','KeyD','Space'].includes(event.code)&&!input.editing){start();if(event.code==='Space')input.requestJump();else input.keys.add(event.code);}});
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);cssRenderer.setSize(innerWidth,innerHeight);updateOrientationTip();});
 renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();announce(t('The graphics connection was interrupted. Reload to return to the island.'));});
+const bugHunt=new BugHunt(scene,app,player,renderer.domElement,()=>started&&!dialog.open&&!input.editing);
 const discovered=new Set<LandmarkId>();let previous=performance.now(),time=0;
 function frame(now:number){
   const dt=Math.min((now-previous)/1000,config.performance.maxDelta);previous=now;time+=dt;
   if(!dialog.open){if(started)player.update(input,dt,time);companion.update(player.model.position,dt,time,chat.speech.snapshot.state!=='idle');}
   const mouth=companion.model.getObjectByName('speakingMouth');if(mouth){mouth.visible=chat.speech.snapshot.state==='displaying'&&!config.animation.reducedMotion;mouth.scale.y=.045*(.4+Math.abs(Math.sin(time*config.animation.speechFrequency))*.6);}
+  bugHunt.update(dt,time);
   cameraUpdate(dt);atmosphere.update(player.model.position,dt);environment.update(time,player.model.position);panels.update(player.model.position,camera,dt);chat.update(player.model.position,companion.model.position,camera,dt);
   ambientAudio.update(player.model.position);
   if(panels.active)discovered.add(panels.active.id);
@@ -129,4 +132,4 @@ function frame(now:number){
 }
 requestAnimationFrame(frame);
 // Read-only telemetry makes real-device performance and controls verifiable.
-Object.defineProperty(window,'portfolioDebug',{get:()=>({player:{x:player.model.position.x,y:player.model.position.y,z:player.model.position.z,grounded:player.grounded},companion:{x:companion.model.position.x,z:companion.model.position.z,state:companion.state,destination:companion.destination},camera:{yaw:input.yaw,pitch:input.pitch},panel:panels.active?.id??null,speech:chat.speech.snapshot,language:getLanguage(),music:music.enabled,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});
+Object.defineProperty(window,'portfolioDebug',{get:()=>({player:{x:player.model.position.x,y:player.model.position.y,z:player.model.position.z,grounded:player.grounded},companion:{x:companion.model.position.x,z:companion.model.position.z,state:companion.state,destination:companion.destination},camera:{yaw:input.yaw,pitch:input.pitch},panel:panels.active?.id??null,speech:chat.speech.snapshot,language:getLanguage(),bugHunt:bugHunt.snapshot,music:music.enabled,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles})});

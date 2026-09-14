@@ -3,7 +3,7 @@ const browser=await chromium.launch({executablePath:process.env.PLAYWRIGHT_CHROM
 try{
   const page=await browser.newPage({viewport:{width:1400,height:850}});
   await page.addInitScript(()=>{window.requestAnimationFrame=()=>0;});
-  await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
+  await page.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
   const metrics=await page.evaluate(async()=>{
     const THREE=await import('/node_modules/three/build/three.module.js');
     const {createLandmark,createCharacter}=await import('/src/world/models.ts');

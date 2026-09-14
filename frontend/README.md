@@ -1,6 +1,6 @@
 # A little world
 
-This README is also the owner’s settings guide. Start with [editing panel content](#edit-the-displayed-3d-html-panels), [gameplay settings](#gameplay-settings-reference), [audio](#audio-settings-and-your-mp3-files), or [languages](#language-settings).
+This README is also the owner’s settings guide. Start with [editing panel content](#edit-the-displayed-3d-react-panels), [gameplay settings](#gameplay-settings-reference), [audio](#audio-settings-and-your-mp3-files), or [languages](#language-settings).
 
 Original Three.js island portfolio with a FastAPI portfolio/chat backend. No third-party 3D models. The visitor is a 3D panda monk; the human companion follows `references/me.png` and wears a left-arm WHOOP band.
 
@@ -15,8 +15,8 @@ make run
 ```
 
 `make run` copies `frontend/.env` from `.env.example` when missing, then
-starts Vite on `http://127.0.0.1:5173` and FastAPI on
-`http://127.0.0.1:8000`. Nx streams prefixed `frontend:` and `backend:`
+starts Vite on `http://127.0.0.1:53173` and FastAPI on
+`http://127.0.0.1:58000`. Nx streams prefixed `frontend:` and `backend:`
 logs to the terminal (the Terminal UI is disabled so serve output is not
 held until the process exits). Run an individual service with
 `pnpm exec nx run frontend:serve` or `pnpm exec nx run backend:serve`.
@@ -26,7 +26,7 @@ held until the process exits). Run an individual service with
 explicitly declines esbuild's optional lifecycle script; the platform binary
 is installed as a dependency.
 
-The backend lives in [`../backend`](../backend/README.md). Run it separately with `uv sync` and `uv run uvicorn app.main:app --reload --port 8000` from that directory. Configure the Ollama Cloud URL, model, and API key in `backend/.env`. Set `VITE_API_BASE_URL` to change the default `http://127.0.0.1:8000/api` endpoint.
+The backend lives in [`../backend`](../backend/README.md). Run it separately with `uv sync` and `uv run uvicorn app.main:app --reload --port 58000` from that directory. Configure the Ollama Cloud URL, model, and API key in `backend/.env`. Set `VITE_API_BASE_URL` to change the default `http://127.0.0.1:58000/api` endpoint.
 
 ## Edit and tune
 
@@ -35,13 +35,13 @@ The backend lives in [`../backend`](../backend/README.md). Run it separately wit
 - `src/world/environmentConfig.ts`: seeded environmental generation and visual budgets.
 - `src/world/models.ts`: original parametric asset geometry. Static landmarks are merged by material; mesh proportions are authored asset details, not gameplay settings.
 - `src/world/navigation.ts`: the road graph and collision-free route entry. Rendering uses this same graph. Dijkstra follows explicit road and entrance nodes; local visibility routes avoid obstacle circles.
-- `src/services/index.ts`: replace `ChatService`, `PanelContentService`, or `HistoryStore` implementations without changing the world renderer. The backend adapters use the FastAPI service and retain local implementations as offline/test fallbacks.
+- `src/services/index.ts`: replace `ChatService` or `HistoryStore` implementations without changing the world renderer. The chat adapter uses the FastAPI service and retains a local implementation as an offline/test fallback.
 
 ## Panels and input
 
 Three.js CSS3DRenderer anchors real DOM nodes in the scene. Landmark panels never billboard. Only their camera-facing front or back receives events, with explicit selection enabled. The world listens for camera gestures on its WebGL element, so panel clicks, selections, wheel events, forms, and inputs remain browser interactions. Mobile panels retain readable dimensions instead of uniformly shrinking the desktop layout.
 
-HTML is sanitized with DOMPurify at the rendering boundary. Embedded pages require HTTPS and receive a sandbox without same-origin access, top navigation, or popup privileges. Scripts/forms/presentation are allowed inside the isolated frame. Do not add `allow-same-origin` casually when integrating future content. CSS3D surfaces are an overlay renderer and do not participate in WebGL depth testing; proximity and explicit front/back visibility manage their presentation.
+Panel content is trusted, typed React code in `src/panel-content/`. React mounts into the DOM nodes owned by `CSS3DObject`; CSS3D surfaces remain an overlay renderer and do not participate in WebGL depth testing. Proximity and explicit front/back visibility manage their presentation. Panel interactions are isolated from world camera input, so clicks, selections, wheel events, forms, and inputs remain browser interactions.
 
 ## Companion and audio
 
@@ -69,44 +69,41 @@ This is a working procedural interpretation, not a pixel-identical reconstructio
 
 The backend is stateless and does not persist conversations; the browser keeps local conversation history. Deployment configuration is intentionally left to the host environment.
 
-## Edit the displayed 3D HTML panels
+## Edit the displayed 3D React panels
 
-The “canvases” are complete HTML documents returned by the backend and
-embedded in the Three.js world through sandboxed CSS3D iframes. The source
-documents live under [`../backend/app/panel_documents`](../backend/app/panel_documents),
-not in the frontend. Each landmark has a `front.html` and a `back.html`.
+The “canvases” are DOM surfaces anchored by Three.js `CSS3DObject`s. The
+complete panel registry lives in [`src/panel-content/index.tsx`](src/panel-content/index.tsx),
+with typed copy and content data in [`src/panel-content/data.ts`](src/panel-content/data.ts)
+and visual styling in [`src/panel-content/styles.css`](src/panel-content/styles.css).
+Each stable landmark ID has a React front surface and a back-side secret or
+easter egg.
 
-The front document is the complete portfolio surface for that landmark. Put all
-relevant information there. The back document is reserved for a short secret,
-joke, or easter egg; it should not be used to hide portfolio data.
+`PanelSystem` still owns the parent article dimensions, proximity animation,
+camera-facing front/back selection, pointer isolation, and scrolling. React
+owns only the content inside the article. The education surface contains a
+draggable force-style graph of education and language nodes. The hobbies
+surface contains a 2D bench-press timing game and keeps the hobby facts beside
+the illustration.
 
-| Landmark | Backend documents |
-| --- | --- |
-| Starship | `panel_documents/starship/front.html`, `back.html` |
-| F-22 | `panel_documents/f22/front.html`, `back.html` |
-| Neural network | `panel_documents/neural-network/front.html`, `back.html` |
-| Roses | `panel_documents/roses/front.html`, `back.html` |
-| Victory statue | `panel_documents/victory-statue/front.html`, `back.html` |
-| Squat rack | `panel_documents/squat-rack/front.html`, `back.html` |
-| Pergamon library | `panel_documents/pergamon-library/front.html`, `back.html` |
+The roses surface opens with “Accompany the cat to eat”, a 24-second runner
+with chair obstacles, a light-grey cat, periodic meows, and a food-bowl finish.
+About Me content follows the game. Use the Jump button, Space, Enter, or Arrow
+Up with the button focused. Meow sound is optional; leaving the panel pauses
+the journey. Tune duration, obstacle spacing, speed, and jump height in
+`src/panel-content/cat-runner.ts`; its React/SVG view is `CatRunner.tsx`.
 
-The backend route is:
+The victory statue opens with “Throw the ball to the dog”, followed by the
+achievement cards. Lock the horizontal arrow, lock the vertical arrow, then
+time the throw while the soccer goal keeps moving. Use the button, Enter, or
+Space with the button focused. The dog reacts and dives during the 1.65-second
+flight; the ball must clear the keeper and fit inside the goal at arrival.
+Goal, save, and miss results offer a fresh attempt. Leaving the panel pauses
+the game. Tune goal movement, selector speeds, keeper reach, and flight timing
+in `src/panel-content/dog-goal.ts`; the view is `DogGoalGame.tsx`.
 
-```text
-GET /api/panels/{landmark-id}:{front|back}
-```
-
-It returns the selected file as `text/html`. The frontend constructs that URL
-from the canonical landmark registry and embeds it; it does not contain the
-panel copy or styling. Each document should keep its own doctype, metadata,
-CSS, and body so it can also be opened directly from the backend URL.
-
-Panel HTML is not passed through the frontend fragment sanitizer because these
-documents are loaded in a sandboxed iframe. Keep scripts and external assets
-intentional, use HTTPS for remote resources, and do not add same-origin
-privileges to the iframe without a specific need. The parent panel still
-controls dimensions, proximity animation, camera-facing front/back selection,
-pointer isolation, and scrolling.
+Do not edit files under `src/world/` when changing panel content. The
+procedural 3D models, their geometry, materials, proportions, and generation
+logic are an explicit immutability boundary.
 
 Save while `pnpm dev` runs to see content edits. Refresh after changing gameplay, generated geometry or audio settings so existing objects/buffers are rebuilt. Production updates require `pnpm build` and deployment of the new `dist/`.
 
@@ -155,9 +152,9 @@ Music and ambience are enabled by default and begin after the first user interac
 
 [`src/i18n/index.ts`](src/i18n/index.ts) supports English and Spanish. With no saved choice, it checks `navigator.languages` in order, matches regional locales such as `es-CO` / `en-US`, and falls back to English if no supported language matches. A manual selection persists under `portfolio.language.v1` and takes precedence. Remove that browser-storage key to return to automatic browser-language selection.
 
-English source strings are fallback dictionary keys; `spanish` maps them to translations. Keep interpolation tokens such as `{title}` unchanged. `t()` translates generated strings, and `localize()` updates static DOM in place. Visitor messages, received conversations and authored panel HTML are preserved on language changes. New demo guide responses use the selected language.
+English source strings are fallback dictionary keys; `spanish` maps them to translations. Keep interpolation tokens such as `{title}` unchanged. `t()` translates generated strings, and `localize()` updates static DOM in place. Visitor messages, received conversations and authored React panel content are preserved on language changes. New demo guide responses use the selected language.
 
-To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add its native label in `src/i18n/LanguageMenu.ts`. The custom dropdown uses the island palette and supports keyboard navigation. Extend `src/i18n/i18n.test.ts`. Custom panel localization is a separate content-service concern, described above.
+To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add its native label in `src/i18n/LanguageMenu.ts`. The custom dropdown uses the island palette and supports keyboard navigation. Extend `src/i18n/i18n.test.ts`. Panel copy is a separate typed React content concern, described above.
 
 The human companion’s blonde hair colors are `palette.companionHair` and `palette.companionHairHighlights` in `src/world/models.ts`. These do not affect the panda visitor avatar.
 
@@ -208,7 +205,7 @@ Under `config.performance`, `maxDpr`/`mobileDpr` cap rendering pixel density; `s
 
 `BrowserHistoryStore` in `src/services/index.ts` accepts a storage key and maximum message count (defaults: `portfolio.conversation.v1`, 10). Clear history through the chat UI. Full replies are persisted on receipt independently of visual speech completion. To change mock responses, edit `createChatService()`.
 
-The default `ChatService` calls the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:8000/api`); panel documents are also served by that backend. If the backend is unavailable, the local chat implementation keeps the guide usable for demos, but authored panel documents cannot load. Validate backend destination IDs and keep panel documents sandboxed. Backend replies are complete responses, not streams. Provider configuration and Ollama Cloud setup live in [`../backend/README.md`](../backend/README.md).
+The default `ChatService` calls the FastAPI backend at `VITE_API_BASE_URL` (default `http://127.0.0.1:58000/api`). If the backend is unavailable, the local chat implementation keeps the guide usable for demos; panel content is already bundled into the frontend. Backend replies are complete responses, not streams. Provider configuration and Ollama Cloud setup live in [`../backend/README.md`](../backend/README.md).
 
 `window.portfolioDebug` exposes read-only player position/grounded state, guide behavior, speech state, language, music playback state and render counts for troubleshooting. Browser scripts need the local server and an installed Chromium; use `PLAYWRIGHT_CHROMIUM_EXECUTABLE` to select one.
 

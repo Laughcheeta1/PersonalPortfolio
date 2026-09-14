@@ -6,8 +6,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
 
+from .bug_hunt import create_bug_hunt_router
 from .chat import InvalidProviderResponse, PortfolioChat
 from .config import Settings, get_settings
 from .database import (
@@ -15,7 +15,6 @@ from .database import (
     create_database_engine,
     dispose_database_engine,
 )
-from .panel_documents import read_panel_document
 from .portfolio import PortfolioRepository
 from .providers.base import ProviderError, ProviderUnavailable, LLMProvider
 from .providers.ollama import OllamaProvider
@@ -68,6 +67,7 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.database_engine = database_engine
+    app.include_router(create_bug_hunt_router(database_engine))
 
     app.add_middleware(
         CORSMiddleware,
@@ -81,13 +81,6 @@ def create_app(
     @app.get("/healthz")
     async def health() -> dict[str, str]:
         return {"status": "ok"}
-
-    @app.get("/api/panels/{panel_id}", response_class=HTMLResponse)
-    async def panel(panel_id: str) -> HTMLResponse:
-        try:
-            return HTMLResponse(read_panel_document(panel_id))
-        except KeyError as exc:
-            raise HTTPException(status_code=404, detail="Panel not found.") from exc
 
     @app.post("/api/chat", response_model=ChatReply)
     async def chat_route(request: ChatRequest) -> ChatReply:

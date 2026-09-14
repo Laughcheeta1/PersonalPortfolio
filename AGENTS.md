@@ -21,3 +21,6 @@
 - Distinguish a managed source deployment from a user-managed container image; honor the requested deployment abstraction and avoid adding container build artifacts when the platform can deploy the application source directly.
 - For deployment requests, prefer the smallest platform-native command that satisfies the target; do not add image registries or extra build layers unless the user asks for them.
 - When inspecting conversational UI behavior, verify the live backend/provider path and distinguish generated runtime replies from local fallback templates before changing copy.
+- For hover-driven UI, keep the initial state neutral and do not invoke selection or activation during initialization unless it is explicitly requested.
+- For timeline layouts with a shared axis, reserve a clear label gutter and verify stacking order so date markers remain readable beside adjacent content.
+- Treat explicit 3D model immutability as a hard boundary: renderer, panel, and UI changes must not modify procedural model geometry, materials, proportions, or model-generation files.

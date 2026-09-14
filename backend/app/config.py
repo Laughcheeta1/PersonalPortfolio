@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     ollama_api_key: SecretStr | None = None
     ollama_timeout_seconds: float = 60.0
     cors_origins: list[str] = [
-        "http://127.0.0.1:5173",
-        "http://localhost:5173",
+        "http://127.0.0.1:53173",
+        "http://localhost:53173",
     ]
 
     model_config = SettingsConfigDict(
