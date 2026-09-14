@@ -82,24 +82,25 @@ easter egg.
 camera-facing front/back selection, pointer isolation, and scrolling. React
 owns only the content inside the article. The education surface contains a
 draggable force-style graph of education and language nodes. The hobbies
-surface contains a 2D bench-press timing game and keeps the hobby facts beside
-the illustration.
+surface displays the hobby facts as static cards. React panels contain
+portfolio content and lightweight interactions only; the panel mini-games have
+been removed.
 
-The roses surface opens with “Accompany the cat to eat”, a 24-second runner
-with chair obstacles, a light-grey cat, periodic meows, and a food-bowl finish.
-About Me content follows the game. Use the Jump button, Space, Enter, or Arrow
-Up with the button focused. Meow sound is optional; leaving the panel pauses
-the journey. Tune duration, obstacle spacing, speed, and jump height in
-`src/panel-content/cat-runner.ts`; its React/SVG view is `CatRunner.tsx`.
+Panels are 660px wide by 510px high on desktop (540px wide on mobile), and the
+camera pitch range allows the wider, taller surfaces to remain in view. The
+Personal Projects and Work Projects sections use React-controlled space fields:
+each project is represented by an unlabeled planet-like asteroid, and hovering
+or focusing one shows its project details in a floating card while a CSS/SVG
+spaceship follows the mouse.
 
-The victory statue opens with “Throw the ball to the dog”, followed by the
-achievement cards. Lock the horizontal arrow, lock the vertical arrow, then
-time the throw while the soccer goal keeps moving. Use the button, Enter, or
-Space with the button focused. The dog reacts and dives during the 1.65-second
-flight; the ball must clear the keeper and fit inside the goal at arrival.
-Goal, save, and miss results offer a fresh attempt. Leaving the panel pauses
-the game. Tune goal movement, selector speeds, keeper reach, and flight timing
-in `src/panel-content/dog-goal.ts`; the view is `DogGoalGame.tsx`.
+The Work panel uses a date-scaled timeline. Hovering a role card opens its full
+experience popup beside the pointer; there is no persistent “Select a role”
+detail panel.
+
+The Awards panel is presented as an olive grove with five Roman columns and
+distinctive relics representing the recognitions. Clicking a relic brings it
+forward with a semi-transparent detail card; clicking outside the card or
+pressing Escape returns it to the column.
 
 Do not edit files under `src/world/` when changing panel content. The
 procedural 3D models, their geometry, materials, proportions, and generation

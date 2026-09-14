@@ -81,8 +81,17 @@ try {
   await panel.locator('h1').filter({ hasText: 'Big ideas' }).waitFor();
   assert.equal(await panel.locator('iframe').count(), 0);
   assert.equal(await panel.locator('.panel-projects').count(), 1);
-  assert.equal(await panel.locator('.project-card').count(), 16);
+  assert.equal(await panel.locator('.project-planet').count(), 16);
   assert.equal(await panel.evaluate(el => getComputedStyle(el).userSelect), 'text');
+  assert.equal(await panel.evaluate(el => el.style.width), '660px');
+  assert.equal(await panel.evaluate(el => el.style.height), '510px');
+  assert.equal(await panel.locator('.project-card').count(), 0);
+  assert.equal(await panel.locator('.project-planet').evaluateAll(planets => planets.every(planet => !planet.textContent?.trim())), true);
+  await panel.locator('.project-planet').first().hover();
+  await panel.locator('.project-hover-card').waitFor();
+  assert.ok((await panel.locator('.project-hover-card').textContent()).trim());
+  await page.mouse.move(20, 400);
+  assert.equal(await panel.locator('.project-hover-card').count(), 0);
 
   const rect = await panel.boundingBox();
   const before = await page.evaluate(() => window.__panelInput.yaw);
@@ -112,13 +121,15 @@ try {
   panel = page.locator('.world-panel:visible');
   await panel.locator('.timeline-card').first().waitFor();
   assert.equal(await panel.locator('.timeline-card').count(), 7);
-  assert.match(await panel.locator('.detail-title').textContent(), /Select a role/);
-  const role = panel.getByRole('button', { name: /AI Engineer/ }).first();
-  await role.click();
-  assert.match(await panel.locator('.detail-title').textContent(), /AI Engineer/);
+  assert.equal(await panel.locator('.timeline-detail').count(), 0);
+  assert.equal(await panel.locator('.timeline-hover-card').count(), 0);
+  const firstTimelineRole = (await panel.locator('.timeline-card').first().locator('.timeline-card__role').textContent()).trim();
+  await panel.locator('.timeline-card').first().hover();
+  await panel.locator('.timeline-hover-card').waitFor();
+  assert.equal((await panel.locator('.timeline-hover-card h3').textContent()).trim(), firstTimelineRole);
   await page.mouse.move(20, 400);
-  assert.match(await panel.locator('.detail-title').textContent(), /AI Engineer/);
-  console.log('PASS: date-scaled timeline starts neutral and keeps explicitly selected role details.');
+  assert.equal(await panel.locator('.timeline-hover-card').count(), 0);
+  console.log('PASS: date-scaled timeline starts neutral and shows a React hover popup for each role.');
 
   await page.evaluate(() => window.__visit(2));
   panel = page.locator('.world-panel:visible');
@@ -146,162 +157,66 @@ try {
   assert.equal(overlaps, 0);
   console.log('PASS: education and language graph has eight draggable nodes and no Skills section.');
 
-  await page.evaluate(() => window.__visit(5));
-  panel = page.locator('.world-panel:visible');
-  await panel.locator('.bench-game__figure').waitFor();
-  assert.equal(await panel.locator('.bench-game__fact').count(), 4);
-  assert.equal(await panel.locator('.bench-game__meter').count(), 1);
-  const meter = panel.locator('.bench-game__meter');
-  await page.evaluate(async () => {
-    const line = document.querySelector('.bench-game__meter');
-    for (let frame = 0; frame < 180; frame++) {
-      if (parseFloat(line.style.getPropertyValue('--arrow-position')) < 20) return;
-      await window.__stepFrames();
-    }
-    throw new Error('The timing arrow never reached the miss region.');
-  });
-  await meter.click();
-  assert.match(await panel.locator('.bench-game__status span').textContent(), /bar height/);
-  await meter.click();
-  await meter.click();
-  assert.match(await panel.locator('.bench-game__status strong').textContent(), /stalled/);
-  await panel.getByRole('button', { name: 'Try again' }).click();
-  assert.match(await panel.locator('.bench-game__status strong').textContent(), /Press/);
-  console.log('PASS: hobbies panel renders the bench-press game and all hobby facts beside it.');
-
-  const benchWin = await page.evaluate(async () => {
-    const game = document.querySelector('.bench-game');
-    let hits = 0;
-    for (let frame = 0; frame < 900 && !game.classList.contains('bench-game--won'); frame++) {
-      await window.__stepFrames();
-      const line = game.querySelector('.bench-game__meter');
-      const arrow = parseFloat(line.style.getPropertyValue('--arrow-position'));
-      if (Math.abs(arrow - 50) < 3) {
-        game.querySelector('.bench-game__press').click();
-        hits++;
-        await new Promise(resolve => setTimeout(resolve, 0));
-      }
-    }
-    return { won: game.classList.contains('bench-game--won'), hits, height: game.querySelector('.bench-game__status span').textContent };
-  });
-  assert.equal(benchWin.won, true);
-  assert.equal(benchWin.hits, 5);
-  assert.match(benchWin.height, /100%/);
-  console.log('PASS: five accurately timed browser presses reach the bench-press win state.');
-
   await page.evaluate(() => window.__visit(3));
   panel = page.locator('.world-panel:visible');
-  const game = panel.locator('.cat-runner');
-  await game.getByRole('button', { name: 'Start journey' }).click();
-  await page.evaluate(() => window.__stepFrames(260));
-  assert.match(await game.getByRole('status').textContent(), /chair got in the way/);
-  await game.getByRole('button', { name: 'Play again' }).click();
-  assert.equal(await game.locator('progress').getAttribute('value'), '0');
-  await game.getByRole('button', { name: 'Hold to jump', exact: true }).press('ArrowUp');
-  await page.evaluate(() => window.__stepFrames(70));
-  const catWin = await page.evaluate(async () => {
-    const game = document.querySelector('.cat-runner');
-    let lastJump = -100;
-    let jumps = 0;
-    let meows = 0;
-    for (let frame = 0; frame < 1900 && !game.classList.contains('cat-runner--won'); frame++) {
-      if (game.classList.contains('cat-runner--failed')) break;
-      const nearby = [...game.querySelectorAll('.cat-runner__chair')].some(chair => {
-        const x = chair.transform.baseVal.getItem(0).matrix.e;
-        return x > 130 && x < 230;
-      });
-      if (nearby && frame - lastJump > 55) {
-        game.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
-        lastJump = frame;
-        jumps++;
-      }
-      if (game.querySelector('.cat-runner__meow')) meows++;
-      await window.__stepFrames();
-    }
-    return { won: game.classList.contains('cat-runner--won'), jumps, meows, progress: game.querySelector('progress').value };
-  });
-  assert.equal(catWin.won, true);
-  assert.ok(catWin.jumps >= 6);
-  assert.ok(catWin.meows > 60);
-  assert.equal(catWin.progress, 100);
-  assert.equal(await game.locator('.cat-runner__eating').count(), 1);
-  assert.equal(await game.locator('.cat-runner__cat').getAttribute('fill'), '#d9d9d9');
-  assert.match(await game.getByRole('status').textContent(), /is eating/);
-  assert.equal(await panel.evaluate(el => el.querySelector('.cat-runner').compareDocumentPosition(el.querySelector('.profile-lines')) & Node.DOCUMENT_POSITION_FOLLOWING), 4);
-  await panel.evaluate(el => { el.scrollTop = 0; });
-  await page.screenshot({ path: '/tmp/portfolio-cat-dinner.png' });
-  await game.getByRole('button', { name: 'Play again' }).click();
-  await page.evaluate(() => window.__stepFrames(30));
-  const beforePause = await game.locator('progress').getAttribute('value');
-  await page.evaluate(async () => { window.__visit(0); await window.__stepFrames(120); window.__visit(3); });
-  assert.equal(await game.locator('progress').getAttribute('value'), beforePause);
-  console.log('PASS: cat runner collision/retry, keyboard jump, chair-clearing victory, periodic meows, dinner animation, About Me ordering, and off-panel pause.');
+  assert.equal(await panel.locator('.cat-runner').count(), 0);
+  assert.equal(await panel.locator('.profile-lines').count(), 2);
+  console.log('PASS: About panel contains only the React profile content.');
 
   await page.evaluate(() => window.__visit(4));
   panel = page.locator('.world-panel:visible');
-  const dogGame = panel.locator('.dog-goal');
-  const aimPenalty = async (x, y) => {
-    await dogGame.locator('svg').scrollIntoViewIfNeeded();
-    const bounds = await dogGame.locator('svg').boundingBox();
-    await page.mouse.click(bounds.x + x / 640 * bounds.width, bounds.y + y / 310 * bounds.height);
-  };
-  const shoot = async (frames) => {
-    const button = dogGame.getByRole('button', { name: 'Hold to shoot' });
-    await button.focus();
-    await page.keyboard.down('Space');
-    await page.evaluate(n => window.__stepFrames(n), frames);
-    await page.keyboard.up('Space');
-    await page.evaluate(() => window.__stepFrames(75));
-  };
-  await aimPenalty(320, 145);
-  await shoot(1);
-  assert.match(await dogGame.getByRole('status').textContent(), /Saved!/);
-  for (let shot = 1; shot < 5; shot++) {
-    await dogGame.getByRole('button', { name: 'Next penalty' }).click();
-    await aimPenalty(shot % 2 ? 420 : 220, 75);
-    await shoot(65);
-    assert.equal(await dogGame.locator('.dog-goal__result text').textContent(), 'GOAL!');
-  }
-  assert.match(await dogGame.getByRole('status').textContent(), /You win/);
-  assert.match(await dogGame.locator('.dog-goal__score strong').textContent(), /4 goals · 5\/5/);
-  await page.screenshot({ path: '/tmp/portfolio-dog-goal-win.png' });
-  await dogGame.getByRole('button', { name: 'Play again' }).click();
-  await aimPenalty(465, 30);
-  await shoot(30);
-  assert.match(await dogGame.getByRole('status').textContent(), /Just wide/);
-  await dogGame.getByRole('button', { name: 'Next penalty' }).click();
-  await dogGame.getByRole('button', { name: 'Hold to shoot' }).focus();
-  await page.keyboard.down('Space');
-  await page.evaluate(() => window.__stepFrames(15));
-  const beforeDogPause = await dogGame.getByRole('meter').getAttribute('aria-valuenow');
-  await page.evaluate(async () => { window.__visit(0); await window.__stepFrames(120); window.__visit(4); });
-  assert.equal(await dogGame.getByRole('meter').getAttribute('aria-valuenow'), beforeDogPause);
-  await page.keyboard.up('Space');
-  await page.evaluate(() => window.__stepFrames(75));
-  await dogGame.getByRole('button', { name: 'Next penalty' }).click();
-  console.log('PASS: penalty save, four corner goals, match win, restart, miss, and off-panel pause.');
+  const achievementField = panel.getByTestId('achievement-field');
+  await achievementField.waitFor();
+  assert.equal(await achievementField.getByTestId('achievement-relic').count(), 5);
+  assert.equal(await achievementField.getByTestId('achievement-column').count(), 5);
+  assert.equal(await panel.locator('.achievement-card').count(), 0);
+  assert.equal(await achievementField.getByTestId('achievement-relic').evaluateAll(relics => relics.every(relic => relic.getAttribute('data-state') === 'resting')), true);
+
+  const firstRelic = achievementField.getByTestId('achievement-relic').first();
+  const firstObject = firstRelic.getByTestId('achievement-object');
+  const restingBox = await firstObject.boundingBox();
+  assert.ok(restingBox?.width);
+  await firstObject.click();
+
+  const featuredAward = achievementField.getByTestId('achievement-featured');
+  const awardDetails = achievementField.getByTestId('achievement-details');
+  await featuredAward.waitFor();
+  await awardDetails.waitFor();
+  assert.equal(await firstRelic.getAttribute('data-state'), 'featured');
+  assert.equal(await firstObject.getAttribute('aria-pressed'), 'true');
+  assert.ok(await featuredAward.isVisible());
+  assert.equal(await featuredAward.getAttribute('data-state'), 'featured');
+  assert.ok((await awardDetails.getByTestId('achievement-details-title').textContent()).trim());
+  assert.ok((await awardDetails.getByTestId('achievement-details-copy').textContent()).trim());
+  assert.match(await awardDetails.evaluate(element => getComputedStyle(element).backgroundColor), /rgba\(/);
+
+  const achievementBounds = await achievementField.boundingBox();
+  await page.mouse.click(achievementBounds.x + 8, achievementBounds.y + 8);
+  assert.equal(await achievementField.getByTestId('achievement-featured').count(), 0);
+  assert.equal(await achievementField.getByTestId('achievement-details').count(), 0);
+  assert.equal(await firstRelic.getAttribute('data-state'), 'resting');
+  assert.equal(await firstObject.getAttribute('aria-pressed'), 'false');
+  console.log('PASS: Awards grove renders five relics, features clicked objects, shows translucent details, and restores on click-outside.');
+
+  await page.evaluate(() => window.__visit(5));
+  panel = page.locator('.world-panel:visible');
+  await panel.locator('.hobby-card').first().waitFor();
+  assert.equal(await panel.locator('.hobby-card').count(), 4);
+  assert.equal(await panel.locator('.bench-game').count(), 0);
+  console.log('PASS: hobbies panel renders static React hobby cards without a mini-game.');
 
   for (const width of [390, 320]) {
     await page.setViewportSize({ width, height: 844 });
-    for (const index of [3, 4, 5]) {
+    for (const index of [0, 1, 3, 4, 5]) {
       await page.evaluate(index => window.__visit(index), index);
       const visible = page.locator('.world-panel:visible');
       await visible.evaluate(el => { el.scrollTop = 0; });
       assert.ok(await visible.evaluate(el => el.scrollWidth <= el.clientWidth + 1));
-      if (index === 4) {
-        await visible.locator('.dog-goal__scene').press('ArrowLeft');
-        await shoot(60);
-        await visible.getByRole('button', { name: /Next penalty|Play again/ }).click();
-      }
-      if (index === 5) {
-        const facts = await visible.locator('.bench-game__fact').evaluateAll(els => els.map(el => ({ x: el.offsetLeft, y: el.offsetTop })));
-        assert.equal(new Set(facts.map(fact => fact.y)).size, 2);
-      }
       await page.screenshot({ path: `/tmp/portfolio-panel-${index}-${width}.png` });
     }
   }
   await page.setViewportSize({ width: 1000, height: 800 });
-  console.log('PASS: all three minigames fit 320px and 390px viewports; dog controls work at both widths; hobby facts form two rows.');
+  console.log('PASS: React panels fit 320px and 390px viewports without horizontal overflow.');
 
   for (let index = 0; index < 7; index++) for (const side of ['front', 'back']) {
     await page.evaluate(({ index, side }) => window.__visit(index, side), { index, side });

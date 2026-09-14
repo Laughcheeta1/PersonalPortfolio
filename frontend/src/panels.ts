@@ -54,7 +54,7 @@ export class PanelSystem {
       s.group.position.set(s.landmark.position[0],config.panels.verticalOffset-config.panels.rise*(1-eased),s.landmark.position[1]);
       // Keep text legible on portrait screens while retaining a fixed world orientation.
       const mobile=window.innerWidth<config.ui.mobileBreakpoint;
-      const width=mobile?360:config.panels.width;
+      const width=mobile?config.panels.mobileWidth:config.panels.width;
       s.elements.forEach(el=>{el.style.width=`${width}px`;});
       const scale=mobile?Math.min(.025,(window.innerWidth-36)*camera.position.distanceTo(s.group.position)*2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/(window.innerHeight*width)):config.panels.scale;
       s.group.scale.setScalar(scale*Math.max(.001,eased));s.group.updateMatrixWorld(true);

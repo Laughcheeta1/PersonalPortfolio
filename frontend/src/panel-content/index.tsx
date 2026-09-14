@@ -5,6 +5,7 @@ import {
   useState,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactElement,
   type ReactNode,
@@ -26,8 +27,6 @@ import {
   type TimelineEntry,
 } from './data';
 import './styles.css';
-import { CatRunner } from './CatRunner';
-import { DogGoalGame } from './DogGoalGame';
 
 interface PanelPageProps {
   theme: string;
@@ -50,22 +49,153 @@ function PanelPage({ theme, eyebrow, title, intro, children, footer }: PanelPage
   );
 }
 
-function ProjectCardView({ project }: { project: ProjectCard }): ReactElement {
+const projectPlanetLayouts = [
+  { x: '12%', y: '24%', size: 64, rotation: -12 },
+  { x: '33%', y: '36%', size: 48, rotation: 18 },
+  { x: '56%', y: '19%', size: 78, rotation: 4 },
+  { x: '84%', y: '29%', size: 54, rotation: -22 },
+  { x: '20%', y: '73%', size: 84, rotation: 9 },
+  { x: '49%', y: '77%', size: 56, rotation: 25 },
+  { x: '77%', y: '72%', size: 70, rotation: -7 },
+  { x: '10%', y: '53%', size: 42, rotation: 15 },
+  { x: '67%', y: '50%', size: 46, rotation: -18 },
+] as const;
+
+interface ProjectPointer {
+  x: number;
+  y: number;
+  angle: number;
+  visible: boolean;
+}
+
+interface HoveredProject {
+  project: ProjectCard;
+  x: number;
+  y: number;
+  placement: 'above' | 'below';
+}
+
+function ProjectHoverCard({ hover }: { hover: HoveredProject }): ReactElement {
   return (
-    <article className="panel-card project-card">
-      <h3>{project.title}</h3>
-      {project.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-      <span className="panel-tag">{project.tag}</span>
-    </article>
+    <aside
+      className={`project-hover-card project-hover-card--${hover.placement}`}
+      id={`project-popover-${hover.project.title.replace(/\W+/g, '-').toLowerCase()}`}
+      role="tooltip"
+      style={{ left: hover.x, top: hover.y }}
+    >
+      <span className="project-hover-card__tag">{hover.project.tag}</span>
+      <h3>{hover.project.title}</h3>
+      {hover.project.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+    </aside>
   );
 }
 
-function ProjectSection({ title, projects }: { title: string; projects: readonly ProjectCard[] }): ReactElement {
+function SpaceShip({ angle, x, y }: { angle: number; x: number; y: number }): ReactElement {
   return (
-    <section className="panel-section">
-      <h2>{title}</h2>
-      <div className="panel-card-grid">
-        {projects.map(project => <ProjectCardView key={project.title} project={project} />)}
+    <svg
+      aria-hidden="true"
+      className="space-cursor__ship"
+      style={{ left: x, top: y, transform: `translate(-50%, -50%) rotate(${angle}deg)` }}
+      viewBox="0 0 48 64"
+    >
+      <path className="space-cursor__flame" d="M19 47c1 8 4 13 5 15 2-3 5-8 5-15Z" />
+      <path className="space-cursor__body" d="M24 3C14 12 10 23 14 43h20c4-20 0-31-10-40Z" />
+      <path className="space-cursor__fin" d="m14 34-10 12 11-3m19-9 10 12-11-3" />
+      <circle className="space-cursor__window" cx="24" cy="24" r="6" />
+      <path className="space-cursor__shine" d="M20 11c-3 7-4 13-3 19" />
+    </svg>
+  );
+}
+
+function ProjectUniverse({ title, projects }: { title: string; projects: readonly ProjectCard[] }): ReactElement {
+  const universeRef = useRef<HTMLDivElement>(null);
+  const previousPointer = useRef<{ x: number; y: number } | null>(null);
+  const [pointer, setPointer] = useState<ProjectPointer>({ x: 0, y: 0, angle: 0, visible: false });
+  const [hovered, setHovered] = useState<HoveredProject | null>(null);
+
+  const updatePointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse') return;
+    const bounds = universeRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    const previous = previousPointer.current;
+    const angle = previous && (x !== previous.x || y !== previous.y)
+      ? Math.atan2(y - previous.y, x - previous.x) * 180 / Math.PI + 90
+      : pointer.angle;
+    previousPointer.current = { x, y };
+    setPointer({ x, y, angle, visible: true });
+  };
+
+  const showProject = (project: ProjectCard, element: HTMLElement, clientX?: number, clientY?: number) => {
+    const universe = universeRef.current;
+    if (!universe) return;
+    const bounds = universe.getBoundingClientRect();
+    const target = element.getBoundingClientRect();
+    const x = clientX === undefined ? target.left + target.width / 2 - bounds.left : clientX - bounds.left;
+    const y = clientY === undefined ? target.top - bounds.top : clientY - bounds.top;
+    const popupWidth = Math.min(300, Math.max(180, bounds.width - 24));
+    const minX = popupWidth / 2 + 12;
+    const maxX = Math.max(minX, bounds.width - popupWidth / 2 - 12);
+    setHovered({
+      project,
+      x: Math.min(maxX, Math.max(minX, x)),
+      y: Math.max(0, y),
+      placement: y > 175 ? 'above' : 'below',
+    });
+  };
+
+  const clearProject = (project: ProjectCard) => {
+    setHovered(current => current?.project.title === project.title ? null : current);
+  };
+
+  return (
+    <section className="project-universe-section" aria-label={`${title} project field`}>
+      <div className="project-universe-heading">
+        <h2>{title}</h2>
+        <span>hover to land</span>
+      </div>
+      <div
+        className="project-universe"
+        onPointerEnter={updatePointer}
+        onPointerLeave={() => {
+          previousPointer.current = null;
+          setPointer(current => ({ ...current, visible: false }));
+          setHovered(null);
+        }}
+        onPointerMove={updatePointer}
+        ref={universeRef}
+      >
+        <div className="project-universe__stars" aria-hidden="true" />
+        <div className="project-universe__nebula" aria-hidden="true" />
+        {projects.map((project, index) => {
+          const layout = projectPlanetLayouts[index % projectPlanetLayouts.length];
+          const popoverId = `project-popover-${project.title.replace(/\W+/g, '-').toLowerCase()}`;
+          return (
+            <button
+              aria-describedby={hovered?.project.title === project.title ? popoverId : undefined}
+              aria-label={`Explore project ${project.title}`}
+              className={`project-planet project-planet--${index % 9}`}
+              key={project.title}
+              onBlur={() => clearProject(project)}
+              onFocus={event => showProject(project, event.currentTarget)}
+              onPointerEnter={event => showProject(project, event.currentTarget, event.clientX, event.clientY)}
+              onPointerLeave={() => clearProject(project)}
+              style={{
+                '--planet-rotation': `${layout.rotation}deg`,
+                '--planet-size': `${layout.size}px`,
+                '--planet-x': layout.x,
+                '--planet-y': layout.y,
+              } as CSSProperties}
+              type="button"
+            >
+              <span aria-hidden="true" />
+            </button>
+          );
+        })}
+        {hovered ? <ProjectHoverCard hover={hovered} /> : null}
+        {pointer.visible ? <div className="space-cursor"><SpaceShip angle={pointer.angle} x={pointer.x} y={pointer.y} /></div> : null}
+        <p className="project-universe__hint">Steer through the field · every world keeps its own story</p>
       </div>
     </section>
   );
@@ -83,8 +213,8 @@ function ProjectsPanel(): ReactElement {
       <div className="panel-orbit" aria-hidden="true">
         <i /><i /><i /><i />
       </div>
-      <ProjectSection title="Personal projects" projects={personalProjects} />
-      <ProjectSection title="Work projects" projects={workProjects} />
+      <ProjectUniverse title="Personal projects" projects={personalProjects} />
+      <ProjectUniverse title="Work projects" projects={workProjects} />
     </PanelPage>
   );
 }
@@ -143,25 +273,49 @@ function buildTimelineLayout(): PositionedTimelineEntry[] {
   return layout;
 }
 
-function TimelineDetail({ entry }: { entry?: TimelineEntry }): ReactElement {
+interface HoveredExperience {
+  entry: TimelineEntry;
+  x: number;
+  y: number;
+  placement: 'above' | 'below';
+}
+
+function ExperiencePopover({ hover }: { hover: HoveredExperience }): ReactElement {
   return (
-    <section className={`timeline-detail${entry ? ' is-populated' : ''}`} aria-live="polite" aria-atomic="true">
-      <p className="detail-kicker">{entry?.kicker ?? 'Role details'}</p>
-      <h2 className="detail-title">
-        {entry ? `${entry.role} · ${entry.company}` : 'Select a role'}
-      </h2>
-      <p className="detail-period">{entry?.period ?? 'Choose a block to explore the journey'}</p>
-      <p className="detail-copy">
-        {entry?.copy ?? 'Click or focus a role block to keep its details open while you explore the timeline.'}
-      </p>
-    </section>
+    <aside
+      className={`timeline-hover-card timeline-hover-card--${hover.placement}`}
+      id={`experience-popover-${hover.entry.id}`}
+      role="tooltip"
+      style={{ left: hover.x, top: hover.y }}
+    >
+      <span className="timeline-hover-card__kicker">{hover.entry.kicker}</span>
+      <h3>{hover.entry.role}</h3>
+      <strong className="timeline-hover-card__company">{hover.entry.company}</strong>
+      <span className="timeline-hover-card__period">{hover.entry.period}</span>
+      <p>{hover.entry.copy}</p>
+    </aside>
   );
 }
 
 function WorkTimeline(): ReactElement {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<HoveredExperience | null>(null);
   const layout = useMemo(buildTimelineLayout, []);
-  const selected = workTimeline.find(entry => entry.id === selectedId);
+
+  const updateHover = (entry: TimelineEntry, element: HTMLElement, clientX: number, clientY: number) => {
+    const timeline = element.closest<HTMLElement>('.timeline');
+    if (!timeline) return;
+    const bounds = timeline.getBoundingClientRect();
+    const popupWidth = Math.min(300, Math.max(180, bounds.width - 24));
+    const minX = popupWidth / 2 + 12;
+    const maxX = Math.max(minX, bounds.width - popupWidth / 2 - 12);
+    const x = Math.min(maxX, Math.max(minX, clientX - bounds.left));
+    const y = Math.max(0, clientY - bounds.top);
+    setHovered({ entry, x, y, placement: y > 185 ? 'above' : 'below' });
+  };
+
+  const clearHover = (entry: TimelineEntry) => {
+    setHovered(current => current?.entry.id === entry.id ? null : current);
+  };
 
   return (
     <>
@@ -169,7 +323,6 @@ function WorkTimeline(): ReactElement {
         <h2>Work experience timeline</h2>
         <p>Latest roles at the top · earliest roles at the bottom</p>
       </div>
-      <TimelineDetail entry={selected} />
       <section className="timeline" aria-label="Work experience timeline">
         <div className="timeline-track" style={{ '--timeline-track-height': `${timelineTrackHeight}px` } as CSSProperties}>
           <div className="timeline-axis" aria-hidden="true">
@@ -196,27 +349,32 @@ function WorkTimeline(): ReactElement {
                   left: `${lane * width}%`,
                   width: `calc(${width}% - 8px)`,
                 };
+                const describedBy = hovered?.entry.id === entry.id ? `experience-popover-${entry.id}` : undefined;
                 return (
-                  <button
-                    aria-pressed={selectedId === entry.id}
-                    className={`timeline-card${entry.current ? ' timeline-card--current' : ''}${selectedId === entry.id ? ' is-selected' : ''}`}
+                  <article
+                    aria-describedby={describedBy}
+                    className={`timeline-card${entry.current ? ' timeline-card--current' : ''}`}
                     key={entry.id}
-                    onClick={() => setSelectedId(entry.id)}
-                    onFocus={() => setSelectedId(entry.id)}
+                    onBlur={() => clearHover(entry)}
+                    onFocus={event => updateHover(entry, event.currentTarget, event.currentTarget.getBoundingClientRect().left + event.currentTarget.getBoundingClientRect().width / 2, event.currentTarget.getBoundingClientRect().top + event.currentTarget.getBoundingClientRect().height / 2)}
+                    onPointerEnter={event => updateHover(entry, event.currentTarget, event.clientX, event.clientY)}
+                    onPointerLeave={() => clearHover(entry)}
+                    onPointerMove={event => updateHover(entry, event.currentTarget, event.clientX, event.clientY)}
                     style={style}
-                    type="button"
+                    tabIndex={0}
                   >
                     <span className="timeline-card__role">{entry.role}</span>
                     <span className="timeline-card__company">{entry.company}</span>
                     <span className="timeline-card__date">{entry.period}</span>
-                  </button>
+                  </article>
                 );
               })}
             </div>
           ))}
         </div>
+        {hovered ? <ExperiencePopover hover={hovered} /> : null}
         <p className="timeline-note">
-          <strong>Select</strong> or focus a block to pin its details. The block length follows the time it occupied.
+          <strong>Hover</strong> over a role to see the full story. The block length follows the time it occupied.
         </p>
       </section>
     </>
@@ -227,7 +385,7 @@ function WorkPanel(): ReactElement {
   return (
     <PanelPage
       theme="panel-work"
-      eyebrow="02 · Work & leadership"
+      eyebrow="02 · Work"
       title={<>Build teams.<br />Move ideas.</>}
       intro="A flight log of roles where technical direction, communication, and delivery had to share the cockpit. Each block spans the time it occupied."
       footer="Altitude is a perspective, not a destination"
@@ -546,10 +704,9 @@ function AboutPanel(): ReactElement {
     <PanelPage
       theme="panel-about"
       eyebrow="04 · Profile & curiosity"
-      title={<>A little company.<br />A happy cat.</>}
+      title={<>A little company.<br />A lot of curiosity.</>}
       footer="Make room for wonder"
     >
-      <CatRunner />
       <h2>About me · A curious builder.</h2>
       <div className="panel-flower" aria-hidden="true">✿</div>
       <div className="panel-quote">
@@ -569,18 +726,174 @@ function AboutPanel(): ReactElement {
   );
 }
 
-function AchievementGroup({ title, entries }: { title: string; entries: ReadonlyArray<(typeof achievements)[number]> }): ReactElement {
+type AwardRelicType = 'armor' | 'laurel' | 'helmet' | 'swords' | 'shield';
+
+const awardRelicTypes: readonly AwardRelicType[] = ['armor', 'laurel', 'helmet', 'swords', 'shield'];
+
+const awardColumnLayouts = [
+  { left: '10%', bottom: '4%', height: '88%', depth: 2 },
+  { left: '30%', bottom: '13%', height: '76%', depth: 3 },
+  { left: '50%', bottom: '3%', height: '91%', depth: 4 },
+  { left: '70%', bottom: '11%', height: '78%', depth: 3 },
+  { left: '90%', bottom: '4%', height: '86%', depth: 2 },
+] as const;
+
+function AwardRelic({ type }: { type: AwardRelicType }): ReactElement {
+  const commonProps = {
+    'aria-hidden': true,
+    className: `award-relic__illustration award-relic__illustration--${type}`,
+    viewBox: '0 0 96 96',
+  } as const;
+
+  if (type === 'armor') {
+    return (
+      <svg {...commonProps}>
+        <path d="M31 17c6-6 28-6 34 0l8 12-6 42c-10 6-28 6-38 0l-6-42Z" />
+        <path d="m31 18-15 10 8 19 10-6m31-23 15 10-8 19-10-6" />
+        <path d="M29 43h38M27 55h42M30 67h36" />
+        <path d="M42 17h12v17H42z" />
+        <circle cx="48" cy="43" r="4" />
+      </svg>
+    );
+  }
+
+  if (type === 'laurel') {
+    return (
+      <svg {...commonProps}>
+        <path d="M17 76C5 57 9 28 34 13M79 76c12-19 8-48-17-63" />
+        <path d="M19 64 9 58m14-9L12 42m17-9-11-12m26 53L36 65m41-1 10-6M70 49l11-7M67 33l11-12M53 71l12-6" />
+        <path d="M19 64c-7-2-11-5-13-10 7-1 12 2 16 7m1-18c-7-1-11-4-14-9 7-1 12 1 17 6m0-18c-5-4-7-8-7-13 6 2 10 6 11 11m41 51c7-2 11-5 13-10-7-1-12 2-16 7m-1-18c7-1 11-4 14-9-7-1-12 1-17 6m0-18c5-4 7-8 7-13-6 2-10 6-11 11" />
+      </svg>
+    );
+  }
+
+  if (type === 'helmet') {
+    return (
+      <svg {...commonProps}>
+        <path d="M22 72c-4-10-5-23-2-35C23 20 34 10 49 10c17 0 27 14 27 31v31Z" />
+        <path d="M20 47h56l-5 13H21Zm8-16h39M51 11l8 19M27 25l-3 23M24 66h49" />
+        <path d="M65 10c10 5 16 14 17 25-7-4-13-5-19-4" />
+        <path d="M37 10c-2-7 2-10 6-3m8 1c0-7 4-9 7-2" />
+      </svg>
+    );
+  }
+
+  if (type === 'swords') {
+    return (
+      <svg {...commonProps}>
+        <path d="m25 72 42-48" />
+        <path d="m71 72-42-48" />
+        <path d="m67 24 8-9 5 5-8 9M29 24l-8-9-5 5 8 9" />
+        <path d="m18 45 20 18m40-18L58 63" />
+        <path d="m17 44-6 7m68-7 6 7" />
+        <path d="M41 88h14" />
+      </svg>
+    );
+  }
+
   return (
-    <section className="panel-section">
-      <h2>{title}</h2>
-      <div className="achievement-list">
-        {entries.map(entry => (
-          <article className="panel-card achievement-card" key={entry.title}>
-            <h3>{entry.title}</h3>
-            <p>{entry.copy}</p>
-          </article>
-        ))}
+    <svg {...commonProps}>
+      <path d="M48 7 78 18v26c0 20-13 34-30 43C31 78 18 64 18 44V18Z" />
+      <path d="M48 15v63M25 27h46M31 62h34" />
+      <path d="m48 24 4 8 9 1-7 6 2 9-8-4-8 4 2-9-7-6 9-1Z" />
+      <path d="M39 78c6 3 12 3 18 0" />
+    </svg>
+  );
+}
+
+function AwardDetails({ entry, onClose }: { entry: (typeof achievements)[number]; onClose: () => void }): ReactElement {
+  return (
+    <article
+      aria-label={`${entry.title} details`}
+      className="award-details"
+      data-testid="achievement-details"
+      onClick={(event: ReactMouseEvent<HTMLElement>) => event.stopPropagation()}
+      role="dialog"
+    >
+      <div className="award-details__topline">
+        <span>{entry.group} · recognition</span>
+        <button aria-label="Close award details" onClick={onClose} type="button">Close ×</button>
       </div>
+      <h3 data-testid="achievement-details-title">{entry.title}</h3>
+      <p data-testid="achievement-details-copy">{entry.copy}</p>
+      <span className="award-details__hint">Click outside to return it to its column.</span>
+    </article>
+  );
+}
+
+function AwardsGrove({ entries }: { entries: readonly (typeof achievements)[number][] }): ReactElement {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const activeEntry = activeIndex === null ? null : entries[activeIndex];
+  const activeRelic = activeIndex === null ? null : awardRelicTypes[activeIndex % awardRelicTypes.length];
+
+  useEffect(() => {
+    if (activeIndex === null) return undefined;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveIndex(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeIndex]);
+
+  return (
+    <section className={`awards-grove${activeEntry ? ' awards-grove--focused' : ''}`} aria-label="Awards and honors grove" data-testid="achievement-field">
+      <div className="awards-grove__sky" aria-hidden="true" />
+      <div className="awards-grove__sun" aria-hidden="true" />
+      <div className="awards-grove__hills" aria-hidden="true" />
+      <div className="awards-grove__trees" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5, 6].map(index => <span className={`olive-tree olive-tree--${index}`} key={index} />)}
+      </div>
+      <div className="awards-grove__field" aria-hidden="true" />
+      <div className="awards-grove__heading">
+        <span>Olive grove of distinction</span>
+        <strong>Click a relic to inspect it</strong>
+      </div>
+      {entries.map((entry, index) => {
+        const layout = awardColumnLayouts[index % awardColumnLayouts.length];
+        const relicType = awardRelicTypes[index % awardRelicTypes.length];
+        const active = activeIndex === index;
+        return (
+          <div
+            className={`award-site${active ? ' award-site--active' : ''}`}
+            data-achievement-id={entry.title}
+            data-state={active ? 'featured' : 'resting'}
+            data-testid="achievement-relic"
+            key={entry.title}
+            style={{
+              '--award-depth': layout.depth,
+              '--award-height': layout.height,
+              '--award-left': layout.left,
+              '--award-bottom': layout.bottom,
+            } as CSSProperties}
+          >
+            <div className="award-column" data-testid="achievement-column">
+              <span className="award-column__capital" />
+              <span className="award-column__shaft" />
+              <span className="award-column__base" />
+            </div>
+            <button
+              aria-expanded={active}
+              aria-label={`Inspect ${entry.title}`}
+              aria-pressed={active}
+              className={`award-relic award-relic--${relicType}`}
+              data-state={active ? 'featured' : 'resting'}
+              data-testid="achievement-object"
+              onClick={() => setActiveIndex(index)}
+              type="button"
+            >
+              <AwardRelic type={relicType} />
+            </button>
+          </div>
+        );
+      })}
+      {activeEntry && activeRelic ? (
+        <div className="award-focus-layer" data-testid="achievement-dismiss-surface" onClick={() => setActiveIndex(null)}>
+          <div className={`award-featured-relic award-featured-relic--${activeRelic}`} aria-hidden="true" data-achievement-id={activeEntry.title} data-state="featured" data-testid="achievement-featured">
+            <AwardRelic type={activeRelic} />
+          </div>
+          <AwardDetails entry={activeEntry} onClose={() => setActiveIndex(null)} />
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -594,211 +907,9 @@ function AchievementsPanel(): ReactElement {
       intro="Proof points are useful—not as a finish line, but as evidence that a hard problem can move."
       footer="Earned in public · carried forward quietly"
     >
-      <DogGoalGame />
       <div className="panel-medal" aria-hidden="true">✦</div>
-      <AchievementGroup title="Awards" entries={achievements.filter(entry => entry.group === 'Awards')} />
-      <AchievementGroup title="Honors" entries={achievements.filter(entry => entry.group === 'Honors')} />
+      <AwardsGrove entries={achievements} />
     </PanelPage>
-  );
-}
-
-type BenchResult = 'ready' | 'won' | 'failed';
-
-function BenchPressFigure({ lift }: { lift: number }): ReactElement {
-  const barY = 112 - lift * 48;
-  // Two fixed-length arm segments meet at the elbow throughout the press.
-  const shoulder = { x: 117, y: 127 };
-  const hand = { x: 122, y: barY };
-  const dx = hand.x - shoulder.x;
-  const dy = hand.y - shoulder.y;
-  const distance = Math.hypot(dx, dy);
-  const bend = Math.sqrt(Math.max(0, 32 ** 2 - (distance / 2) ** 2));
-  const elbow = {
-    x: (shoulder.x + hand.x) / 2 + dy / distance * bend,
-    y: (shoulder.y + hand.y) / 2 - dx / distance * bend,
-  };
-  const arm = `M${shoulder.x} ${shoulder.y}L${elbow.x} ${elbow.y}L${hand.x} ${hand.y}`;
-  return (
-    <svg
-      aria-label="Side view of a lifter lying on a flat bench, feet planted, pressing a barbell above his chest"
-      className="bench-game__figure"
-      role="img"
-      viewBox="0 0 300 220"
-    >
-      <defs>
-        <linearGradient id="bench-metal" x1="0" x2="1">
-          <stop offset="0" stopColor="#81958d" />
-          <stop offset=".5" stopColor="#eef2df" />
-          <stop offset="1" stopColor="#93a88e" />
-        </linearGradient>
-      </defs>
-      <ellipse className="bench-game__shadow" cx="152" cy="202" rx="119" ry="8" />
-      {/* Rack and safety arms sit behind the athlete. */}
-      <path d="M60 198V59h11v139m-23 0h43M68 89h15v-9M68 146h72" fill="none" stroke="#82958b" strokeWidth="6" strokeLinejoin="round" />
-      <path className="bench-game__leg bench-game__leg--far" d="M179 137L222 154L234 192" fill="none" />
-      <path className="bench-game__shoe" d="M225 187h12l14 8q3 6-3 6h-25z" />
-      <path className="bench-game__bench-leg" d="M83 151h9v44h16v6H69v-6h14zm91 0h9v44h16v6h-40v-6h15z" />
-      <rect className="bench-game__bench" x="65" y="141" width="137" height="13" rx="5" />
-      <path className="bench-game__arm bench-game__arm--far" d={arm} transform="translate(15 -7)" />
-      {/* Head, shoulders and hips rest along the horizontal bench pad. */}
-      <path className="bench-game__torso" d="M103 125Q116 116 134 121L171 131L183 128L189 143H109z" />
-      <path d="M160 130l24-2 13 13-15 15-17-12z" fill="#405d50" />
-      <path className="bench-game__leg" d="M187 143L215 158L215 194" fill="none" />
-      <path className="bench-game__shoe" d="M207 190h15l14 7q4 6-3 6h-27z" />
-      <path d="M98 130h12" stroke="#e9bd94" strokeWidth="13" />
-      <path className="bench-game__head" d="M77 126q0-14 13-15l9 3 4 7 6 3-6 4q-1 11-13 11-13 0-13-13z" />
-      <path className="bench-game__hair" d="M78 132q-9-15 3-22 10-5 16 4l-12 4 1 15z" />
-      <path d="M96 119l3 1" stroke="#5e493b" strokeWidth="2" strokeLinecap="round" />
-      <path className="bench-game__arm" d={arm} />
-      <g className="bench-game__bar" transform={`translate(0 ${barY})`}>
-        <path d="M88 14L168-23" stroke="url(#bench-metal)" strokeWidth="5" strokeLinecap="round" />
-        <ellipse className="bench-game__plate" cx="153" cy="-16" rx="10" ry="21" transform="rotate(-12 153 -16)" />
-        <ellipse className="bench-game__plate" cx="104" cy="7" rx="12" ry="24" transform="rotate(-12 104 7)" />
-        <ellipse cx="104" cy="7" rx="4" ry="7" fill="#93a88e" />
-        <path d="M88 14l16-7" stroke="url(#bench-metal)" strokeWidth="5" strokeLinecap="round" />
-        <path d="M119 1l6-3m12-5 5-2" stroke="#e9bd94" strokeWidth="7" strokeLinecap="round" />
-      </g>
-    </svg>
-  );
-}
-
-function BenchPressGame(): ReactElement {
-  const [lift, setLift] = useState(.42);
-  const [arrow, setArrow] = useState(.16);
-  const [result, setResult] = useState<BenchResult>('ready');
-  const liftRef = useRef(lift);
-  const arrowRef = useRef(arrow);
-  const directionRef = useRef(1);
-  const resultRef = useRef<BenchResult>(result);
-
-  useEffect(() => {
-    liftRef.current = lift;
-  }, [lift]);
-
-  useEffect(() => {
-    arrowRef.current = arrow;
-  }, [arrow]);
-
-  useEffect(() => {
-    resultRef.current = result;
-  }, [result]);
-
-  useEffect(() => {
-    if (result !== 'ready') return;
-    let frame = 0;
-    let previous = performance.now();
-    const tick = (now: number) => {
-      const dt = Math.min(.04, Math.max(.008, (now - previous) / 1000));
-      previous = now;
-      const speed = .38 + liftRef.current * 1.18;
-      let next = arrowRef.current + directionRef.current * speed * dt;
-      if (next >= 1) {
-        next = 1;
-        directionRef.current = -1;
-      } else if (next <= 0) {
-        next = 0;
-        directionRef.current = 1;
-      }
-      arrowRef.current = next;
-      setArrow(next);
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [result]);
-
-  const targetWidth = .34 - lift * .24;
-  const targetLeft = .5 - targetWidth / 2;
-  const meterStyle = {
-    '--target-left': `${targetLeft * 100}%`,
-    '--target-width': `${targetWidth * 100}%`,
-    '--arrow-position': `${arrow * 100}%`,
-  } as CSSProperties;
-
-  const attempt = () => {
-    if (resultRef.current !== 'ready') return;
-    const width = .34 - liftRef.current * .24;
-    const hit = Math.abs(arrowRef.current - .5) <= width / 2;
-    const nextLift = Math.max(0, Math.min(1, liftRef.current + (hit ? .12 : -.14)));
-    liftRef.current = nextLift;
-    setLift(nextLift);
-    if (nextLift >= 1) {
-      resultRef.current = 'won';
-      setResult('won');
-    } else if (nextLift <= 0) {
-      resultRef.current = 'failed';
-      setResult('failed');
-    }
-  };
-
-  const reset = () => {
-    directionRef.current = 1;
-    liftRef.current = .42;
-    arrowRef.current = .16;
-    resultRef.current = 'ready';
-    setLift(.42);
-    setArrow(.16);
-    setResult('ready');
-  };
-
-  const status = result === 'won'
-    ? 'Rep complete! Strong work.'
-    : result === 'failed'
-      ? 'The bar stalled. Try again.'
-      : 'Press when the arrow enters the green.';
-
-  return (
-    <section className={`bench-game bench-game--${result}`} aria-label="Helping the bar go up">
-      <aside className="bench-game__side bench-game__side--left">
-        {hobbies.slice(0, 2).map(hobby => (
-          <article className="bench-game__fact" key={hobby.id}>
-            <span>{hobby.number}</span>
-            <strong>{hobby.title}</strong>
-            <p>{hobby.copy}</p>
-          </article>
-        ))}
-      </aside>
-      <div className="bench-game__center">
-        <div className="bench-game__status" aria-live="polite">
-          <strong>{status}</strong>
-          <span>{Math.round(lift * 100)}% bar height</span>
-        </div>
-        <BenchPressFigure lift={lift} />
-        <div
-          aria-label="Timing line. Press while the arrow is in the green area."
-          className="bench-game__meter"
-          onKeyDown={event => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault();
-              attempt();
-            }
-          }}
-          onPointerDown={event => {
-            event.preventDefault();
-            attempt();
-          }}
-          role="button"
-          style={meterStyle}
-          tabIndex={0}
-        >
-          <span className="bench-game__target" />
-          <span className="bench-game__arrow" />
-        </div>
-        <button className="bench-game__press" onClick={result === 'ready' ? attempt : reset} type="button">
-          {result === 'ready' ? 'Press!' : 'Try again'}
-        </button>
-        {result !== 'ready' ? <button className="bench-game__reset" onClick={reset} type="button">Reset rep</button> : null}
-      </div>
-      <aside className="bench-game__side bench-game__side--right">
-        {hobbies.slice(2).map(hobby => (
-          <article className="bench-game__fact" key={hobby.id}>
-            <span>{hobby.number}</span>
-            <strong>{hobby.title}</strong>
-            <p>{hobby.copy}</p>
-          </article>
-        ))}
-      </aside>
-    </section>
   );
 }
 
@@ -807,11 +918,20 @@ function HobbiesPanel(): ReactElement {
     <PanelPage
       theme="panel-hobbies"
       eyebrow="06 · Life beyond code"
-      title={<>Help the bar<br />go up.</>}
-      intro="The other projects keep the builder human. Help him complete one more repetition, then read the stories on either side."
+      title={<>Life beyond<br />the build.</>}
+      intro="The other projects keep the builder human. Here are a few things that make time away from code feel well spent."
       footer="Rest is part of the system"
     >
-      <BenchPressGame />
+      <div className="panel-bars" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /></div>
+      <div className="hobby-list">
+        {hobbies.map(hobby => (
+          <article className="panel-card hobby-card" key={hobby.id}>
+            <span className="hobby-number">{hobby.number}</span>
+            <h2>{hobby.title}</h2>
+            <p>{hobby.copy}</p>
+          </article>
+        ))}
+      </div>
     </PanelPage>
   );
 }
