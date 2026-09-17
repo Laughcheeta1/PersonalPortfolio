@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
+import { config } from '../config';
 import { Atmosphere } from './atmosphere';
 
 describe('party atmosphere', () => {
@@ -12,12 +13,17 @@ describe('party atmosphere', () => {
     atmosphere.update(position, .5);
     const daytime = (scene.background as THREE.Color).clone();
     atmosphere.setPartyMode(true);
-    atmosphere.update(position, .5);
+    atmosphere.update(position, .1);
     const firstPartyColor = (scene.background as THREE.Color).clone();
+    const firstPartyLight = atmosphere.sun.color.clone();
     atmosphere.update(position, .5);
     const secondPartyColor = (scene.background as THREE.Color).clone();
+    const secondPartyLight = atmosphere.sun.color.clone();
 
-    expect(firstPartyColor.equals(daytime)).toBe(false);
+    expect(firstPartyColor.equals(new THREE.Color(config.atmosphere.partyLightPalette[0]).multiplyScalar(config.atmosphere.partySkyScale))).toBe(true);
+    expect(secondPartyColor.equals(new THREE.Color(config.atmosphere.partyLightPalette[1]).multiplyScalar(config.atmosphere.partySkyScale))).toBe(true);
+    expect(firstPartyLight.equals(new THREE.Color(config.atmosphere.partyLightPalette[0]))).toBe(true);
+    expect(secondPartyLight.equals(new THREE.Color(config.atmosphere.partyLightPalette[1]))).toBe(true);
     expect(secondPartyColor.equals(firstPartyColor)).toBe(false);
 
     atmosphere.setPartyMode(false);

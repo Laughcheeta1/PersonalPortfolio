@@ -13,13 +13,11 @@ export class Atmosphere {
   private starMaterial=new THREE.PointsMaterial({color:'#e4f1ff',size:.45,transparent:true,opacity:0,depthWrite:false,fog:false});
   private partyMode=false;
   private partyTime=0;
-  private partyBlend=0;
   private readonly normalCloudColor=new THREE.Color('#fff9e9');
   private readonly normalStarColor=new THREE.Color('#e4f1ff');
   private readonly partySkyColor=new THREE.Color();
   private readonly partyLightColor=new THREE.Color();
-  private readonly cloudTarget=new THREE.Color();
-  private readonly starTarget=new THREE.Color();
+  private readonly partyFillColor=new THREE.Color();
   readonly ambient = new THREE.HemisphereLight(config.atmosphere.sky,'#a08e6b',config.atmosphere.ambient);
   readonly sun = new THREE.DirectionalLight(config.atmosphere.sunColor,config.atmosphere.sun);
   constructor(private scene: THREE.Scene) {
@@ -50,22 +48,20 @@ export class Atmosphere {
     const {base,weights}=biomeWeights(position), sky=new THREE.Color(config.atmosphere.sky).multiplyScalar(base),light=new THREE.Color(config.atmosphere.sunColor).multiplyScalar(base);
     let fog=config.atmosphere.fog*base,ambient=config.atmosphere.ambient*base;
     for(const b of weights){sky.add(new THREE.Color(b.biome.sky).multiplyScalar(b.weight));light.add(new THREE.Color(b.biome.light).multiplyScalar(b.weight));fog+=b.biome.fog*b.weight;ambient+=b.biome.ambient*b.weight;}
-    const alpha=damping(config.atmosphere.smoothing,dt);this.partyBlend=THREE.MathUtils.lerp(this.partyBlend,this.partyMode?1:0,alpha);
+    const alpha=damping(config.atmosphere.smoothing,dt);
     if(this.partyMode&&!config.animation.reducedMotion)this.partyTime+=dt;
-    const hue=(this.partyTime*config.atmosphere.partyCycleSpeed)%1,pulse=.5+Math.sin(this.partyTime*4.5)*.08;
-    this.partySkyColor.setHSL(hue,.92,pulse);this.partyLightColor.setHSL((hue+.08)%1,.82,.58+Math.sin(this.partyTime*4.5)*.06);
-    if(this.partyBlend>.001){
-      sky.lerp(this.partySkyColor,this.partyBlend*config.atmosphere.partySkyMix);light.lerp(this.partyLightColor,this.partyBlend*config.atmosphere.partyLightMix);
-      fog=THREE.MathUtils.lerp(fog,config.atmosphere.partyFog,this.partyBlend);ambient=THREE.MathUtils.lerp(ambient,config.atmosphere.partyAmbient,this.partyBlend);
+    const beat=Math.floor(this.partyTime/config.atmosphere.partyBeatDuration),paletteIndex=beat%config.atmosphere.partyLightPalette.length;
+    this.partyLightColor.set(config.atmosphere.partyLightPalette[paletteIndex]!);this.partySkyColor.copy(this.partyLightColor).multiplyScalar(config.atmosphere.partySkyScale);this.partyFillColor.set(config.atmosphere.partyLightPalette[(paletteIndex+2)%config.atmosphere.partyLightPalette.length]!);
+    if(this.partyMode){
+      sky.copy(this.partySkyColor);light.copy(this.partyLightColor);fog=config.atmosphere.partyFog;ambient=config.atmosphere.partyAmbient;
     }
-    (this.scene.background as THREE.Color).lerp(sky,alpha);
+    if(this.partyMode)(this.scene.background as THREE.Color).copy(sky);else (this.scene.background as THREE.Color).lerp(sky,alpha);
     const lunar=weights.find(b=>b.landmark.biome==='lunar')?.weight??0;
-    this.cloudTarget.copy(this.normalCloudColor).lerp(this.partySkyColor,this.partyBlend*.3);this.starTarget.copy(this.normalStarColor).lerp(this.partySkyColor,this.partyBlend*.8);
-    this.cloudMaterial.color.lerp(this.cloudTarget,alpha);this.starMaterial.color.lerp(this.starTarget,alpha);
+    if(this.partyMode){this.cloudMaterial.color.copy(this.partySkyColor);this.starMaterial.color.copy(this.partyLightColor);}else{this.cloudMaterial.color.lerp(this.normalCloudColor,alpha);this.starMaterial.color.lerp(this.normalStarColor,alpha);}
     this.cloudMaterial.opacity=THREE.MathUtils.lerp(this.cloudMaterial.opacity,(1-lunar)*.85,alpha);this.starMaterial.opacity=THREE.MathUtils.lerp(this.starMaterial.opacity,lunar,alpha);
     this.skyGroup.position.set(position.x,0,position.z);if(!config.animation.reducedMotion)this.skyGroup.rotation.y+=dt*config.sky.cloudDrift*.01;
-    const sceneFog=this.scene.fog as THREE.FogExp2;sceneFog.color.copy(this.scene.background as THREE.Color);sceneFog.density=THREE.MathUtils.lerp(sceneFog.density,fog,alpha);
-    this.ambient.intensity=THREE.MathUtils.lerp(this.ambient.intensity,ambient,alpha);this.ambient.color.lerp(sky,alpha);this.sun.color.lerp(light,alpha);this.sun.intensity=THREE.MathUtils.lerp(this.sun.intensity,THREE.MathUtils.lerp(config.atmosphere.sun,config.atmosphere.sun*.72,this.partyBlend),alpha);
+    const sceneFog=this.scene.fog as THREE.FogExp2;sceneFog.color.copy(this.scene.background as THREE.Color);sceneFog.density=this.partyMode?fog:THREE.MathUtils.lerp(sceneFog.density,fog,alpha);
+    if(this.partyMode){this.ambient.intensity=ambient;this.ambient.color.copy(this.partyFillColor);this.sun.color.copy(this.partyLightColor);this.sun.intensity=config.atmosphere.sun*.72;}else{this.ambient.intensity=THREE.MathUtils.lerp(this.ambient.intensity,ambient,alpha);this.ambient.color.lerp(sky,alpha);this.sun.color.lerp(light,alpha);this.sun.intensity=THREE.MathUtils.lerp(this.sun.intensity,config.atmosphere.sun,alpha);}
     this.sun.position.set(position.x+20,35,position.z+18);this.sun.target.position.copy(position);
     return weights.reduce((a,b)=>a.weight>b.weight?a:b);
   }
