@@ -5,7 +5,7 @@ try{
   if(!process.env.CHECK_MOBILE_ONLY){
   const context=await browser.newContext({viewport:{width:900,height:650},locale:'es-CO'});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
+  await page.goto('http://127.0.0.1:53173/',{waitUntil:'domcontentloaded'});
   assert.equal(await page.getByText('Welcome to my ever expanding world',{exact:true}).count(),0);
   assert.equal(await page.locator('.tiny-star').count(),0);
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Pausar música de fondo');
@@ -33,7 +33,7 @@ try{
   assert.equal(await page.evaluate(()=>window.portfolioDebug.music),true);assert.equal(await page.locator('#music').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#music').getAttribute('aria-label'),'Pause background music');
   await page.locator('#music').click();await page.waitForFunction(()=>!window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-pressed'),'false');assert.equal(await page.locator('#music .mute-slash').isVisible(),true);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Play background music');
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);assert.equal(await page.locator('#music .mute-slash').isVisible(),false);
-  await page.reload({waitUntil:'networkidle'});assert.equal(await page.locator('html').getAttribute('lang'),'en');
+  await page.reload({waitUntil:'domcontentloaded'});assert.equal(await page.locator('html').getAttribute('lang'),'en');
   assert.equal(await page.locator('.landmark-label:visible').count()<7,true);
   assert.deepEqual(errors,[]);console.log('PASS desktop: browser locale, persistent selector, hover/focus tooltip, jump/landing, move while drag, music-only toggle, nearby titles.');
   await context.close();
@@ -42,7 +42,8 @@ try{
   const mobile=await mobileContext.newPage();
   // Let software-rendered frames settle before sending touch events in headless CI.
   await mobile.addInitScript(()=>{const raf=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=callback=>{window.__lastFrame=callback;return window.__pauseFrames?0:raf(callback);};window.__resumeFrames=()=>{window.__pauseFrames=false;raf(window.__lastFrame);};});
-  await mobile.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
+  await mobile.goto('http://127.0.0.1:53173/',{waitUntil:'domcontentloaded'});
+  const tutorialGate=mobile.locator('#tutorial-gate-skip');if(await tutorialGate.count())await tutorialGate.click();
   assert.equal(await mobile.locator('#orientation-tip').isVisible(),true);
   await mobile.locator('#orientation-tip button').click();assert.equal(await mobile.locator('#orientation-tip').isVisible(),false);
   assert.equal(await mobile.locator('#jump').isVisible(),true);assert.equal(await mobile.locator('#run').isVisible(),true);

@@ -1,4 +1,5 @@
 import './style.css';
+import { createOrientationTip, isSmallViewport } from './orientation';
 import * as THREE from 'three';
 import { CSS3DRenderer, CSS3DSprite } from 'three/addons/renderers/CSS3DRenderer.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -41,10 +42,7 @@ const musicVolumeInput=musicControl.querySelector<HTMLInputElement>('#music-volu
 const musicVolumeValue=musicControl.querySelector<HTMLOutputElement>('#music-volume-value')!;
 const jumpButton=document.createElement('button');jumpButton.id='jump';jumpButton.textContent='Jump';jumpButton.setAttribute('aria-label','Jump');document.querySelector('#joystick')!.after(jumpButton);
 const runButton=document.createElement('button');runButton.id='run';runButton.textContent='Run';runButton.setAttribute('aria-label','Hold to run');runButton.setAttribute('aria-pressed','false');jumpButton.after(runButton);
-const orientationTip=document.createElement('aside');orientationTip.id='orientation-tip';orientationTip.setAttribute('aria-label','A wider view');orientationTip.innerHTML='<span aria-hidden="true">↻</span><div><strong>A wider view</strong><p>Turn your phone sideways for more room to explore.</p><button type="button">Continue in portrait</button></div>';app.append(orientationTip);
-let orientationTipDismissed=false;
-function updateOrientationTip(){orientationTip.hidden=orientationTipDismissed||!matchMedia('(pointer: coarse)').matches||innerWidth>config.ui.mobileBreakpoint||innerWidth>=innerHeight;}
-orientationTip.querySelector('button')!.addEventListener('click',()=>{orientationTipDismissed=true;updateOrientationTip();});updateOrientationTip();
+const orientationTip=createOrientationTip(app,{label:'A wider view',title:'A wider view',body:'Turn your phone sideways for more room to explore.',continueLabel:'Continue in portrait'},'orientation-tip');
 document.querySelector('.controls')!.insertAdjacentHTML('beforeend','<i></i><kbd>space</kbd><span>Jump</span>');
 document.querySelector('#help-dialog p')!.innerHTML='Walk with <strong>WASD</strong> or the arrow keys. Hold <strong>Shift</strong> to run. Press <strong>Space</strong> to jump. Drag the world to look around. On touchscreens, use the thumbstick, hold Run, and tap Jump.';
 const mapTooltip=document.createElement('div');mapTooltip.id='map-tooltip';mapTooltip.role='tooltip';mapTooltip.hidden=true;document.querySelector('.map-card')!.append(mapTooltip);
@@ -60,7 +58,7 @@ let renderer:THREE.WebGLRenderer;
 try {renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});} catch {
   world.innerHTML='<div class="webgl-error"><h2>This little world needs WebGL.</h2><p>Try a browser with hardware acceleration enabled. You can still browse the island’s destinations from the map.</p></div>';throw new Error('WebGL is not available');
 }
-renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<640?config.performance.mobileDpr:config.performance.maxDpr));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.setClearColor(config.atmosphere.sky);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;world.append(renderer.domElement);
+renderer.setPixelRatio(Math.min(devicePixelRatio,isSmallViewport()?config.performance.mobileDpr:config.performance.maxDpr));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.setClearColor(config.atmosphere.sky);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;world.append(renderer.domElement);
 const cssRenderer=new CSS3DRenderer();cssRenderer.setSize(innerWidth,innerHeight);cssRenderer.domElement.className='spatial-dom';world.append(cssRenderer.domElement);
 const scene=new THREE.Scene(),domScene=new THREE.Scene();
 const pmrem=new THREE.PMREMGenerator(renderer),studio=new RoomEnvironment();scene.environment=pmrem.fromScene(studio).texture;scene.environmentIntensity=config.atmosphere.environmentIntensity;renderer.toneMappingExposure=config.atmosphere.exposure;studio.dispose();pmrem.dispose();
@@ -125,7 +123,7 @@ toggle.addEventListener('click',()=>toggleMap(list.hidden));document.querySelect
 for(const button of list.querySelectorAll<HTMLButtonElement>('[data-destination]'))button.addEventListener('click',()=>{start();const id=button.dataset.destination as LandmarkId;const l=landmarks.find(l=>l.id===id)!;void chat.send(`${getLanguage()==='es'?'Llévame a':'Take me to'} ${l.id}`);toggleMap(false);announce(t('Follow your guide to {title}.',{title:t(l.title)}));});
 renderer.domElement.setAttribute('tabindex','0');renderer.domElement.setAttribute('aria-label',t('3D island. Use WASD to walk and drag to rotate the camera.'));
 window.addEventListener('keydown',event=>{if(event.code==='Escape')toggleMap(false);const uiTarget=(event.target as HTMLElement)?.closest('button,a,[role="button"],summary,dialog,.world-panel,.chat-anchor');if(!started&&!uiTarget&&['KeyW','KeyA','KeyS','KeyD','Space'].includes(event.code)&&!input.editing){start();if(event.code==='Space')input.requestJump();else input.keys.add(event.code);}});
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);cssRenderer.setSize(innerWidth,innerHeight);updateOrientationTip();});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,isSmallViewport()?config.performance.mobileDpr:config.performance.maxDpr));renderer.setSize(innerWidth,innerHeight);cssRenderer.setSize(innerWidth,innerHeight);orientationTip.update();});
 renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();announce(t('The graphics connection was interrupted. Reload to return to the island.'));});
 const bugHunt=new BugHunt(scene,app,player,renderer.domElement,()=>started&&!dialog.open&&!input.editing);
 const discovered=new Set<LandmarkId>();let previous=performance.now(),time=0;

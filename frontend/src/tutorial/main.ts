@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { config } from '../config';
+import { createOrientationTip, isSmallViewport } from '../orientation';
 import { Input } from '../input';
 import { Player } from '../world/actors';
 import { damping } from '../world/physics';
@@ -31,6 +32,7 @@ app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLab
     <span id="tutorial-eyebrow" class="tutorial-eyebrow">${initialCopy.stepLabel} 01 · ${initialCopy.steps.forward.category}</span>
     <h1 id="tutorial-title">${initialCopy.steps.forward.title}</h1>
     <p id="tutorial-copy">${initialCopy.steps.forward.body}</p>
+    <p id="tutorial-touch-note" class="tutorial-touch-note">${initialCopy.touchControlsHint}</p>
     <div id="tutorial-key-prompt" class="tutorial-key-prompt"><kbd>${initialCopy.steps.forward.keyLabel}</kbd><span>${initialCopy.promptTurn}</span></div>
     <p id="tutorial-feedback" class="tutorial-feedback" role="status"></p>
     <div id="tutorial-focus-progress" class="tutorial-focus-progress" hidden><span class="focus-dot"></span><span><strong id="tutorial-focus-count">0 / 4</strong> <span id="tutorial-focus-label">${initialCopy.focusLabel}</span></span></div>
@@ -64,12 +66,15 @@ app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLab
   <p id="tutorial-notice" class="tutorial-notice" role="status"></p>
 </main>`;
 
+const orientationTip = createOrientationTip(app, initialCopy.orientation, 'tutorial-orientation-tip');
+
 const world = document.querySelector<HTMLElement>('#tutorial-world')!;
 const canvasHost = world;
 const tutorialCard = document.querySelector<HTMLElement>('.tutorial-card')!;
 const title = document.querySelector<HTMLElement>('#tutorial-title')!;
 const eyebrow = document.querySelector<HTMLElement>('#tutorial-eyebrow')!;
 const copy = document.querySelector<HTMLElement>('#tutorial-copy')!;
+const touchNote = document.querySelector<HTMLElement>('#tutorial-touch-note')!;
 const keyPrompt = document.querySelector<HTMLElement>('#tutorial-key-prompt')!;
 const feedback = document.querySelector<HTMLElement>('#tutorial-feedback')!;
 const stepCount = document.querySelector<HTMLElement>('#tutorial-step-count')!;
@@ -108,7 +113,7 @@ try {
   throw new Error('WebGL is not available');
 }
 
-renderer.setPixelRatio(Math.min(devicePixelRatio, innerWidth < 640 ? config.performance.mobileDpr : config.performance.maxDpr));
+renderer.setPixelRatio(Math.min(devicePixelRatio, isSmallViewport() ? config.performance.mobileDpr : config.performance.maxDpr));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -260,6 +265,8 @@ function renderLanguage() {
   document.querySelector<HTMLElement>('.tutorial-header__title span')!.textContent = strings.headerEyebrow;
   document.querySelector<HTMLElement>('.tutorial-header__title strong')!.textContent = strings.headerTitle;
   document.querySelector<HTMLElement>('.tutorial-progress')!.setAttribute('aria-label', strings.progressLabel);
+  touchNote.textContent = strings.touchControlsHint;
+  orientationTip.setCopy(strings.orientation);
   focusLabel.textContent = strings.focusLabel;
   document.querySelector<HTMLElement>('#tutorial-route-heading')!.textContent = strings.routeHeading;
   cameraHintLabel.textContent = strings.cameraHint;
@@ -311,8 +318,10 @@ function renderStage() {
   progressFill.style.width = `${(currentStep / tutorialSteps.length) * 100}%`;
   const stepCopy = strings.steps[step.id];
   eyebrow.textContent = `${strings.stepLabel} ${String(index).padStart(2, '0')} · ${stepCopy.category}`;
-  title.textContent = stepCopy.title;
-  copy.textContent = stepCopy.body;
+  const touchDevice = matchMedia('(pointer: coarse)').matches;
+  title.textContent = touchDevice ? stepCopy.touchTitle : stepCopy.title;
+  copy.textContent = touchDevice ? stepCopy.touchBody : stepCopy.body;
+  keyPrompt.hidden = touchDevice;
   keyPrompt.innerHTML = isCamera ? `<span class="drag-key">↔</span><span>${strings.promptDrag}</span>` : `<kbd>${stepCopy.keyLabel}</kbd><span>${strings.promptTurn}</span>`;
   keyPrompt.classList.toggle('is-camera', isCamera);
   focusProgress.hidden = !isCamera;
@@ -458,6 +467,7 @@ requestAnimationFrame(frame);
 window.addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio, isSmallViewport() ? config.performance.mobileDpr : config.performance.maxDpr));
   renderer.setSize(innerWidth, innerHeight);
 });
 renderer.domElement.addEventListener('webglcontextlost', event => {

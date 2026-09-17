@@ -1,4 +1,5 @@
 import type { Language } from '../i18n';
+import type { OrientationCopy } from '../orientation';
 import type { TutorialStepId } from './state';
 
 export type FingerId = 'index' | 'middle' | 'ring' | 'thumb' | 'little';
@@ -9,6 +10,8 @@ export type TutorialStepCopy = {
   body: string;
   route: string;
   keyLabel: string;
+  touchTitle: string;
+  touchBody: string;
 };
 
 export type TutorialCopy = {
@@ -32,6 +35,8 @@ export type TutorialCopy = {
   touchRunLabel: string;
   touchRunText: string;
   touchJumpLabel: string;
+  touchControlsHint: string;
+  orientation: OrientationCopy;
   fingerGuide: {
     eyebrow: string;
     title: string;
@@ -86,6 +91,13 @@ const english: TutorialCopy = {
   touchRunLabel: 'Hold to run',
   touchRunText: 'RUN',
   touchJumpLabel: 'Jump',
+  touchControlsHint: 'On a phone? Use the thumbstick to move, hold Run to sprint, tap Jump to hop, and drag the world to look around.',
+  orientation: {
+    label: 'A wider view',
+    title: 'Rotate for a wider view',
+    body: 'Turn your phone sideways to make the field guide easier to follow.',
+    continueLabel: 'Continue in portrait',
+  },
   fingerGuide: {
     eyebrow: 'KEYBOARD MAP',
     title: 'Place your hand here',
@@ -123,13 +135,13 @@ const english: TutorialCopy = {
     home: 'the portfolio',
   },
   steps: {
-    forward: { category: 'WALK', title: 'Press W to move forward', body: 'Hold the key until the panda takes a few steps. We’ll move on as soon as you do.', route: 'Forward', keyLabel: 'W' },
-    backward: { category: 'WALK', title: 'Press S to move backwards', body: 'You can retrace your steps just as easily. Press the key and feel the room move with you.', route: 'Backwards', keyLabel: 'S' },
-    left: { category: 'WALK', title: 'Press A to move left', body: 'Strafe around the spot. Keep your eyes on the sun while you try it.', route: 'Left', keyLabel: 'A' },
-    right: { category: 'WALK', title: 'Press D to move right', body: 'One more side-step. The next lesson will teach you to turn the whole view.', route: 'Right', keyLabel: 'D' },
-    camera: { category: 'LOOK', title: 'Drag to move the camera', body: 'Drag anywhere on the room to orbit the camera. Find the four red spheres — front, behind, and at both sides — and center each one.', route: 'Look around', keyLabel: 'DRAG' },
-    run: { category: 'SPRINT', title: 'Hold Shift to run', body: 'Hold Shift while you move. Your little finger finds the key in the diagram, and the panda picks up the pace.', route: 'Run', keyLabel: 'shift' },
-    jump: { category: 'PLAY', title: 'Press Space to jump', body: 'Press Space to hop. It serves no purpose here other than having fun jumping — go on, make the panda bounce.', route: 'Jump', keyLabel: 'space' },
+    forward: { category: 'WALK', title: 'Press W to move forward', body: 'Hold the key until the panda takes a few steps. We’ll move on as soon as you do.', touchTitle: 'Drag the thumbstick forward', touchBody: 'Use the on-screen thumbstick to move the panda forward. We’ll move on as soon as you do.', route: 'Forward', keyLabel: 'W' },
+    backward: { category: 'WALK', title: 'Press S to move backwards', body: 'You can retrace your steps just as easily. Press the key and feel the room move with you.', touchTitle: 'Drag the thumbstick back', touchBody: 'Use the on-screen thumbstick to move the panda back. We’ll move on as soon as you do.', route: 'Backwards', keyLabel: 'S' },
+    left: { category: 'WALK', title: 'Press A to move left', body: 'Strafe around the spot. Keep your eyes on the sun while you try it.', touchTitle: 'Drag the thumbstick left', touchBody: 'Use the on-screen thumbstick to move the panda left. Keep your eyes on the sun while you try it.', route: 'Left', keyLabel: 'A' },
+    right: { category: 'WALK', title: 'Press D to move right', body: 'One more side-step. The next lesson will teach you to turn the whole view.', touchTitle: 'Drag the thumbstick right', touchBody: 'Use the on-screen thumbstick to move the panda right. One more side-step, then we’ll turn the view.', route: 'Right', keyLabel: 'D' },
+    camera: { category: 'LOOK', title: 'Drag to move the camera', body: 'Drag anywhere on the room to orbit the camera. Find the four red spheres — front, behind, and at both sides — and center each one.', touchTitle: 'Drag to look around', touchBody: 'Drag across the room to look around. Find the four red spheres — front, behind, and at both sides — and center each one.', route: 'Look around', keyLabel: 'DRAG' },
+    run: { category: 'SPRINT', title: 'Hold Shift to run', body: 'Hold Shift while you move. Your little finger finds the key in the diagram, and the panda picks up the pace.', touchTitle: 'Hold Run to sprint', touchBody: 'Hold Run while you move. The panda will pick up the pace.', route: 'Run', keyLabel: 'shift' },
+    jump: { category: 'PLAY', title: 'Press Space to jump', body: 'Press Space to hop. It serves no purpose here other than having fun jumping — go on, make the panda bounce.', touchTitle: 'Tap Jump to hop', touchBody: 'Tap Jump to make the panda bounce. It is just for fun here.', route: 'Jump', keyLabel: 'space' },
   },
 };
 
@@ -154,6 +166,13 @@ const spanish: TutorialCopy = {
   touchRunLabel: 'Mantén para correr',
   touchRunText: 'CORRER',
   touchJumpLabel: 'Saltar',
+  touchControlsHint: '¿Estás en un teléfono? Usa el joystick para moverte, mantén Correr para acelerar, pulsa Saltar y arrastra el mundo para mirar.',
+  orientation: {
+    label: 'Una vista más amplia',
+    title: 'Gira el teléfono para ver mejor',
+    body: 'Pon el teléfono en horizontal para seguir la guía con más comodidad.',
+    continueLabel: 'Continuar en vertical',
+  },
   fingerGuide: {
     eyebrow: 'MAPA DEL TECLADO',
     title: 'Coloca aquí la mano',
@@ -191,13 +210,13 @@ const spanish: TutorialCopy = {
     home: 'al portafolio',
   },
   steps: {
-    forward: { category: 'CAMINAR', title: 'Pulsa W para avanzar', body: 'Mantén pulsada la tecla hasta que el panda dé unos pasos. Avanzaremos en cuanto lo hagas.', route: 'Avanzar', keyLabel: 'W' },
-    backward: { category: 'CAMINAR', title: 'Pulsa S para retroceder', body: 'Puedes desandar el camino con la misma facilidad. Pulsa la tecla y siente cómo la sala se mueve contigo.', route: 'Retroceder', keyLabel: 'S' },
-    left: { category: 'CAMINAR', title: 'Pulsa A para moverte a la izquierda', body: 'Muévete de lado alrededor del punto. Mantén la vista en el sol mientras lo pruebas.', route: 'Izquierda', keyLabel: 'A' },
-    right: { category: 'CAMINAR', title: 'Pulsa D para moverte a la derecha', body: 'Un último paso lateral. La siguiente lección te enseñará a girar toda la vista.', route: 'Derecha', keyLabel: 'D' },
-    camera: { category: 'MIRAR', title: 'Arrastra para mover la cámara', body: 'Arrastra por la sala para orbitar la cámara. Encuentra las cuatro esferas rojas — delante, detrás y a ambos lados — y centra cada una.', route: 'Mirar alrededor', keyLabel: 'ARRASTRA' },
-    run: { category: 'CORRER', title: 'Mantén pulsado Shift para correr', body: 'Mantén pulsado Shift mientras te mueves. Tu meñique encuentra la tecla en el diagrama y el panda acelera.', route: 'Correr', keyLabel: 'shift' },
-    jump: { category: 'JUGAR', title: 'Pulsa Espacio para saltar', body: 'Pulsa Espacio para dar un salto. Aquí no sirve para nada más que para divertirte saltando — haz que el panda rebote.', route: 'Saltar', keyLabel: 'espacio' },
+    forward: { category: 'CAMINAR', title: 'Pulsa W para avanzar', body: 'Mantén pulsada la tecla hasta que el panda dé unos pasos. Avanzaremos en cuanto lo hagas.', touchTitle: 'Arrastra el joystick hacia delante', touchBody: 'Usa el joystick de la pantalla para mover el panda hacia delante. Avanzaremos en cuanto lo hagas.', route: 'Avanzar', keyLabel: 'W' },
+    backward: { category: 'CAMINAR', title: 'Pulsa S para retroceder', body: 'Puedes desandar el camino con la misma facilidad. Pulsa la tecla y siente cómo la sala se mueve contigo.', touchTitle: 'Arrastra el joystick hacia atrás', touchBody: 'Usa el joystick de la pantalla para mover el panda hacia atrás. Avanzaremos en cuanto lo hagas.', route: 'Retroceder', keyLabel: 'S' },
+    left: { category: 'CAMINAR', title: 'Pulsa A para moverte a la izquierda', body: 'Muévete de lado alrededor del punto. Mantén la vista en el sol mientras lo pruebas.', touchTitle: 'Arrastra el joystick a la izquierda', touchBody: 'Usa el joystick de la pantalla para mover el panda a la izquierda. Mantén la vista en el sol mientras lo pruebas.', route: 'Izquierda', keyLabel: 'A' },
+    right: { category: 'CAMINAR', title: 'Pulsa D para moverte a la derecha', body: 'Un último paso lateral. La siguiente lección te enseñará a girar toda la vista.', touchTitle: 'Arrastra el joystick a la derecha', touchBody: 'Usa el joystick de la pantalla para mover el panda a la derecha. Después giraremos la vista.', route: 'Derecha', keyLabel: 'D' },
+    camera: { category: 'MIRAR', title: 'Arrastra para mover la cámara', body: 'Arrastra por la sala para orbitar la cámara. Encuentra las cuatro esferas rojas — delante, detrás y a ambos lados — y centra cada una.', touchTitle: 'Arrastra para mirar alrededor', touchBody: 'Arrastra por la sala para mirar alrededor. Encuentra las cuatro esferas rojas — delante, detrás y a ambos lados — y centra cada una.', route: 'Mirar alrededor', keyLabel: 'ARRASTRA' },
+    run: { category: 'CORRER', title: 'Mantén pulsado Shift para correr', body: 'Mantén pulsado Shift mientras te mueves. Tu meñique encuentra la tecla en el diagrama y el panda acelera.', touchTitle: 'Mantén Correr para acelerar', touchBody: 'Mantén pulsado Correr mientras te mueves. El panda acelerará.', route: 'Correr', keyLabel: 'shift' },
+    jump: { category: 'JUGAR', title: 'Pulsa Espacio para saltar', body: 'Pulsa Espacio para dar un salto. Aquí no sirve para nada más que para divertirte saltando — haz que el panda rebote.', touchTitle: 'Pulsa Saltar para brincar', touchBody: 'Pulsa Saltar para hacer que el panda rebote. Aquí es solo por diversión.', route: 'Saltar', keyLabel: 'espacio' },
   },
 };
 

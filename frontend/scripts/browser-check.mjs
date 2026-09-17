@@ -6,7 +6,7 @@ async function prepare(page){await page.addInitScript(()=>{const raf=window.requ
 async function capture(page,path){await page.evaluate(()=>{window.__pauseFrames=true;});await page.waitForTimeout(1000);await page.screenshot({path,timeout:60000});await page.evaluate(()=>window.__resumeFrames());}
 await prepare(page);
 const errors=[];page.on('pageerror',error=>errors.push(error.message));
-await page.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
+await page.goto('http://127.0.0.1:53173/',{waitUntil:'domcontentloaded'});
 await page.waitForTimeout(1500);
 await capture(page,'/tmp/portfolio-desktop.png');
 console.log(JSON.stringify({errors,debug:await page.evaluate(()=>window.portfolioDebug)}));
@@ -23,7 +23,7 @@ await capture(page,'/tmp/portfolio-guide.png');
 await page.close();
 const mobile=await browser.newPage({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1});
 await prepare(mobile);
-await mobile.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});await mobile.waitForTimeout(1000);await capture(mobile,'/tmp/portfolio-mobile.png');
+await mobile.goto('http://127.0.0.1:53173/',{waitUntil:'domcontentloaded'});await mobile.waitForTimeout(1000);await capture(mobile,'/tmp/portfolio-mobile.png');
 assert.equal(await mobile.locator('#joystick').isVisible(),true);
 console.log('mobile',JSON.stringify(await mobile.evaluate(()=>({width:innerWidth,scroll:document.body.scrollWidth,debug:window.portfolioDebug}))));
 await browser.close();
