@@ -3,6 +3,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
@@ -31,8 +32,13 @@ import { HobbyScene } from './HobbyScene';
 import { AwardsScene } from './AwardsScene';
 import { AwardRelic, type AwardRelicType } from './AwardRelic';
 import { buildTimelineLayout, formatTimelineMonth } from './timelineLayout';
+import { getLanguage, onLanguageChange, t } from '../i18n';
 
 const publicAssetBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.BASE_URL ?? '/');
+
+function usePanelLanguage(): void {
+  useSyncExternalStore(onLanguageChange, getLanguage, getLanguage);
+}
 
 interface PanelPageProps {
   theme: string;
@@ -88,9 +94,9 @@ function ProjectHoverCard({ hover }: { hover: HoveredProject }): ReactElement {
       role="tooltip"
       style={{ left: hover.x, top: hover.y }}
     >
-      <span className="project-hover-card__tag">{hover.project.tag}</span>
-      <h3>{hover.project.title}</h3>
-      {hover.project.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+      <span className="project-hover-card__tag">{t(hover.project.tag)}</span>
+      <h3>{t(hover.project.title)}</h3>
+      {hover.project.paragraphs.map(paragraph => <p key={paragraph}>{t(paragraph)}</p>)}
     </aside>
   );
 }
@@ -176,7 +182,7 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
   };
 
   return (
-    <section className="project-universe-section" aria-label={`${title} project field`}>
+    <section className="project-universe-section" aria-label={t('{title} project field', { title })}>
       <div className="project-universe-heading">
         <h2>{title}</h2>
       </div>
@@ -200,7 +206,7 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
           return (
             <button
               aria-describedby={hovered?.project.title === project.title ? popoverId : undefined}
-              aria-label={`Explore project ${project.title}`}
+              aria-label={t('Explore project {title}', { title: t(project.title) })}
               className="project-planet"
               key={project.title}
               onBlur={() => clearProject(project)}
@@ -231,10 +237,10 @@ function ProjectsPanel(): ReactElement {
     <PanelPage
       theme="panel-projects"
       eyebrow="01"
-      title="Projects"
+      title={t('Projects')}
     >
-      <ProjectUniverse title="Personal projects" projects={personalProjects} />
-      <ProjectUniverse title="Work projects" projects={workProjects} designOffset={personalProjects.length} />
+      <ProjectUniverse title={t('Personal projects')} projects={personalProjects} />
+      <ProjectUniverse title={t('Work projects')} projects={workProjects} designOffset={personalProjects.length} />
     </PanelPage>
   );
 }
@@ -265,11 +271,11 @@ function ExperiencePopover({ hover, onEnter, onLeave, onDismiss }: {
       onBlur={onLeave}
       onKeyDown={event => { if (event.key === 'Escape') onDismiss(); }}
     >
-      <span className="timeline-hover-card__kicker">{hover.entry.kicker}</span>
-      <h3>{hover.entry.role}</h3>
-      <strong className="timeline-hover-card__company">{hover.entry.company}</strong>
+      <span className="timeline-hover-card__kicker">{t(hover.entry.kicker)}</span>
+      <h3>{t(hover.entry.role)}</h3>
+      <strong className="timeline-hover-card__company">{t(hover.entry.company)}</strong>
       <span className="timeline-hover-card__period">{hover.entry.period}</span>
-      <p>{hover.entry.copy}</p>
+      <p>{t(hover.entry.copy)}</p>
     </aside>
   );
 }
@@ -278,7 +284,8 @@ function WorkTimeline(): ReactElement {
   const [hovered, setHovered] = useState<HoveredExperience | null>(null);
   const [now, setNow] = useState(() => new Date());
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const layout = useMemo(() => buildTimelineLayout(workTimeline, now), [now]);
+  const language = getLanguage();
+  const layout = useMemo(() => buildTimelineLayout(workTimeline, now, language), [now, language]);
   const trackHeight = Math.max(900, (layout.end - layout.start) / (365.25 * 86400000) * 330);
   const years = Array.from({ length: new Date(layout.end).getUTCFullYear() - new Date(layout.start).getUTCFullYear() + 1 }, (_, index) => Date.UTC(new Date(layout.start).getUTCFullYear() + index, 0, 1)).filter(date => date > layout.start && date < layout.end);
 
@@ -325,8 +332,8 @@ function WorkTimeline(): ReactElement {
 
   return (
     <>
-      <section className="timeline" aria-label="Experience timeline">
-        <div className="timeline-endpoint"><time dateTime={new Date(layout.currentMonth).toISOString().slice(0, 7)}>{formatTimelineMonth(layout.currentMonth)}</time><span>Now</span></div>
+      <section className="timeline" aria-label={t('Experience timeline')}>
+        <div className="timeline-endpoint"><time dateTime={new Date(layout.currentMonth).toISOString().slice(0, 7)}>{formatTimelineMonth(layout.currentMonth, language)}</time><span>{t('Now')}</span></div>
         <div className="timeline-track" style={{ height: trackHeight }}>
           <div className="timeline-axis" aria-hidden="true" />
           {years.map(date => <span className="timeline-year" key={date} style={{ top: `${(layout.end - date) / (layout.end - layout.start) * 100}%` }}>{new Date(date).getUTCFullYear()}</span>)}
@@ -350,17 +357,17 @@ function WorkTimeline(): ReactElement {
                     onKeyDown={event => { if (event.key === 'Escape') dismissHover(); }}
                     tabIndex={0}
                   >
-                    <span className="timeline-card__role">{entry.role}</span>
-                    <span className="timeline-card__company">{entry.company}</span>
+                    <span className="timeline-card__role">{t(entry.role)}</span>
+                    <span className="timeline-card__company">{t(entry.company)}</span>
                     <span className="timeline-card__date">{entry.period}</span>
-                    <span className="timeline-card__status">{entry.current ? 'Active' : entry.kicker}</span>
+                    <span className="timeline-card__status">{entry.current ? t('Active') : t(entry.kicker)}</span>
                   </article>
                 );
               })}
             </div>
           ))}
         </div>
-        <div className="timeline-endpoint timeline-endpoint--start"><time dateTime={new Date(layout.start).toISOString().slice(0, 7)}>{formatTimelineMonth(layout.start)}</time><span>Beginning</span></div>
+        <div className="timeline-endpoint timeline-endpoint--start"><time dateTime={new Date(layout.start).toISOString().slice(0, 7)}>{formatTimelineMonth(layout.start, language)}</time><span>{t('Beginning')}</span></div>
         {hovered ? <ExperiencePopover hover={hovered} onEnter={keepHover} onLeave={scheduleClose} onDismiss={dismissHover} /> : null}
       </section>
     </>
@@ -372,7 +379,7 @@ function WorkPanel(): ReactElement {
     <PanelPage
       theme="panel-work"
       eyebrow="02"
-      title="Work experience"
+      title={t('Work experience')}
     >
       <WorkTimeline />
     </PanelPage>
@@ -425,7 +432,7 @@ function EducationGraph(): ReactElement {
   return (
     <>
       <div
-        aria-label="Education neural network. Languages feed courses, university learning, and formal education."
+        aria-label={t('Education neural network. Languages feed courses, university learning, and formal education.')}
         className="education-graph"
         data-testid="education-network"
         role="group"
@@ -447,7 +454,7 @@ function EducationGraph(): ReactElement {
         <div className="education-graph__layers">
           {educationLayers.map((layer, layerIndex) => (
             <section
-              aria-label={`${layer.role} education entries`}
+              aria-label={t('{role} education entries', { role: t(layer.role) })}
               className={`education-layer education-layer--${layer.role}`}
               data-layer-id={layer.id}
               data-role={layer.role}
@@ -458,7 +465,7 @@ function EducationGraph(): ReactElement {
                 {layer.entries.map((entry, entryIndex) => (
                   <button
                     aria-describedby={activeId === entry.id ? 'education-graph-detail' : undefined}
-                    aria-label={`${entry.title}; ${entry.provider}; ${entry.date}`}
+                    aria-label={`${t(entry.title)}; ${t(entry.provider)}; ${t(entry.date)}`}
                     aria-pressed={activeId === entry.id}
                     className={`education-node education-node--${entry.type}${activeId === entry.id ? ' is-selected' : ''}`}
                     data-entry-id={entry.id}
@@ -478,10 +485,10 @@ function EducationGraph(): ReactElement {
                     style={{ top: `${networkNodeY(entryIndex, layer.entries.length)}%` }}
                     type="button"
                   >
-                    <span className="education-node__kind">{entry.type}</span>
-                    <strong title={entry.title}>{entry.title}</strong>
-                    <span className="education-node__provider" title={entry.provider}>{entry.provider}</span>
-                    <span className="education-node__date">{entry.date}</span>
+                    <span className="education-node__kind">{t(entry.type)}</span>
+                    <strong title={t(entry.title)}>{t(entry.title)}</strong>
+                    <span className="education-node__provider" title={t(entry.provider)}>{t(entry.provider)}</span>
+                    <span className="education-node__date">{t(entry.date)}</span>
                   </button>
                 ))}
               </div>
@@ -492,12 +499,12 @@ function EducationGraph(): ReactElement {
       {selected ? (
         <section className="education-graph__detail" id="education-graph-detail" aria-live="polite" aria-atomic="true">
           <div className="education-graph__detail-meta">
-            <span>{selected.type}</span>
-            <span>{selected.date}</span>
+            <span>{t(selected.type)}</span>
+            <span>{t(selected.date)}</span>
           </div>
-          <h3>{selected.title}</h3>
-          <small>{selected.provider}</small>
-          <p>{selected.copy}</p>
+          <h3>{t(selected.title)}</h3>
+          <small>{t(selected.provider)}</small>
+          <p>{t(selected.copy)}</p>
         </section>
       ) : null}
     </>
@@ -509,7 +516,7 @@ function EducationPanel(): ReactElement {
     <PanelPage
       theme="panel-education"
       eyebrow="03"
-      title="Skills & education"
+      title={t('Skills & education')}
     >
       <section className="panel-section education-section">
         <EducationGraph />
@@ -523,16 +530,16 @@ function AboutPanel(): ReactElement {
     <PanelPage
       theme="panel-about"
       eyebrow="04"
-      title="About me"
+      title={t('About me')}
     >
       <div className="panel-flower" aria-hidden="true">✿</div>
       <div className="panel-quote">
-        “I know of no better life purpose than to perish attempting the great and impossible.”
+        {t('“I know of no better life purpose than to perish attempting the great and impossible.”')}
         <small>— Friedrich Nietzsche</small>
       </div>
       {/* Reserved for a future personal note. */}
-      <section className="profile-personal-space" aria-label="Reserved space for a future personal note" />
-      <nav className="panel-links" aria-label="Profile links">
+      <section className="profile-personal-space" aria-label={t('Reserved space for a future personal note')} />
+      <nav className="panel-links" aria-label={t('Profile links')}>
         <a href="https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270" rel="noreferrer" target="_blank">LinkedIn ↗</a>
         <a href="https://github.com/Laughcheeta1" rel="noreferrer" target="_blank">GitHub ↗</a>
       </nav>
@@ -554,19 +561,19 @@ const awardColumnLayouts = [
 function AwardDetails({ entry, onClose }: { entry: (typeof achievements)[number]; onClose: () => void }): ReactElement {
   return (
     <article
-      aria-label={`${entry.title} details`}
+      aria-label={t('{title} details', { title: t(entry.title) })}
       className="award-details"
       data-testid="achievement-details"
       onClick={(event: ReactMouseEvent<HTMLElement>) => event.stopPropagation()}
       role="dialog"
     >
       <div className="award-details__topline">
-        <span>{entry.group} · recognition</span>
-        <button aria-label="Close award details" onClick={onClose} type="button">Close ×</button>
+        <span>{t(entry.group)} · {t('recognition')}</span>
+        <button aria-label={t('Close award details')} onClick={onClose} type="button">{t('Close ×')}</button>
       </div>
-      <h3 data-testid="achievement-details-title">{entry.title}</h3>
-      <p data-testid="achievement-details-copy">{entry.copy}</p>
-      <span className="award-details__hint">Click outside to return it to its column.</span>
+      <h3 data-testid="achievement-details-title">{t(entry.title)}</h3>
+      <p data-testid="achievement-details-copy">{t(entry.copy)}</p>
+      <span className="award-details__hint">{t('Click outside to return it to its column.')}</span>
     </article>
   );
 }
@@ -577,7 +584,7 @@ function AwardsGrove({ entries }: { entries: readonly (typeof achievements)[numb
   const activeRelic = activeIndex === null ? null : awardRelicTypes[activeIndex % awardRelicTypes.length];
 
   return (
-    <section className={`awards-grove${activeEntry ? ' awards-grove--focused' : ''}`} aria-label="Awards and honors grove" data-testid="achievement-field" onKeyDown={event => {
+    <section className={`awards-grove${activeEntry ? ' awards-grove--focused' : ''}`} aria-label={t('Awards and honors grove')} data-testid="achievement-field" onKeyDown={event => {
       if (event.key === 'Escape') { event.stopPropagation(); setActiveIndex(null); }
     }}>
       <AwardsScene activeIndex={activeIndex} />
@@ -600,7 +607,7 @@ function AwardsGrove({ entries }: { entries: readonly (typeof achievements)[numb
             <div aria-hidden="true" className="award-column" data-testid="achievement-column" />
             <button
               aria-expanded={active}
-              aria-label={`Inspect ${entry.title}`}
+              aria-label={t('Inspect {title}', { title: t(entry.title) })}
               aria-pressed={active}
               className="award-relic"
               data-state={active ? 'featured' : 'resting'}
@@ -632,7 +639,7 @@ function AchievementsPanel(): ReactElement {
     <PanelPage
       theme="panel-achievements"
       eyebrow="05"
-      title="Honors & awards"
+      title={t('Honors & awards')}
     >
       <AwardsGrove entries={achievements} />
     </PanelPage>
@@ -644,7 +651,7 @@ function HobbyConstellation(): ReactElement {
 
   return (
     <section
-      aria-label="Hobby star field"
+      aria-label={t('Hobby star field')}
       className="hobby-sky"
       data-testid="hobby-sky"
     >
@@ -678,7 +685,7 @@ function HobbyConstellation(): ReactElement {
           >
             <button
               aria-describedby={activeId === hobby.id ? `hobby-detail-${hobby.id}` : undefined}
-              aria-label={`Hobby star ${hobby.number}: ${hobby.title}`}
+              aria-label={t('Hobby star {number}: {title}', { number: hobby.number, title: t(hobby.title) })}
               aria-pressed={activeId === hobby.id}
               className={`hobby-star${activeId === hobby.id ? ' is-active' : ''}`}
               data-hobby-id={hobby.id}
@@ -692,9 +699,9 @@ function HobbyConstellation(): ReactElement {
             </button>
             {activeId === hobby.id ? (
               <aside aria-live="polite" className="hobby-star-detail" id={`hobby-detail-${hobby.id}`} role="tooltip" data-testid="hobby-details" tabIndex={0}>
-                <div className="hobby-star-detail__topline"><span>{hobby.number} · hobby star</span></div>
-                <h3>{hobby.title}</h3>
-                <p>{hobby.copy}</p>
+                <div className="hobby-star-detail__topline"><span>{hobby.number} · {t('hobby star')}</span></div>
+                <h3>{t(hobby.title)}</h3>
+                <p>{t(hobby.copy)}</p>
               </aside>
             ) : null}
           </div>
@@ -709,7 +716,7 @@ function HobbiesPanel(): ReactElement {
     <PanelPage
       theme="panel-hobbies"
       eyebrow="06"
-      title="Hobbies"
+      title={t('Hobbies')}
     >
       <HobbyConstellation />
     </PanelPage>
@@ -721,11 +728,11 @@ function LibraryPanel(): ReactElement {
     <PanelPage
       theme="panel-library"
       eyebrow="07"
-      title="Go Big or Go Home"
+      title={t('Go Big or Go Home')}
     >
       <div className="library-message">
-        <p className="library-message__title">Building something VERY BIG</p>
-        <p className="library-message__status">Currently in stealth mode</p>
+        <p className="library-message__title">{t('Changing how the world works')}</p>
+        <p className="library-message__status">{t('Currently in stealth mode')}</p>
       </div>
     </PanelPage>
   );
@@ -736,14 +743,14 @@ function FitnessStatsPanel(): ReactElement {
 
   return (
     <main className={`panel-page secret-panel fitness-stats-panel ${panel.theme}`} data-testid="fitness-stats-panel">
-      <h1>{panel.title}</h1>
-      <p className="fitness-stats__copy">{panel.copy}</p>
-      <ul className="fitness-stats__grid" aria-label="Fitness and endurance statistics">
+      <h1>{t(panel.title)}</h1>
+      <p className="fitness-stats__copy">{t(panel.copy)}</p>
+      <ul className="fitness-stats__grid" aria-label={t('Fitness and endurance statistics')}>
         {fitnessStats.map(stat => (
           <li className={`fitness-stat fitness-stat--${stat.accent}`} data-testid="fitness-stat" key={stat.id}>
             <strong className="fitness-stat__value">{stat.value}</strong>
-            <span className="fitness-stat__label">{stat.label}</span>
-            {stat.detail ? <p>{stat.detail}</p> : null}
+            <span className="fitness-stat__label">{t(stat.label)}</span>
+            {stat.detail ? <p>{t(stat.detail)}</p> : null}
           </li>
         ))}
       </ul>
@@ -754,8 +761,8 @@ function FitnessStatsPanel(): ReactElement {
 function ProfileMemoryPanel(): ReactElement {
   return (
     <main className={`panel-page secret-panel profile-memory-panel ${profileMemory.theme}`} data-testid="profile-memory-panel">
-      <h1>{profileMemory.title}</h1>
-      <p className="profile-memory__song-lead">My favourite song is</p>
+      <h1>{t(profileMemory.title)}</h1>
+      <p className="profile-memory__song-lead">{t('My favourite song is')}</p>
       <div className="profile-memory__song">{profileMemory.song}</div>
       <figure className="profile-memory__player">
         <div className="profile-memory__screen">
@@ -764,11 +771,11 @@ function ProfileMemoryPanel(): ReactElement {
             allowFullScreen
             loading="lazy"
             src={profileMemory.embedUrl}
-            title={`YouTube player for ${profileMemory.song}`}
+            title={t('YouTube player for {song}', { song: profileMemory.song })}
           />
         </div>
       </figure>
-      <p className="profile-memory__story">{profileMemory.story}</p>
+      <p className="profile-memory__story">{t(profileMemory.story)}</p>
     </main>
   );
 }
@@ -796,7 +803,7 @@ function F22RaptorMark(): ReactElement {
 function SecretPanel({ panel }: { panel: SecretPanel }): ReactElement {
   return (
     <main className={`panel-page secret-panel ${panel.theme}`}>
-      {panel.eyebrow ? <div className="panel-eyebrow">{panel.eyebrow}</div> : null}
+      {panel.eyebrow ? <div className="panel-eyebrow">{t(panel.eyebrow)}</div> : null}
       {panel.theme === 'secret-flight' || panel.icon ? (
         <div className="secret-panel__icon" aria-hidden="true">
           {panel.theme === 'secret-launch' ? (
@@ -809,13 +816,13 @@ function SecretPanel({ panel }: { panel: SecretPanel }): ReactElement {
           ) : panel.theme === 'secret-flight' ? <F22RaptorMark /> : panel.icon}
         </div>
       ) : null}
-      <h1>{panel.title}</h1>
-      {panel.copy ? <p className="secret-panel__copy">{panel.copy}</p> : null}
-      {panel.additionalCopy ? <p className="secret-panel__copy secret-panel__copy--secondary">{panel.additionalCopy}</p> : null}
-      {panel.signature ? <div className="secret-panel__signature">{panel.signature}</div> : null}
+      <h1>{t(panel.title)}</h1>
+      {panel.copy ? <p className="secret-panel__copy">{t(panel.copy)}</p> : null}
+      {panel.additionalCopy ? <p className="secret-panel__copy secret-panel__copy--secondary">{t(panel.additionalCopy)}</p> : null}
+      {panel.signature ? <div className="secret-panel__signature">{t(panel.signature)}</div> : null}
       {panel.image ? (
         <figure className="secret-panel__image-frame">
-          <img alt={panel.image.alt} data-testid="secret-panel-image" src={`${publicAssetBaseUrl}${panel.image.src}`} />
+          <img alt={t(panel.image.alt)} data-testid="secret-panel-image" src={`${publicAssetBaseUrl}${panel.image.src}`} />
         </figure>
       ) : null}
     </main>
@@ -843,13 +850,14 @@ const panelRegistry: Readonly<Record<string, PanelComponent>> = {
 
 function MissingPanel(): ReactElement {
   return (
-    <PanelPage theme="panel-missing" eyebrow="Notebook" title="A page is missing.">
-      <p className="panel-intro">This story has not been added to the island yet.</p>
+    <PanelPage theme="panel-missing" eyebrow={t('Notebook')} title={t('A page is missing.')}>
+      <p className="panel-intro">{t('This story has not been added to the island yet.')}</p>
     </PanelPage>
   );
 }
 
 export function PanelContent({ panelId }: { panelId: string }): ReactElement {
+  usePanelLanguage();
   const Panel = panelRegistry[panelId] ?? MissingPanel;
   return <Panel />;
 }

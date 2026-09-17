@@ -34,6 +34,10 @@ try {
     body: '<!doctype html><html><head><link rel="stylesheet" href="/src/style.css"></head><body></body></html>',
   }));
   await page.goto('http://127.0.0.1:53173/', { waitUntil: 'domcontentloaded' });
+  const i18nModuleUrl = await page.evaluate(async () => {
+    const source = await (await fetch('/src/panel-content/index.tsx')).text();
+    return source.match(/"(\/src\/i18n\/index\.ts\?[^" ]+)"/)?.[1] ?? '/src/i18n/index.ts';
+  });
   await page.evaluate(async () => {
     const THREE = await import('/node_modules/three/build/three.module.js');
     const { CSS3DRenderer } = await import('/node_modules/three/examples/jsm/renderers/CSS3DRenderer.js');
@@ -93,6 +97,11 @@ try {
   assert.ok((await panel.locator('.project-hover-card').textContent()).trim());
   await page.mouse.move(20, 400);
   assert.equal(await panel.locator('.project-hover-card').count(), 0);
+  await page.evaluate(async moduleUrl => { const { setLanguage } = await import(moduleUrl); setLanguage('es'); }, i18nModuleUrl);
+  await panel.locator('h1').filter({ hasText: 'Proyectos' }).waitFor();
+  assert.equal(await panel.getByText('Proyectos personales', { exact: true }).count(), 1);
+  await page.evaluate(async moduleUrl => { const { setLanguage } = await import(moduleUrl); setLanguage('en'); }, i18nModuleUrl);
+  await panel.locator('h1').filter({ hasText: 'Projects' }).waitFor();
 
   const rect = await panel.boundingBox();
   const before = await page.evaluate(() => window.__panelInput.yaw);
@@ -367,10 +376,10 @@ try {
   await page.evaluate(() => window.__visit(6));
   panel = page.locator('.world-panel:visible');
   assert.equal(await panel.getByText('Go Big or Go Home', { exact: true }).count(), 1);
-  assert.equal(await panel.getByText('Building something VERY BIG', { exact: true }).count(), 1);
+  assert.equal(await panel.getByText('Changing how the world works', { exact: true }).count(), 1);
   assert.equal(await panel.getByText('Currently in stealth mode', { exact: true }).count(), 1);
   assert.equal(await panel.locator('.panel-columns, .panel-note, .panel-status').count(), 0);
-  console.log('PASS: Library of Pergamon displays the requested phrase.');
+  console.log('PASS: Library of Pergamon displays the requested world-changing phrase.');
 
   await page.evaluate(() => window.__visit(6, 'back'));
   panel = page.locator('.world-panel:visible');

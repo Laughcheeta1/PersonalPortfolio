@@ -1,4 +1,6 @@
 /** UI translations stay separate from canonical world IDs and visitor conversations. */
+import { panelSpanish } from './panelTranslations';
+
 export const languages = ['en', 'es'] as const;
 export type Language = typeof languages[number];
 const spanish: Record<string, string> = {
@@ -12,7 +14,7 @@ const spanish: Record<string, string> = {
   'Show controls':'Ver controles',
   'Play background music':'Activar música de fondo','Pause background music':'Pausar música de fondo',
   'Music could not play. Try enabling it again.':'No se pudo reproducir la música. Intenta activarla de nuevo.',
-  'Language':'Idioma','Welcome to my ever expanding world':'BIENVENIDO A MI MUNDO EN CONSTANTE EXPANSIÓN',
+  'Language':'Idioma',
   'A piece of me':'Una parte de mí',
   'Let’s wander':'Vamos a explorar',
   'YOU ARE EXPLORING':'ESTÁS EXPLORANDO','The greenway':'El sendero verde',
@@ -63,6 +65,7 @@ const spanish: Record<string, string> = {
   'A note to yourself':'Una nota para ti','Try typing here…':'Prueba a escribir aquí…','Your note stays in this panel for this visit.':'Tu nota permanece en este panel durante esta visita.',
   "Let's head to {title}. Follow me along the paths!":'Vamos a {title}. ¡Sígueme por los senderos!',
   "Welcome to my little island! I'm a local demo guide for now. Ask me to take you to {places}. You can also wander at your own pace and discover the stories at each landmark.":'¡Bienvenido a mi pequeña isla! Por ahora soy un guía local de demostración. Pídeme que te lleve a {places}. También puedes explorar a tu ritmo y descubrir las historias de cada lugar.',
+  ...panelSpanish,
 };
 const storageKey = 'portfolio.language.v1';
 export function resolveLanguage(preferences: readonly string[]): Language {

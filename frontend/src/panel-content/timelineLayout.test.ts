@@ -73,6 +73,12 @@ describe('experience timeline layout', () => {
     }
   });
 
+  it('formats dates and current periods for Spanish panels', () => {
+    const october = buildTimelineLayout(workTimeline, new Date('2026-10-01T00:00:00Z'), 'es');
+    expect(formatTimelineMonth(october.currentMonth, 'es')).toMatch(/octubre.*2026/i);
+    expect(october.cards.find(card => card.current)?.period).toContain('presente');
+  });
+
   it('derives earlier range starts and accepts month precision', () => {
     const entry = { ...workTimeline[0], start: '2020-02', end: '2021-03', current: false };
     const result = buildTimelineLayout([entry], now);

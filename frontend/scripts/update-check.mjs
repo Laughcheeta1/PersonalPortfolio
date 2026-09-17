@@ -6,6 +6,8 @@ try{
   const context=await browser.newContext({viewport:{width:900,height:650},locale:'es-CO'});
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:53173/',{waitUntil:'networkidle'});
+  assert.equal(await page.getByText('Welcome to my ever expanding world',{exact:true}).count(),0);
+  assert.equal(await page.locator('.tiny-star').count(),0);
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Pausar música de fondo');
   await page.locator('#music').click();await page.waitForFunction(()=>!window.portfolioDebug.music);assert.equal(await page.locator('#music').getAttribute('aria-label'),'Activar música de fondo');
   await page.locator('#music').click();await page.waitForFunction(()=>window.portfolioDebug.music);

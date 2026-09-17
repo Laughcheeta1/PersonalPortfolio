@@ -1,9 +1,13 @@
 import type { TimelineEntry } from './data';
+import type { Language } from '../i18n';
 
-const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const monthFormatters: Record<Language, Intl.DateTimeFormat> = {
+  en: new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+  es: new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }),
+};
 
-export function formatTimelineMonth(timestamp: number): string {
-  return monthFormatter.format(timestamp);
+export function formatTimelineMonth(timestamp: number, language: Language = 'en'): string {
+  return monthFormatters[language].format(timestamp);
 }
 
 function parseTimelineDate(value: string): number {
@@ -78,7 +82,7 @@ function balancedSides(intervals: readonly { startTimestamp: number; endTimestam
   return intervalEdges.map((edge, index) => edge ? edge.capacity === 0 ? 'left' as const : 'right' as const : index % 2 ? 'right' as const : 'left' as const);
 }
 
-export function buildTimelineLayout(entries: readonly TimelineEntry[], now: Date) {
+export function buildTimelineLayout(entries: readonly TimelineEntry[], now: Date, language: Language = 'en') {
   const currentMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1);
   const nextMonth = Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1);
   const parsed = entries.map(entry => ({
@@ -103,7 +107,7 @@ export function buildTimelineLayout(entries: readonly TimelineEntry[], now: Date
       ...entry,
       side,
       lane,
-      period: `${formatTimelineMonth(entry.startTimestamp)} — ${entry.current ? 'present' : formatTimelineMonth(entry.endTimestamp)}`,
+      period: `${formatTimelineMonth(entry.startTimestamp, language)} — ${entry.current ? language === 'es' ? 'presente' : 'present' : formatTimelineMonth(entry.endTimestamp, language)}`,
       top: (end - entry.endTimestamp) / span * 100,
       height: (entry.endTimestamp - entry.startTimestamp) / span * 100,
     };

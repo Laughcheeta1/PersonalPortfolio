@@ -157,9 +157,9 @@ Music and ambience are enabled by default and begin after the first user interac
 
 [`src/i18n/index.ts`](src/i18n/index.ts) supports English and Spanish. With no saved choice, it checks `navigator.languages` in order, matches regional locales such as `es-CO` / `en-US`, and falls back to English if no supported language matches. A manual selection persists under `portfolio.language.v1` and takes precedence. Remove that browser-storage key to return to automatic browser-language selection.
 
-English source strings are fallback dictionary keys; `spanish` maps them to translations. Keep interpolation tokens such as `{title}` unchanged. `t()` translates generated strings, and `localize()` updates static DOM in place. Visitor messages, received conversations and authored React panel content are preserved on language changes. New demo guide responses use the selected language.
+English source strings are fallback dictionary keys; `spanish` maps them to translations. Keep interpolation tokens such as `{title}` unchanged. `t()` translates generated strings, and `localize()` updates static DOM in place. Authored React panel copy re-renders in the selected language; canvas/SVG artwork, embedded media, and stable content IDs remain unchanged. New demo guide responses use the selected language.
 
-To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add its native label in `src/i18n/LanguageMenu.ts`. The custom dropdown uses the island palette and supports keyboard navigation. Extend `src/i18n/i18n.test.ts`. Panel copy is a separate typed React content concern, described above.
+To add a language, extend `languages` and the lookup/dictionaries in `t()`, then add its native label in `src/i18n/LanguageMenu.ts`. The custom dropdown uses the island palette and supports keyboard navigation. Extend `src/i18n/i18n.test.ts` and `src/i18n/panelTranslations.ts` for authored panel copy.
 
 The human companion’s blonde hair colors are `palette.companionHair` and `palette.companionHairHighlights` in `src/world/models.ts`. These do not affect the panda visitor avatar.
 
