@@ -99,7 +99,7 @@ describe('optional music', () => {
     vi.stubGlobal('Audio', vi.fn(function () { return audio; }));
     const music = new MusicPlayer(); music.unlock(); await music.setEnabled(true);
 
-    level = 100;
+    level = 10;
     expect(music.update(.016)).toBe(true);
     expect(music.update(.016)).toBe(false);
     level = 0;

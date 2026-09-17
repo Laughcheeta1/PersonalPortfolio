@@ -73,7 +73,7 @@ export class MusicPlayer {
       context = new AudioContext();
       const source = context.createMediaElementSource(this.audio), analyser = context.createAnalyser();
       analyser.fftSize = config.audio.beatFftSize;
-      analyser.smoothingTimeConstant = .05;
+      analyser.smoothingTimeConstant = config.audio.beatSmoothing;
       source.connect(analyser);analyser.connect(context.destination);
       this.audioContext = context;this.mediaSource = source;this.analyser = analyser;this.frequencyData = new Uint8Array(analyser.frequencyBinCount);
     } catch {
