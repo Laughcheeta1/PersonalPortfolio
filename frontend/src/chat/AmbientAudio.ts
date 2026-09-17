@@ -3,7 +3,7 @@ import { biomeWeights } from '../world/atmosphere';
 import { ambientSynthesis, type AmbientProfile } from './audioConfig';
 
 interface Layer { source: AudioBufferSourceNode; gain: GainNode; filter: BiquadFilterNode }
-/** Original synthesized surf plus five distinct, smoothly mixed biome soundscapes. */
+/** Original synthesized surf plus three distinct, smoothly mixed biome soundscapes. */
 export class AmbientAudio {
   private context: AudioContext | null = null;
   private layers = new Map<string, Layer>();

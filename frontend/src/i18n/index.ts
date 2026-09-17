@@ -12,7 +12,7 @@ const spanish: Record<string, string> = {
   'My world home':'Inicio de mi mundo', 'My world':'Mi mundo',
   'A PERSONAL PORTFOLIO':'UN PORTAFOLIO PERSONAL', 'A GOOD DAY TO EXPLORE':'UN BUEN DÍA PARA EXPLORAR',
   'Show controls':'Ver controles',
-  'Play background music':'Activar música de fondo','Pause background music':'Pausar música de fondo','Background music from:':'Música de fondo de:',
+  'Play background music':'Activar música de fondo','Pause background music':'Pausar música de fondo','Background music from:':'Música de fondo de:','Volume':'Volumen','Music volume':'Volumen de música',
   'Music could not play. Try enabling it again.':'No se pudo reproducir la música. Intenta activarla de nuevo.',
   'Language':'Idioma',
   'A piece of me':'Una parte de mí',

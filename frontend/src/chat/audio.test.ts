@@ -53,6 +53,8 @@ describe('ambient biome audio', () => {
     expect(sources).toHaveLength(Object.keys(ambientSynthesis.profiles).length + 1);
     expect(ambientSynthesis.profiles).not.toHaveProperty('lunar');
     expect(ambientSynthesis.profiles).not.toHaveProperty('garden');
+    expect(ambientSynthesis.profiles).not.toHaveProperty('digital');
+    expect(ambientSynthesis.profiles).not.toHaveProperty('training');
     for (const landmark of landmarks.filter(item => item.biome in ambientSynthesis.profiles)) {
       ambient.update({ x: landmark.position[0], z: landmark.position[1] });
       const layer = gains[Object.keys(ambientSynthesis.profiles).indexOf(landmark.biome) + 1]!;
@@ -70,6 +72,10 @@ describe('optional music', () => {
     vi.stubGlobal('Audio', audioFactory);
     const music = new MusicPlayer(); music.unlock();
     expect(audioFactory).toHaveBeenCalledWith(expect.stringContaining('party_bathroom_audio.mp3'));
+    expect(audio.volume).toBe(config.audio.musicVolume);
+    expect(audio.volume).toBe(.5);
+    music.setVolume(.25);
+    expect(audio.volume).toBe(.25);
     expect(audio.play).not.toHaveBeenCalled();
     expect(music.enabled).toBe(false);
     await music.setEnabled(true);

@@ -36,6 +36,9 @@ const world=document.querySelector<HTMLElement>('#world')!;
 const languageControl=createLanguageMenu();
 document.querySelector('.top-right')!.prepend(languageControl);
 const musicButton=document.querySelector<HTMLButtonElement>('#music')!;
+const musicControl=document.createElement('div');musicControl.className='music-control';musicButton.replaceWith(musicControl);musicControl.append(musicButton);musicControl.insertAdjacentHTML('beforeend','<div class="music-volume-popover" role="group" aria-label="Music volume"><label for="music-volume">Volume <output id="music-volume-value" for="music-volume">50%</output></label><input id="music-volume" aria-label="Music volume" max="100" min="0" step="1" type="range" value="50" /></div>');
+const musicVolumeInput=musicControl.querySelector<HTMLInputElement>('#music-volume')!;
+const musicVolumeValue=musicControl.querySelector<HTMLOutputElement>('#music-volume-value')!;
 const jumpButton=document.createElement('button');jumpButton.id='jump';jumpButton.textContent='Jump';jumpButton.setAttribute('aria-label','Jump');document.querySelector('#joystick')!.after(jumpButton);
 const runButton=document.createElement('button');runButton.id='run';runButton.textContent='Run';runButton.setAttribute('aria-label','Hold to run');runButton.setAttribute('aria-pressed','false');jumpButton.after(runButton);
 const orientationTip=document.createElement('aside');orientationTip.id='orientation-tip';orientationTip.setAttribute('aria-label','A wider view');orientationTip.innerHTML='<span aria-hidden="true">↻</span><div><strong>A wider view</strong><p>Turn your phone sideways for more room to explore.</p><button type="button">Continue in portrait</button></div>';app.append(orientationTip);
@@ -74,7 +77,10 @@ for(const [i,landmark] of landmarks.entries()){
 const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));
 const ambientAudio=new AmbientAudio();
 const music=new MusicPlayer();
-const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicButton.contains(target);
+let lastAudibleVolume=music.currentVolume;
+const updateMusicVolumeDisplay=()=>{musicVolumeInput.value=String(Math.round(music.currentVolume*100));musicVolumeValue.value=`${Math.round(music.currentVolume*100)}%`;musicVolumeValue.textContent=musicVolumeValue.value;};
+updateMusicVolumeDisplay();
+const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicControl.contains(target);
 const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>unlockAudio(document.activeElement!==musicButton));input.yaw=.18;
 const target=new THREE.Vector3(),desiredCamera=new THREE.Vector3();
 function cameraUpdate(dt:number,immediate=false){
@@ -96,14 +102,17 @@ runButton.addEventListener('pointerdown',event=>{if(runPointer!==null)return;eve
 const releaseRun=()=>{runPointer=null;input.keys.delete('ShiftLeft');runButton.setAttribute('aria-pressed','false');};
 for(const type of ['pointerup','pointercancel','lostpointercapture'])runButton.addEventListener(type,releaseRun);
 window.addEventListener('blur',releaseRun);document.addEventListener('visibilitychange',releaseRun);
-function updateMusicButton(){const playing=music.enabled;const label=t(playing?'Pause background music':'Play background music');musicButton.setAttribute('aria-label',label);musicButton.title=label;musicButton.classList.toggle('music-playing',playing);musicButton.setAttribute('aria-pressed',String(playing));}
+function updateMusicButton(){const playing=music.enabled&&music.currentVolume>0;const label=t(playing?'Pause background music':'Play background music');musicButton.setAttribute('aria-label',label);musicButton.title=label;musicButton.classList.toggle('music-playing',playing);musicButton.setAttribute('aria-pressed',String(playing));}
 let musicStarting=false;
 let musicPreference:boolean|null=null;
 function setMusicEnabled(enabled:boolean):Promise<void>{const request=music.setEnabled(enabled).catch(()=>{announce(t('Music could not play. Try enabling it again.'));}).finally(updateMusicButton);updateMusicButton();return request;}
 function unlockAudio(startMusic=true){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(startMusic&&musicPreference!==false&&!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
+function setMusicVolume(volume:number){music.setVolume(volume);if(volume>0)lastAudibleVolume=volume;updateMusicVolumeDisplay();updateMusicButton();}
+function handleMusicVolumeInput(){const volume=Number(musicVolumeInput.value)/100;setMusicVolume(volume);if(volume===0){musicPreference=false;void setMusicEnabled(false);return;}musicPreference=true;unlockAudio(false);if(!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
+musicVolumeInput.addEventListener('input',handleMusicVolumeInput);
 // Browsers require a user gesture before any audible playback.
 window.addEventListener('pointerdown',event=>unlockAudio(!isMusicControl(event.target)));window.addEventListener('keydown',event=>unlockAudio(!isMusicControl(event.target)));
-musicButton.addEventListener('click',()=>{const enabled=!music.enabled;musicPreference=enabled;unlockAudio(false);void setMusicEnabled(enabled);});
+musicButton.addEventListener('click',()=>{if(music.enabled&&music.currentVolume>0){musicPreference=false;setMusicVolume(0);void setMusicEnabled(false);return;}const volume=music.currentVolume>0?music.currentVolume:lastAudibleVolume||config.audio.musicVolume;musicPreference=true;setMusicVolume(volume);unlockAudio(false);void setMusicEnabled(true);});
 onLanguageChange(()=>{for(const element of app.children)if(element!==world)localize(element);for(const label of labels)localize(label.object.element);if(tooltipLandmark)mapTooltip.textContent=t(tooltipLandmark.title);updateMusicButton();});
 for(const label of labels)localize(label.object.element);updateMusicButton();
 document.querySelector('#explore')!.addEventListener('click',start);
