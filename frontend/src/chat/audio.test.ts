@@ -3,6 +3,7 @@ import { config } from '../config';
 import { MusicPlayer } from './MusicPlayer';
 import { SpeechQueue } from './Speech';
 import { AmbientAudio } from './AmbientAudio';
+import { ambientSynthesis } from './audioConfig';
 import { landmarks } from '../world/registry';
 
 afterEach(() => vi.unstubAllGlobals());
@@ -46,13 +47,15 @@ describe('sampled speech audio', () => {
 });
 
 describe('ambient biome audio', () => {
-  it('mixes an always-on layer for every biome and changes with proximity', () => {
+  it('mixes audible biome layers, keeps surf always on, and omits panel-specific audio', () => {
     const { gains, sources } = audioHarness();
     const ambient = new AmbientAudio(); ambient.unlock();
-    expect(sources).toHaveLength(landmarks.length + 1);
-    for (const landmark of landmarks) {
+    expect(sources).toHaveLength(Object.keys(ambientSynthesis.profiles).length + 1);
+    expect(ambientSynthesis.profiles).not.toHaveProperty('lunar');
+    expect(ambientSynthesis.profiles).not.toHaveProperty('garden');
+    for (const landmark of landmarks.filter(item => item.biome in ambientSynthesis.profiles)) {
       ambient.update({ x: landmark.position[0], z: landmark.position[1] });
-      const layer = gains[landmarks.indexOf(landmark) + 1]!;
+      const layer = gains[Object.keys(ambientSynthesis.profiles).indexOf(landmark.biome) + 1]!;
       expect(layer.gain.setTargetAtTime.mock.lastCall![0]).toBeGreaterThan(0);
     }
     ambient.dispose();
@@ -63,8 +66,10 @@ describe('ambient biome audio', () => {
 describe('optional music', () => {
   it('does not autoplay, stays audible, and reports playback failure', async () => {
     const audio = { loop: false, preload: '', muted: false, volume: 0, play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), removeAttribute: vi.fn(), load: vi.fn() };
-    vi.stubGlobal('Audio', vi.fn(function () { return audio; }));
+    const audioFactory = vi.fn(function () { return audio; });
+    vi.stubGlobal('Audio', audioFactory);
     const music = new MusicPlayer(); music.unlock();
+    expect(audioFactory).toHaveBeenCalledWith(expect.stringContaining('party_bathroom_audio.mp3'));
     expect(audio.play).not.toHaveBeenCalled();
     expect(music.enabled).toBe(false);
     await music.setEnabled(true);

@@ -197,20 +197,26 @@ try {
   panel = page.locator('.world-panel:visible');
   await panel.locator('[data-testid="education-network"]').waitFor();
   const educationLayers = panel.locator('.education-layer');
-  assert.equal(await educationLayers.count(), 5);
+  assert.equal(await educationLayers.count(), 4);
   assert.deepEqual(await educationLayers.evaluateAll(layers => layers.map(layer => ({
     id: layer.getAttribute('data-layer-id'),
     role: layer.getAttribute('data-role'),
     count: layer.querySelectorAll('[data-testid="education-node"]').length,
   }))), [
     { id: 'languages', role: 'input', count: 2 },
-    { id: 'technical-courses', role: 'hidden', count: 4 },
-    { id: 'general-learning', role: 'hidden', count: 2 },
-    { id: 'university-learning', role: 'university', count: 4 },
-    { id: 'formal-education', role: 'output', count: 4 },
+    { id: 'courses-and-certifications-01', role: 'hidden', count: 5 },
+    { id: 'courses-and-certifications-02', role: 'hidden', count: 4 },
+    { id: 'formal-education', role: 'output', count: 3 },
   ]);
-  assert.equal(await panel.locator('[data-testid="education-node"]').count(), 16);
-  assert.equal(await panel.locator('.education-connection').count(), 40);
+  assert.equal(await panel.locator('[data-testid="education-node"]').count(), 14);
+  assert.equal(await panel.locator('.education-connection').count(), 42);
+  assert.deepEqual(await panel.locator('.education-node__kind').allTextContents(), [
+    'Language', 'Language',
+    'Course', 'Course', 'Course', 'Course', 'Course',
+    'Course', 'Course', 'Course', 'Course',
+    'University', 'University', 'University',
+  ]);
+  assert.equal(await panel.getByText(/Participation ICPC/i).count(), 0);
   assert.equal(await panel.locator('.education-graph__detail').count(), 0);
   assert.equal(await panel.locator('.panel-intro, .panel-nodes').count(), 0);
   assert.equal(await panel.locator('.education-layer__heading').count(), 0);
@@ -227,7 +233,7 @@ try {
   await node.hover();
   await node.click();
   const lockedDetail = await panel.locator('.education-graph__detail p').textContent();
-  assert.equal(lockedDetail, 'University degree in Systems Engineering, in progress at Escuela de Ingeniería de Antioquia.');
+  assert.equal(lockedDetail, 'Systems Engineering and Computing undergraduate program, in progress.');
   const otherNode = panel.locator('[data-testid="education-node"]').filter({ hasText: 'Python' }).first();
   await otherNode.hover();
   assert.equal(await node.getAttribute('data-locked'), 'true');
@@ -238,7 +244,7 @@ try {
   await node.click();
   assert.equal(await panel.locator('.education-graph__detail').count(), 0, 'Clicking the selected card again deselects it.');
   assert.equal(await node.getAttribute('aria-pressed'), 'false');
-  console.log('PASS: education neural network has fourteen credentials plus two language inputs in five capped layers with accessible details.');
+  console.log('PASS: education neural network has fourteen cards in four requested layers with three card categories.');
 
   await page.evaluate(() => window.__visit(2, 'back'));
   panel = page.locator('.world-panel:visible');

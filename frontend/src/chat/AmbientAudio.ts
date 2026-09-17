@@ -3,7 +3,7 @@ import { biomeWeights } from '../world/atmosphere';
 import { ambientSynthesis, type AmbientProfile } from './audioConfig';
 
 interface Layer { source: AudioBufferSourceNode; gain: GainNode; filter: BiquadFilterNode }
-/** Original synthesized surf plus seven distinct, smoothly mixed biome soundscapes. */
+/** Original synthesized surf plus five distinct, smoothly mixed biome soundscapes. */
 export class AmbientAudio {
   private context: AudioContext | null = null;
   private layers = new Map<string, Layer>();
@@ -50,16 +50,15 @@ export class AmbientAudio {
   update(position: { x: number; z: number }): void {
     if (!this.context) return;
     const { weights } = biomeWeights(position);
-    const lunar = weights.find(b => b.landmark.biome === 'lunar')?.weight ?? 0;
     const altitude = weights.find(b => b.landmark.biome === 'altitude')?.weight ?? 0;
     const now = this.context.currentTime;
     for (const [name, layer] of this.layers) {
-      const weight = name === 'surf' ? 1 - lunar * ambientSynthesis.lunarSurfAttenuation : weights.find(b => b.landmark.biome === name)?.weight ?? 0;
+      const weight = name === 'surf' ? 1 : weights.find(b => b.landmark.biome === name)?.weight ?? 0;
       const volume = name === 'surf' ? config.audio.ambientVolume : config.audio.biomeVolume;
       layer.gain.gain.setTargetAtTime(volume * weight, now, config.audio.blendTime);
     }
     this.layers.get('surf')?.filter.frequency.setTargetAtTime(
-      config.audio.baseFilter + (config.audio.altitudeFilter - config.audio.baseFilter) * altitude + (config.audio.lunarFilter - config.audio.baseFilter) * lunar,
+      config.audio.baseFilter + (config.audio.altitudeFilter - config.audio.baseFilter) * altitude,
       now, config.audio.blendTime,
     );
   }

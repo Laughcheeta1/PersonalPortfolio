@@ -31,6 +31,7 @@ app.innerHTML=`<main id="world" aria-label="Interactive island portfolio"></main
 <div id="joystick" aria-label="Drag to move" role="application"><span></span></div><span class="touch-hint">Drag the world to look around</span>
 <dialog id="help-dialog"><button class="dialog-close" aria-label="Close controls">×</button><span class="eyebrow">A FIELD GUIDE</span><h2>At your pace.</h2><p>Walk with <strong>WASD</strong> or the arrow keys. Hold <strong>Shift</strong> to run. Drag the world to look around. On touchscreens, use the thumbstick to move.</p><p>Approach a landmark to open its notebook. You can type, select text, and scroll inside each notebook.</p><p>Your guide waits nearby. Walk up to chat, or choose a place on the island map for a guided walk.</p><button class="explore-button dialog-done">Got it. Let’s explore ↗</button></dialog><div id="notice" role="status"></div>`;
 
+app.insertAdjacentHTML('beforeend','<p class="music-attribution">Background music from: <a href="https://www.youtube.com/watch?v=PEqjXrE6YgM" rel="noreferrer" target="_blank">https://www.youtube.com/watch?v=PEqjXrE6YgM</a></p>');
 const world=document.querySelector<HTMLElement>('#world')!;
 const languageControl=createLanguageMenu();
 document.querySelector('.top-right')!.prepend(languageControl);

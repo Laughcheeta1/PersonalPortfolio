@@ -1,6 +1,6 @@
 import { useId } from 'react';
 
-export type AwardRelicType = 'armor' | 'laurel' | 'helmet' | 'swords' | 'shield';
+export type AwardRelicType = 'armor' | 'laurel' | 'helmet' | 'swords' | 'shield' | 'civic-crown';
 
 export type AwardRelicKind = AwardRelicType;
 
@@ -14,7 +14,26 @@ export function AwardRelic({ kind }: { kind: AwardRelicKind }) {
       <linearGradient id={`${id}-gold`} x1="0" x2="1"><stop stopColor="#382b1d"/><stop offset=".23" stopColor="#a98342"/><stop offset=".42" stopColor="#e4bd73"/><stop offset=".56" stopColor="#79603a"/><stop offset=".8" stopColor="#bb9251"/><stop offset="1" stopColor="#43301d"/></linearGradient>
       <linearGradient id={`${id}-steel`}><stop stopColor="#55545a"/><stop offset=".45" stopColor="#d8cdb6"/><stop offset=".5" stopColor="#8f9190"/><stop offset="1" stopColor="#343844"/></linearGradient>
       <linearGradient id={`${id}-red`}><stop stopColor="#270f0b"/><stop offset=".5" stopColor="#9c3420"/><stop offset="1" stopColor="#3b120d"/></linearGradient>
+      <linearGradient id={`${id}-civic-gold`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#805016"/><stop offset=".28" stopColor="#ffe9a0"/><stop offset=".48" stopColor="#e9b638"/><stop offset=".7" stopColor="#a56c15"/><stop offset="1" stopColor="#ffdc72"/></linearGradient>
+      <g id={`${id}-oak-leaf`}>
+        <path d="M0 0 C-5 -5 -14 -3 -11 -11 C-23 -9 -25 -19 -16 -22 C-30 -25 -25 -35 -16 -32 C-23 -43 -15 -48 -8 -42 Q-8 -54 0 -59 Q8 -54 8 -42 C15 -48 23 -43 16 -32 C25 -35 30 -25 16 -22 C25 -19 23 -9 11 -11 C14 -3 5 -5 0 0Z" fill={`url(#${id}-civic-gold)`} stroke="#805016" strokeWidth="1.2"/>
+        <path d="M0 -3V-51 M0 -13L-10 -19 M0 -25L-15 -31 M0 -37L-8 -43 M0 -13L10 -19 M0 -25L15 -31 M0 -37L8 -43" fill="none" stroke="#fff0ac" strokeWidth="1"/>
+      </g>
     </defs>
+    {kind === 'civic-crown' && <g>
+      <path d="M98 190 C17 179 21 84 65 42 M102 190 C183 179 179 84 135 42" fill="none" stroke="#976719" strokeWidth="7"/>
+      {[-1, 1].map(side => <g key={side} transform={`translate(100 0) scale(${side} 1)`}>
+        {[0,1,2,3,4,5].map(i => <g key={i} transform={`translate(${12 + Math.sin(i / 5 * Math.PI * .85) * 48} ${182 - i * 23})`}>
+          <use href={`#${id}-oak-leaf`} transform={`rotate(${60 - i * 17}) scale(.65)`}/>
+          <use href={`#${id}-oak-leaf`} transform={`rotate(${-48 - i * 10}) scale(.52)`}/>
+        </g>)}
+        {[0,1,2].map(i => <g key={i} transform={`translate(${36 + i * 11} ${164 - i * 34}) rotate(25)`}>
+          <ellipse cy="5" rx="5" ry="8" fill={`url(#${id}-civic-gold)`} stroke="#805016"/>
+          <path d="M-6 3Q-6 -6 0 -5Q6 -6 6 3Z" fill="#bd8c28" stroke="#805016"/>
+        </g>)}
+      </g>)}
+      <path d="M88 185Q100 190 112 185L110 194Q100 200 90 194Z" fill={`url(#${id}-civic-gold)`} stroke="#805016"/>
+    </g>}
     {kind === 'armor' && <g stroke={dark} strokeWidth="2">
       <path d="M119 21 Q160 15 171 54 L177 213 143 195 116 173Z" fill={`url(#${id}-red)`}/>
       <path d="M145 38 Q151 112 159 195 M157 44 L169 207" fill="none" stroke="#c5632e"/>

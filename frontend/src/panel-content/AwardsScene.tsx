@@ -1,8 +1,8 @@
 import { useId } from 'react';
-import { AwardRelic, type AwardRelicKind } from './AwardRelic';
+import { AwardRelic } from './AwardRelic';
+import { awardColumns } from './awardColumns';
 
-const relics: AwardRelicKind[] = ['armor', 'laurel', 'helmet', 'swords', 'shield'];
-const columns = [174, 442, 710, 992, 1282];
+const columns = awardColumns.map(column => column.x);
 const seeded = (i: number) => { const v = Math.sin(i * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
 
 export function AwardsScene({ activeIndex = null }: { activeIndex?: number | null }) {
@@ -43,7 +43,7 @@ export function AwardsScene({ activeIndex = null }: { activeIndex?: number | nul
         <path d={`M${x-29} 438H${x+29}V863H${x-29}Z`} fill={`url(#${id}-grain)`} stroke="none"/>
       </g>
       {i===3&&<path d={`M${x+19} 610l-30 44 15 14 -23 51 M${x-20} 713l9 36 -11 20`} stroke="#584b39" fill="none" strokeWidth="2"/>}
-      <svg opacity={activeIndex === i ? 0 : 1} x={x-(i===0?104:100)} y={i===0?91:103} width={i===0?208:200} height="220" overflow="visible"><AwardRelic kind={relics[i]}/></svg>
+      <svg opacity={activeIndex === i ? 0 : 1} x={x-100} y={103} width={200} height="220" overflow="visible"><AwardRelic kind={awardColumns[i].relic}/></svg>
     </g>)}
     {Array.from({length:64},(_,i)=>{const x=seeded(i+222)*1448,y=879+seeded(i+177)*207,s=12+seeded(i+153)*34;return <g key={i}><path d={`M${x-s} ${y} l${s*.5} ${-s*.6} ${s} ${-s*.1} ${s*.65} ${s*.55} -${s*.23} ${s*.67} -${s*1.4} ${s*.12}Z`} fill={['#a99169','#6b6046','#c1a67c','#554a36'][i%4]} stroke="#393728" strokeWidth="2"/><path d={`M${x-s*.5} ${y-s*.55} l${s} ${-s*.1} ${s*.6} ${s*.5}`} fill="none" stroke="#d9b583" opacity=".65"/></g>;})}
     {Array.from({length:94},(_,i)=>{const x=seeded(i+432)*1448,y=863+seeded(i+256)*223;return <path key={i} d={`M${x} ${y} q-12 -20 -15 -27 m15 27 q8 -27 19 -32 m-19 32 l-1 -38`} fill="none" stroke={i%3?'#ab9450':'#d5b263'} strokeWidth="2" opacity=".7"/>;})}

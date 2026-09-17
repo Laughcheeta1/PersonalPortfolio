@@ -1,112 +1,77 @@
 export interface ProjectCard {
+  id: string;
   title: string;
   paragraphs: readonly string[];
-  tag: string;
+  href?: string;
 }
+
+const placeholderProject = (id: string): ProjectCard => ({
+  id,
+  title: 'Place holder planet for future projects',
+  paragraphs: [],
+});
 
 export const personalProjects: readonly ProjectCard[] = [
   {
-    title: 'NAO Aeronautics',
+    id: 'review-vscode-extension',
+    title: 'Review VS Code Extension',
     paragraphs: [
-      'Logistics startup concept bringing city resources to remote areas. Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and developed a prototype.',
+      'VS Code extension for keeping control of fast code changes in the era of coding agents, with line-by-line review of live updates without constant Git commits.',
     ],
-    tag: 'VENTURE CONCEPT',
+    href: 'https://github.com/Laughcheeta1/PersonalPortfolio',
   },
   {
+    id: 'vcow',
     title: 'VCOW',
     paragraphs: [
       'A CREATE-X project that pivoted from vertical farming for cattle-raising into a crowdfunding platform for cattle projects after interviews with farmers and investors.',
     ],
-    tag: 'PRODUCT DISCOVERY',
   },
   {
+    id: 'employee-absence-management',
     title: 'Employee Absence Management',
     paragraphs: [
       'Web application enabling employers to manage employee absences. Defined requirements, architecture, database, and backend service layers.',
       'Monolith architecture using Next.js and GraphQL backed by Supabase.',
     ],
-    tag: 'WEB APPLICATION',
   },
   {
+    id: 'lookup',
     title: 'Lookup',
     paragraphs: [
       'Multi-brand clothing catalog with CSV inventory upload plus store and product geolocation.',
       'REST microservice architecture using Spring Boot, NestJS, React, Vite, and MongoDB.',
     ],
-    tag: 'MICROSERVICES',
   },
   {
+    id: 'personal-portfolio',
     title: 'Personal Portfolio',
     paragraphs: [
       'This little island: a Three.js world, a conversational guide, and a portfolio designed as a place to explore.',
     ],
-    tag: 'IN PROGRESS',
   },
-  {
-    title: 'Review VS Code Extension',
-    paragraphs: [
-      'VS Code extension for keeping control of fast code changes in the era of coding agents, with line-by-line review of live updates without constant Git commits.',
-    ],
-    tag: 'VS CODE EXTENSION',
-  },
-  {
-    title: 'EIA University Hackathon',
-    paragraphs: [
-      'Organized a startup business-model and MVP hackathon with sponsorship from mc2.',
-    ],
-    tag: 'COMMUNITY',
-  },
+  placeholderProject('personal-project-placeholder-review-slot'),
+  placeholderProject('personal-project-placeholder-hackathon-slot'),
 ];
 
 export const workProjects: readonly ProjectCard[] = [
+  placeholderProject('work-project-placeholder-legal'),
+  placeholderProject('work-project-placeholder-rpa'),
+  placeholderProject('work-project-placeholder-medical-scales'),
+  placeholderProject('work-project-placeholder-medical-decision-support'),
+  placeholderProject('work-project-placeholder-evaluations'),
   {
-    title: 'Legal_IA',
+    id: 'rpa-emr-chrome-integrations',
+    title: 'RPA Integration Agent & EMR Mapping Agent & Chrome Extension for RPA Integrations',
     paragraphs: [
-      'Created and deployed an AI web application now in use by a legal professional. Lawyers manage their knowledge bases, clients, and documents, then ask an AI agent questions about that private context.',
-      "Administrator pages let the owner independently change each agent's LLM provider, model, and prompt, keeping the product maintainable without engineering intervention.",
+      'AI agent built to automate and test RPA system integrations.',
+      'Agent that maps any electronic medical record to a standard format from its HTML file.',
+      'Chrome extension compatible with Manifest V2 and V3 for RPA integrations.',
     ],
-    tag: 'DEPLOYED AI PRODUCT',
   },
-  {
-    title: 'RPA Integration Agent',
-    paragraphs: ['AI agent built to automate and test RPA system integrations.'],
-    tag: 'AI AGENTS',
-  },
-  {
-    title: 'Medical Scales Calculator',
-    paragraphs: ['AI agent that calculates complex medical scales from consultation context and chat.'],
-    tag: 'AI AGENTS',
-  },
-  {
-    title: 'Medical Decision Support Agent',
-    paragraphs: ['AI agent system for medical decision support.'],
-    tag: 'AI AGENTS',
-  },
-  {
-    title: 'AI Agent Tests and Evaluations',
-    paragraphs: ['Tests and evaluations for AI agent systems.'],
-    tag: 'EVALUATION',
-  },
-  {
-    title: 'EMR Mapping Agent',
-    paragraphs: ['Agent that maps any electronic medical record to a standard format from its HTML file.'],
-    tag: 'PYTHON · LLMS',
-  },
-  {
-    title: 'Chrome Extension for RPA Integrations',
-    paragraphs: ['Chrome extension compatible with Manifest V2 and V3 for RPA integrations.'],
-    tag: 'CHROME EXTENSIONS',
-  },
-  {
-    title: 'Codebase Migration',
-    paragraphs: ['Supported codebase migration as part of Telepatia’s engineering work.'],
-    tag: 'ENGINEERING',
-  },
-  {
-    title: 'Forward-Deployed Engineering',
-    paragraphs: ['Worked directly with large corporate customers to support product integrations and delivery.'],
-    tag: 'CUSTOMER SUPPORT',
-  },
+  placeholderProject('work-project-placeholder-chrome'),
+  placeholderProject('work-project-placeholder-codebase'),
+  placeholderProject('work-project-placeholder-forward-deployed'),
 ];
 
 export interface TimelineEntry {
@@ -117,7 +82,7 @@ export interface TimelineEntry {
   role: string;
   company: string;
   period: string;
-  copy: string;
+  copy?: string;
   current?: boolean;
 }
 
@@ -151,7 +116,6 @@ export const workTimeline: readonly TimelineEntry[] = [
     role: 'Data Structures Class Private Tutor',
     company: 'Escuela de Ingeniería de Antioquia',
     period: 'September 2024 — July 2025',
-    copy: 'Tutored students in Data Structures and developed personalized study plans to support different learning styles and paces.',
   },
   {
     id: 'programming-fundamentals-tutor',
@@ -161,7 +125,7 @@ export const workTimeline: readonly TimelineEntry[] = [
     role: 'Programming Fundamentals Tutor',
     company: 'Escuela de Ingeniería de Antioquia',
     period: 'June 2023 — November 2023',
-    copy: 'Tutored students in programming fundamentals, helping them grasp coding concepts through clear explanations and approachable guidance.',
+    copy: 'Selected as tutor for the programming fundamentals classes in the university',
   },
   {
     id: 'systems-representative',
@@ -171,7 +135,7 @@ export const workTimeline: readonly TimelineEntry[] = [
     role: 'Systems Engineering Student Representative',
     company: 'Escuela de Ingeniería de Antioquia',
     period: 'September 2025 — September 2026',
-    copy: 'Helped, through student petition pressure, institute the program director the students wanted. Executed three hackathons focused on business-model creation and V0s of startups, infrastructure, and biotechnology and AI.',
+    copy: 'Helped, through student petition pressure, institute the program director the students wanted.\n\nExecuted three hackathons focused on:\n* business-model creation and V0s of startups\n* infrastructure\n* biotechnology and AI.',
   },
   {
     id: 'mc2-ambassador',
@@ -181,7 +145,7 @@ export const workTimeline: readonly TimelineEntry[] = [
     role: 'University Ambassador and Entrepreneur',
     company: 'mc^2',
     period: 'March 2025 — September 2025',
-    copy: 'Represented mc^2 at EIA, fostered connections, organized conferences, hackathons, and networking events, and facilitated university partnerships.',
+    copy: 'Represented mc^2 at EIA, fostered connections, organized a hackathon, and facilitated university partnerships.',
   },
   {
     id: 'nao-aeronautics',
@@ -191,26 +155,25 @@ export const workTimeline: readonly TimelineEntry[] = [
     role: 'CEO and Founder',
     company: 'NAO Aeronautics',
     period: 'August 2023 — September 2025',
-    copy: 'Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and designed and developed a prototype.',
+    copy: 'Logistics startup concept bringing city resources to remote areas. Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and developed a prototype.',
   },
 ];
 
-export type EducationEntryType = 'language' | 'course' | 'general' | 'university' | 'formal';
+export type EducationEntryType = 'language' | 'course' | 'university';
 
 export interface EducationEntry {
   id: string;
   title: string;
   provider: string;
   date: string;
-  copy: string;
+  copy?: string;
   type: EducationEntryType;
 }
 
 export interface EducationLayer {
   id: string;
   label: string;
-  descriptor: string;
-  role: 'input' | 'hidden' | 'university' | 'output';
+  role: 'input' | 'hidden' | 'output';
   entries: readonly EducationEntry[];
 }
 
@@ -218,14 +181,13 @@ export const educationLayers: readonly EducationLayer[] = [
   {
     id: 'languages',
     label: 'Languages',
-    descriptor: 'Input layer',
     role: 'input',
     entries: [
       {
         id: 'spanish',
         title: 'Spanish',
         provider: 'Language proficiency',
-        date: 'Native / bilingual',
+        date: 'Native/bilingual proficiency',
         copy: 'Native or bilingual proficiency.',
         type: 'language',
       },
@@ -233,89 +195,32 @@ export const educationLayers: readonly EducationLayer[] = [
         id: 'english',
         title: 'English',
         provider: 'Language proficiency',
-        date: 'Native / bilingual',
+        date: 'Native/bilingual proficiency',
         copy: 'Native or bilingual proficiency.',
         type: 'language',
       },
     ],
   },
   {
-    id: 'technical-courses',
-    label: 'Technical courses',
-    descriptor: 'Hidden layer 01',
-    role: 'hidden',
-    entries: [
-      {
-        id: 'perficient-tech-camp',
-        title: 'Certification Perficient Tech Camp 2023',
-        provider: 'Perficient Latin America',
-        date: 'December 2023',
-        copy: 'Technology training program completed through Perficient Latin America.',
-        type: 'course',
-      },
-      {
-        id: 'supervised-machine-learning',
-        title: 'Supervised Machine Learning: Regression and Classification',
-        provider: 'DeepLearning.AI',
-        date: 'January 2025',
-        copy: 'Supervised machine learning course covering regression and classification.',
-        type: 'course',
-      },
-      {
-        id: 'python-advanced',
-        title: 'Python Advanced Course',
-        provider: 'SoftServe',
-        date: 'July 2025',
-        copy: 'Advanced Python course completed through SoftServe.',
-        type: 'course',
-      },
-      {
-        id: 'advanced-learning-algorithms',
-        title: 'Advanced Learning Algorithms',
-        provider: 'DeepLearning.AI',
-        date: 'April 2026',
-        copy: 'Advanced learning algorithms course completed through DeepLearning.AI.',
-        type: 'course',
-      },
-    ],
-  },
-  {
-    id: 'general-learning',
-    label: 'General learning',
-    descriptor: 'Hidden layer 02',
+    id: 'courses-and-certifications-01',
+    label: 'Courses and certifications',
     role: 'hidden',
     entries: [
       {
         id: 'ruta-n-tech-marathon',
-        title: 'Certification Ruta N Tech Marathon',
+        title: 'Ruta N Tech Marathon',
         provider: 'Ruta N Medellín',
         date: 'September 2023',
-        copy: 'Technology and innovation marathon certification from Ruta N Medellín.',
-        type: 'general',
+        copy: 'Competitive programming marathon',
+        type: 'course',
       },
       {
-        id: 'mc2-builders',
-        title: 'mc^2 Builders Program',
-        provider: 'mc^2',
-        date: 'May 2025',
-        copy: 'Entrepreneurship and startup-building program completed through mc^2.',
-        type: 'general',
-      },
-    ],
-  },
-  {
-    id: 'university-learning',
-    label: 'University learning',
-    descriptor: 'University layer',
-    role: 'university',
-    entries: [
-      {
-        id: 'icpc-2023',
-        title: 'Participation ICPC 2023',
-        provider: 'ICPC – International Collegiate Programming Contest',
-        date: 'October 2023',
-        copy: 'Participation in the 2023 International Collegiate Programming Contest.',
-        type: 'university',
+        id: 'perficient-tech-camp',
+        title: 'Perficient Tech Camp 2023',
+        provider: 'Perficient Latin America',
+        date: 'December 2023',
+        copy: 'Web development training program',
+        type: 'course',
       },
       {
         id: 'cs50x',
@@ -323,7 +228,7 @@ export const educationLayers: readonly EducationLayer[] = [
         provider: 'Harvard University',
         date: 'June 2024',
         copy: 'Harvard University introduction to computer science course.',
-        type: 'university',
+        type: 'course',
       },
       {
         id: 'cs50-ai',
@@ -331,7 +236,7 @@ export const educationLayers: readonly EducationLayer[] = [
         provider: 'Harvard University',
         date: 'July 2024',
         copy: 'Harvard University artificial intelligence course.',
-        type: 'university',
+        type: 'course',
       },
       {
         id: 'create-x',
@@ -339,47 +244,71 @@ export const educationLayers: readonly EducationLayer[] = [
         provider: 'Georgia Institute of Technology',
         date: 'October 2024',
         copy: 'Startup-building program from the Georgia Institute of Technology.',
-        type: 'university',
+        type: 'course',
+      },
+    ],
+  },
+  {
+    id: 'courses-and-certifications-02',
+    label: 'Courses and certifications',
+    role: 'hidden',
+    entries: [
+      {
+        id: 'supervised-machine-learning',
+        title: 'Supervised Machine Learning: Regression and Classification',
+        provider: 'Stanford University & DeepLearning.AI',
+        date: 'January 2025',
+        type: 'course',
+      },
+      {
+        id: 'mc2-builders',
+        title: 'mc^2 Builders Program',
+        provider: 'mc^2',
+        date: 'Completed May 2025',
+        copy: 'Entrepreneurship and startup-building program',
+        type: 'course',
+      },
+      {
+        id: 'python-advanced',
+        title: 'Python Advanced Course',
+        provider: 'SoftServe',
+        date: 'March–July 2025',
+        type: 'course',
+      },
+      {
+        id: 'advanced-learning-algorithms',
+        title: 'Advanced Learning Algorithms',
+        provider: 'DeepLearning.AI',
+        date: 'April 2026',
+        type: 'course',
       },
     ],
   },
   {
     id: 'formal-education',
     label: 'Formal education',
-    descriptor: 'Output layer',
     role: 'output',
     entries: [
       {
         id: 'eia-systems-engineering',
-        title: 'Systems Engineering',
-        provider: 'Escuela de Ingeniería de Antioquia',
-        date: 'January 2022 — November 2026',
-        copy: 'University degree in Systems Engineering, in progress at Escuela de Ingeniería de Antioquia.',
-        type: 'formal',
+        title: 'Systems Engineering and Computing',
+        provider: 'Universidad EIA / Escuela de Ingeniería de Antioquia',
+        date: 'January 2022 – November 2026; in progress',
+        type: 'university',
       },
       {
         id: 'data-analytics-diplomat',
-        title: 'Data Analytics Diplomat',
+        title: 'Data Analytics Diploma',
         provider: 'Escuela de Ingeniería de Antioquia',
-        date: 'November 2023',
-        copy: 'Data analytics diploma from Escuela de Ingeniería de Antioquia.',
-        type: 'formal',
-      },
-      {
-        id: 'icpc-2024',
-        title: 'Participation ICPC 2024',
-        provider: 'ICPC – International Collegiate Programming Contest',
-        date: 'October 2024',
-        copy: 'Participation in the 2024 International Collegiate Programming Contest.',
-        type: 'formal',
+        date: 'Completed November 2023',
+        type: 'university',
       },
       {
         id: 'leadership-diplomat',
-        title: 'Leadership Diplomat',
+        title: 'Leadership Diploma',
         provider: 'Escuela de Ingeniería de Antioquia',
         date: 'May 2026',
-        copy: 'Leadership diploma from Escuela de Ingeniería de Antioquia.',
-        type: 'formal',
+        type: 'university',
       },
     ],
   },
@@ -389,7 +318,7 @@ export interface Hobby {
   id: string;
   number: string;
   title: string;
-  copy: string;
+  copy?: string;
   star: {
     x: string;
     y: string;
@@ -403,70 +332,90 @@ export const hobbies: readonly Hobby[] = [
     id: 'learning',
     number: '01',
     title: 'Learning new things',
-    copy: 'Following questions wherever they lead—through technology, ideas, and the small details that make the world feel larger.',
     star: { x: '20%', y: '22%', size: 27, delay: 0 },
   },
   {
     id: 'gym',
     number: '02',
     title: 'Gym',
-    copy: 'Lifting weights and running. Repetition, patience, and showing up turn effort into momentum.',
     star: { x: '48%', y: '14%', size: 23, delay: 1.1 },
   },
   {
     id: 'gifts',
     number: '03',
     title: 'Making Gifts and surprise parties',
-    copy: 'Planning handmade gifts and surprise parties for friends and family. The surprise is part of the craft.',
     star: { x: '68%', y: '42%', size: 25, delay: 2.2 },
   },
   {
     id: 'motorcycle',
     number: '04',
-    title: 'Motorcycle driving',
-    copy: 'Riding motorcycles and taking a different route home whenever there is time to explore.',
+    title: 'Listening to Fredy Vega Podcasts',
     star: { x: '81%', y: '23%', size: 29, delay: .6 },
   },
   {
     id: 'working',
     number: '05',
     title: 'Working',
-    copy: 'Yes, really. I truly love working—the satisfaction of solving hard problems and making something useful keeps me energized.',
+    copy: 'Really. I personaly work for the love of the game',
     star: { x: '34%', y: '39%', size: 31, delay: 1.8 },
   },
 ];
 
 export interface Achievement {
   title: string;
-  copy: string;
+  copy?: string;
+  date: string;
   group: 'Awards' | 'Honors';
 }
 
 export const achievements: readonly Achievement[] = [
   {
     group: 'Awards',
-    title: 'First Place Hackathon · ISA Intercolombia',
-    copy: 'First-place hackathon recognition.',
+    title: "First Place — Sistecredito's Third Hackathon",
+    copy: 'The challenge was focused on software development.',
+    date: '2024-11',
   },
   {
     group: 'Awards',
-    title: 'First Place Hackathon · Sistecredito',
-    copy: 'First-place hackathon recognition.',
+    title: 'First Place — Sistecredito Hackathon',
+    copy: 'The hackathon was about making an efficient system for detecting fraudulent transactions via classification algorithms.',
+    date: '2024-08',
   },
   {
     group: 'Awards',
-    title: "First Place Hackathon · Sistecredito, Third Version",
-    copy: "First-place recognition in Sistecredito's third hackathon.",
+    title: "First Place — ISA Intercolombia's Hackathon",
+    copy: 'This one is pretty interesting. More about it in my LinkedIn',
+    date: '2024-05',
+  },
+  {
+    group: 'Awards', title: 'Regional ICPC EIA Representative',
+    copy: 'My team advanced to the regional round of ICPC.', date: '2024',
+  },
+  {
+    group: 'Awards', title: 'Local ICPC EIA Representative',
+    copy: 'Represented EIA University in ICPC.', date: '2023',
+  },
+  {
+    group: 'Awards', title: 'Local ICPC EIA Representative',
+    copy: 'Represented EIA University in ICPC.', date: '2022',
+  },
+  {
+    group: 'Honors', title: 'Recognition of Leadership — EIA University',
+    date: '2026-02',
+  },
+  {
+    group: 'Honors', title: "Mentor and Judge — Sistecredito's Fourth Hackathon",
+    copy: "Asked to be a mentor and judge for Sistecredito's fourth hackathon.", date: '2025-03',
   },
   {
     group: 'Honors',
-    title: 'Academic Recognition · First Semester',
-    copy: 'Academic recognition for the first semester.',
+    title: 'Deans List — Second Semester',
+    date: '2023-02',
   },
   {
     group: 'Honors',
-    title: 'Academic Recognition · Second Semester',
-    copy: 'Academic recognition for the second semester.',
+    title: 'Deans List — First Semester',
+    date: '2022-10',
   },
 ];
 

@@ -141,7 +141,7 @@ Minimap markers show a title popup on hover or keyboard focus. The small world t
 
 ## Audio settings and your MP3 files
 
-The supplied files remain at `assets/sound_effects/sans_voice.mp3` and `assets/music/the_smoke_decides.mp3`. Replace them at the same path to change the voice or music. If renaming, update the `new URL(...)` in `src/chat/Speech.ts` or `src/chat/MusicPlayer.ts`. Vite bundles hashed URLs in production. Voice loads and decodes once after a gesture; music loads on demand.
+The supplied files remain at `assets/sound_effects/sans_voice.mp3`, `assets/music/party_bathroom_audio.mp3` (current music), and `assets/music/the_smoke_decides.mp3` (retained but unused). Replace them at the same path to change the voice or music. If renaming, update the `new URL(...)` in `src/chat/Speech.ts` or `src/chat/MusicPlayer.ts`. Vite bundles hashed URLs in production. Voice loads and decodes once after a gesture; music loads on demand.
 
 Music and ambience are enabled by default and begin after the first user interaction, as required by browser autoplay rules. The music-note button plays/pauses only the jazz soundtrack; a slash means the soundtrack is paused. Speech and ambience are unaffected. Music playback failures appear in a notice and playback retries on a later interaction.
 
@@ -149,9 +149,9 @@ Music and ambience are enabled by default and begin after the first user interac
 | --- | --- |
 | `speech` timing | `characterDelay`, `spaceDelay`, `commaDelay`, `periodDelay`, `lineBreakDelay`: display cadence and natural pauses. `holdDuration`: final distant bubble hold. |
 | `speech` sound | `volume`: voice gain (0.18). `sampleOffset`: start inside the MP3 (0.22 seconds skips this file’s initial silence; revisit when replacing it). `sampleDuration`: snippet length (0.075 seconds). `playbackRate`: speed/pitch multiplier. `playbackRateVariance`: randomized variation. `minSoundInterval`: minimum interval between snippets. |
-| `audio` | `ambientVolume`: base surf/wind gain (0.065, previously 0.012). `biomeVolume`: overall biome-layer gain (0.10). `musicVolume`: soundtrack volume (0.25, valid 0–1). `bufferSeconds`: synthesized loop duration. `baseFilter`, `lunarFilter`, `altitudeFilter`: surf low-pass cutoff targets in Hz. `blendTime`: smooth gain/filter transition time constant. |
+| `audio` | `ambientVolume`: base surf/wind gain (0.065, previously 0.012). `biomeVolume`: overall biome-layer gain (0.10). `musicVolume`: soundtrack volume (0.25, valid 0–1). `bufferSeconds`: synthesized loop duration. `baseFilter`, `altitudeFilter`: surf low-pass cutoff targets in Hz. `blendTime`: smooth gain/filter transition time constant. |
 
-[`src/chat/audioConfig.ts`](src/chat/audioConfig.ts) defines `ambientSynthesis.profiles` for **all seven biomes**. Each profile has `filter` (cutoff Hz), `noise` (noise strength), `frequency` (tone Hz), `tone` (tone strength), `pulse` (cycles/second), and `modulation` (pulse depth, usually 0–1). Increase an individual profile’s `noise` or `tone` to emphasize only that biome. `noiseInput`, `noiseMemory`, `noiseGain` tune the shared noise generator; `lunarSurfAttenuation` controls how much ordinary surf fades around Starship. Profile gains blend by world proximity.
+[`src/chat/audioConfig.ts`](src/chat/audioConfig.ts) defines `ambientSynthesis.profiles` for the **five audible biomes**; the Starship/lunar and About Me/garden biomes intentionally have no synthesized layer. Each profile has `filter` (cutoff Hz), `noise` (noise strength), `frequency` (tone Hz), `tone` (tone strength), `pulse` (cycles/second), and `modulation` (pulse depth, usually 0–1). Increase an individual profile’s `noise` or `tone` to emphasize only that biome. `noiseInput`, `noiseMemory`, and `noiseGain` tune the shared noise generator. Profile gains blend by world proximity.
 
 ## Language settings
 

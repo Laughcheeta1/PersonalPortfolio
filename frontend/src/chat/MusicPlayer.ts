@@ -8,7 +8,7 @@ export class MusicPlayer {
   get enabled(): boolean { return this.active; }
   unlock(): void {
     if (this.disposed || this.audio) return;
-    this.audio = new Audio(new URL('../../assets/music/the_smoke_decides.mp3', import.meta.url).href);
+    this.audio = new Audio(new URL('../../assets/music/party_bathroom_audio.mp3', import.meta.url).href);
     this.audio.loop = true;
     this.audio.preload = 'none';
     this.audio.volume = config.audio.musicVolume;

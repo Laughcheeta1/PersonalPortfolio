@@ -21,6 +21,7 @@ import {
   workProjects,
   workTimeline,
   type EducationEntry,
+  type EducationEntryType,
   type ProjectCard,
   type SecretPanel,
   type TimelineEntry,
@@ -30,7 +31,8 @@ import { ProjectPlanet } from './ProjectPlanet';
 import { projectPlane, nearestPlanetLimb, type Point } from './projectPointer';
 import { HobbyScene } from './HobbyScene';
 import { AwardsScene } from './AwardsScene';
-import { AwardRelic, type AwardRelicType } from './AwardRelic';
+import { AwardRelic } from './AwardRelic';
+import { awardColumns } from './awardColumns';
 import { buildTimelineLayout, formatTimelineMonth } from './timelineLayout';
 import { getLanguage, onLanguageChange, t } from '../i18n';
 
@@ -86,17 +88,21 @@ interface HoveredProject {
   placement: 'above' | 'below';
 }
 
-function ProjectHoverCard({ hover }: { hover: HoveredProject }): ReactElement {
+function ProjectHoverCard({ hover, onEnter, onLeave }: { hover: HoveredProject; onEnter: () => void; onLeave: () => void }): ReactElement {
   return (
     <aside
       className={`project-hover-card project-hover-card--${hover.placement}`}
-      id={`project-popover-${hover.project.title.replace(/\W+/g, '-').toLowerCase()}`}
+      id={`project-popover-${hover.project.id}`}
+      onBlur={onLeave}
+      onFocus={onEnter}
+      onPointerEnter={onEnter}
+      onPointerLeave={onLeave}
       role="tooltip"
       style={{ left: hover.x, top: hover.y }}
     >
-      <span className="project-hover-card__tag">{t(hover.project.tag)}</span>
       <h3>{t(hover.project.title)}</h3>
       {hover.project.paragraphs.map(paragraph => <p key={paragraph}>{t(paragraph)}</p>)}
+      {hover.project.href ? <a href={hover.project.href} rel="noreferrer" target="_blank">{t('Open project ↗')}</a> : null}
     </aside>
   );
 }
@@ -122,8 +128,21 @@ function SpaceShip({ angle, x, y, landed }: { angle: number; x: number; y: numbe
 function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string; projects: readonly ProjectCard[]; designOffset?: number }): ReactElement {
   const universeRef = useRef<HTMLDivElement>(null);
   const previousPointer = useRef<{ x: number; y: number } | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pointer, setPointer] = useState<ProjectPointer>({ x: 0, y: 0, angle: 0, visible: false, landed: false });
   const [hovered, setHovered] = useState<HoveredProject | null>(null);
+
+  const keepProjectHover = () => {
+    if (closeTimer.current !== null) clearTimeout(closeTimer.current);
+    closeTimer.current = null;
+  };
+  const scheduleProjectClose = () => {
+    keepProjectHover();
+    closeTimer.current = setTimeout(() => setHovered(null), 250);
+  };
+  useEffect(() => () => {
+    if (closeTimer.current !== null) clearTimeout(closeTimer.current);
+  }, []);
 
   const getProjection = () => {
     const universe = universeRef.current;
@@ -164,6 +183,7 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
     if (!universe) return;
     const projection = getProjection();
     if (!projection) return;
+    keepProjectHover();
     const target = element.getBoundingClientRect();
     const { x, y } = projection.toLocal({ x: clientX ?? target.left + target.width / 2, y: clientY ?? target.top });
     const popupWidth = Math.min(300, Math.max(180, universe.clientWidth - 24));
@@ -178,7 +198,8 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
   };
 
   const clearProject = (project: ProjectCard) => {
-    setHovered(current => current?.project.title === project.title ? null : current);
+    keepProjectHover();
+    closeTimer.current = setTimeout(() => setHovered(current => current?.project.id === project.id ? null : current), 250);
   };
 
   return (
@@ -192,6 +213,7 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
         onPointerLeave={() => {
           previousPointer.current = null;
           setPointer(current => ({ ...current, visible: false }));
+          keepProjectHover();
           setHovered(null);
         }}
         onPointerMove={updatePointer}
@@ -202,13 +224,13 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
         <div className="project-universe__nebula" aria-hidden="true" />
         {projects.map((project, index) => {
           const layout = projectPlanetLayouts[index % projectPlanetLayouts.length];
-          const popoverId = `project-popover-${project.title.replace(/\W+/g, '-').toLowerCase()}`;
+          const popoverId = `project-popover-${project.id}`;
           return (
             <button
-              aria-describedby={hovered?.project.title === project.title ? popoverId : undefined}
+              aria-describedby={hovered?.project.id === project.id ? popoverId : undefined}
               aria-label={t('Explore project {title}', { title: t(project.title) })}
               className="project-planet"
-              key={project.title}
+              key={project.id}
               onBlur={() => clearProject(project)}
               onFocus={event => showProject(project, event.currentTarget)}
               onPointerEnter={event => showProject(project, event.currentTarget, event.clientX, event.clientY)}
@@ -225,7 +247,7 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
             </button>
           );
         })}
-        {hovered ? <ProjectHoverCard hover={hovered} /> : null}
+        {hovered ? <ProjectHoverCard hover={hovered} onEnter={keepProjectHover} onLeave={scheduleProjectClose} /> : null}
         {pointer.visible ? <div className="space-cursor"><SpaceShip angle={pointer.angle} x={pointer.x} y={pointer.y} landed={pointer.landed} /></div> : null}
       </div>
     </section>
@@ -275,7 +297,7 @@ function ExperiencePopover({ hover, onEnter, onLeave, onDismiss }: {
       <h3>{t(hover.entry.role)}</h3>
       <strong className="timeline-hover-card__company">{t(hover.entry.company)}</strong>
       <span className="timeline-hover-card__period">{hover.entry.period}</span>
-      <p>{t(hover.entry.copy)}</p>
+      {hover.entry.copy ? <p>{t(hover.entry.copy)}</p> : null}
     </aside>
   );
 }
@@ -394,7 +416,16 @@ interface EducationConnection {
   to: { x: number; y: number };
 }
 
-const networkLayerX = (layerIndex: number): number => 10 + layerIndex * 20;
+const networkLayerX = (layerIndex: number): number => {
+  const lastLayerIndex = educationLayers.length - 1;
+  return lastLayerIndex <= 0 ? 50 : 10 + layerIndex * 80 / lastLayerIndex;
+};
+
+const educationTypeLabels: Record<EducationEntryType, string> = {
+  language: 'Language',
+  course: 'Course',
+  university: 'University',
+};
 
 function networkNodeY(nodeIndex: number, nodeCount: number): number {
   if (nodeCount <= 1) return 50;
@@ -432,7 +463,7 @@ function EducationGraph(): ReactElement {
   return (
     <>
       <div
-        aria-label={t('Education neural network. Languages feed courses, university learning, and formal education.')}
+        aria-label={t('Skills & education')}
         className="education-graph"
         data-testid="education-network"
         role="group"
@@ -454,7 +485,7 @@ function EducationGraph(): ReactElement {
         <div className="education-graph__layers">
           {educationLayers.map((layer, layerIndex) => (
             <section
-              aria-label={t('{role} education entries', { role: t(layer.role) })}
+              aria-label={t(layer.label)}
               className={`education-layer education-layer--${layer.role}`}
               data-layer-id={layer.id}
               data-role={layer.role}
@@ -496,7 +527,7 @@ function EducationGraph(): ReactElement {
                     style={{ top: `${networkNodeY(entryIndex, layer.entries.length)}%` }}
                     type="button"
                   >
-                    <span className="education-node__kind">{t(entry.type)}</span>
+                    <span className="education-node__kind">{t(educationTypeLabels[entry.type])}</span>
                     <strong title={t(entry.title)}>{t(entry.title)}</strong>
                     <span className="education-node__provider" title={t(entry.provider)}>{t(entry.provider)}</span>
                     <span className="education-node__date">{t(entry.date)}</span>
@@ -510,12 +541,12 @@ function EducationGraph(): ReactElement {
       {selected ? (
         <section className="education-graph__detail" id="education-graph-detail" aria-live="polite" aria-atomic="true">
           <div className="education-graph__detail-meta">
-            <span>{t(selected.type)}</span>
+            <span>{t(educationTypeLabels[selected.type])}</span>
             <span>{t(selected.date)}</span>
           </div>
           <h3>{t(selected.title)}</h3>
           <small>{t(selected.provider)}</small>
-          <p>{t(selected.copy)}</p>
+          {selected.copy ? <p>{t(selected.copy)}</p> : null}
         </section>
       ) : null}
     </>
@@ -558,18 +589,11 @@ function AboutPanel(): ReactElement {
   );
 }
 
-const awardRelicTypes: readonly AwardRelicType[] = ['armor', 'laurel', 'helmet', 'swords', 'shield'];
+const awardColumnLayouts = awardColumns.map(column => ({
+  left: `${column.x / 1448 * 100}%`, top: `${103 / 1086 * 100}%`, height: `${220 / 1086 * 100}%`,
+}));
 
-// Coordinates follow the five relics in the 1448 × 1086 reference artwork.
-const awardColumnLayouts = [
-  { left: '12%', top: '9%', height: '21%' },
-  { left: '30.5%', top: '18%', height: '12%' },
-  { left: '49%', top: '12%', height: '18%' },
-  { left: '68.5%', top: '17%', height: '13%' },
-  { left: '88.5%', top: '9%', height: '21%' },
-] as const;
-
-function AwardDetails({ entry, onClose }: { entry: (typeof achievements)[number]; onClose: () => void }): ReactElement {
+function AwardDetails({ entry, entries, onClose }: { entry: (typeof awardColumns)[number]; entries: typeof achievements; onClose: () => void }): ReactElement {
   return (
     <article
       aria-label={t('{title} details', { title: t(entry.title) })}
@@ -583,24 +607,38 @@ function AwardDetails({ entry, onClose }: { entry: (typeof achievements)[number]
         <button aria-label={t('Close award details')} onClick={onClose} type="button">{t('Close ×')}</button>
       </div>
       <h3 data-testid="achievement-details-title">{t(entry.title)}</h3>
-      <p data-testid="achievement-details-copy">{t(entry.copy)}</p>
-      <span className="award-details__hint">{t('Click outside to return it to its column.')}</span>
+      <ol className="award-details__list" data-testid="achievement-details-copy">
+        {entries.filter(item => item.group === entry.group).map(item => <li key={`${item.title}-${item.date}`}>
+          <strong>{t(item.title)}</strong>
+          <time dateTime={item.date}>{item.date.length === 4 ? item.date : new Intl.DateTimeFormat(getLanguage(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${item.date}-01T00:00:00Z`))}</time>
+          {item.copy ? <p>{t(item.copy)}</p> : null}
+        </li>)}
+      </ol>
     </article>
   );
 }
 
 function AwardsGrove({ entries }: { entries: readonly (typeof achievements)[number][] }): ReactElement {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const activeEntry = activeIndex === null ? null : entries[activeIndex];
-  const activeRelic = activeIndex === null ? null : awardRelicTypes[activeIndex % awardRelicTypes.length];
+  const [returning, setReturning] = useState(false);
+  const activeEntry = activeIndex === null ? null : awardColumns[activeIndex];
+  const activeRelic = activeEntry?.relic;
+  const closeAward = () => {
+    if (activeIndex === null || returning) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setActiveIndex(null);
+    } else {
+      setReturning(true);
+    }
+  };
 
   return (
     <section className={`awards-grove${activeEntry ? ' awards-grove--focused' : ''}`} aria-label={t('Awards and honors grove')} data-testid="achievement-field" onKeyDown={event => {
-      if (event.key === 'Escape') { event.stopPropagation(); setActiveIndex(null); }
+      if (event.key === 'Escape') { event.stopPropagation(); closeAward(); }
     }}>
       <AwardsScene activeIndex={activeIndex} />
-      {entries.map((entry, index) => {
-        const layout = awardColumnLayouts[index % awardColumnLayouts.length];
+      {awardColumns.map((entry, index) => {
+        const layout = awardColumnLayouts[index];
         const active = activeIndex === index;
         return (
           <div
@@ -631,14 +669,19 @@ function AwardsGrove({ entries }: { entries: readonly (typeof achievements)[numb
         );
       })}
       {activeEntry && activeRelic ? (
-        <div className="award-focus-layer" data-testid="achievement-dismiss-surface" onClick={() => setActiveIndex(null)}>
+        <div className={`award-focus-layer${returning ? ' award-focus-layer--returning' : ''}`} data-testid="achievement-dismiss-surface" onClick={closeAward}>
           <div className={`award-featured-relic award-featured-relic--${activeRelic}`} style={{
             '--award-origin-x': awardColumnLayouts[activeIndex!].left,
             '--award-origin-y': `${parseFloat(awardColumnLayouts[activeIndex!].top) + parseFloat(awardColumnLayouts[activeIndex!].height) / 2}%`,
-          } as CSSProperties} aria-hidden="true" data-achievement-id={activeEntry.title} data-state="featured" data-testid="achievement-featured">
+          } as CSSProperties} aria-hidden="true" data-achievement-id={activeEntry.title} data-state={returning ? 'returning' : 'featured'} data-testid="achievement-featured"
+            onAnimationEnd={event => {
+              if (event.animationName !== 'award-relic-return') return;
+              setActiveIndex(null);
+              setReturning(false);
+            }}>
             <AwardRelic kind={activeRelic} />
           </div>
-          <AwardDetails entry={activeEntry} onClose={() => setActiveIndex(null)} />
+          {!returning && <AwardDetails entry={activeEntry} entries={entries} onClose={closeAward} />}
         </div>
       ) : null}
     </section>
@@ -662,7 +705,7 @@ function HobbyConstellation(): ReactElement {
 
   return (
     <section
-      aria-label={t('Hobby star field')}
+      aria-label={t('Hobby field')}
       className="hobby-sky"
       data-testid="hobby-sky"
     >
@@ -691,12 +734,11 @@ function HobbyConstellation(): ReactElement {
               '--hobby-star-size': `${hobby.star.size}px`,
               '--hobby-star-x': hobby.star.x,
               '--hobby-star-y': hobby.star.y,
-              '--hobby-star-offset': `${parseFloat(hobby.star.x)}cqw`,
             } as CSSProperties}
           >
             <button
               aria-describedby={activeId === hobby.id ? `hobby-detail-${hobby.id}` : undefined}
-              aria-label={t('Hobby star {number}: {title}', { number: hobby.number, title: t(hobby.title) })}
+              aria-label={t('Hobby {number}: {title}', { number: hobby.number, title: t(hobby.title) })}
               aria-pressed={activeId === hobby.id}
               className={`hobby-star${activeId === hobby.id ? ' is-active' : ''}`}
               data-hobby-id={hobby.id}
@@ -710,9 +752,8 @@ function HobbyConstellation(): ReactElement {
             </button>
             {activeId === hobby.id ? (
               <aside aria-live="polite" className="hobby-star-detail" id={`hobby-detail-${hobby.id}`} role="tooltip" data-testid="hobby-details" tabIndex={0}>
-                <div className="hobby-star-detail__topline"><span>{hobby.number} · {t('hobby star')}</span></div>
                 <h3>{t(hobby.title)}</h3>
-                <p>{t(hobby.copy)}</p>
+                {hobby.copy ? <p>{t(hobby.copy)}</p> : null}
               </aside>
             ) : null}
           </div>

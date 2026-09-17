@@ -646,22 +646,6 @@
         "summary": "Won first place at ISA Intercolombia's hackathon.",
         "details": "Created a data-driven logistics and optimization concept for predicting powerline failures and improving routing and stock allocation.",
         "date": "2024-05-01"
-      }
-    ],
-    "honors": [
-      {
-        "id": "leadership-recognition-eia-university",
-        "title": "Recognition of Leadership — EIA University",
-        "summary": "Recognized for representing the undergraduate program in systems and computer engineering.",
-        "details": "",
-        "date": "2026-02-12"
-      },
-      {
-        "id": "award-sistecredito-hackathon-mentor-judge-4th",
-        "title": "Mentor and Judge — Sistecredito's Fourth Hackathon",
-        "summary": "Selected as mentor and judge for Sistecredito's fourth hackathon.",
-        "details": "The hackathon focused on AI agents used as debt negotiators.",
-        "date": "2025-03"
       },
       {
         "id": "honor-icpc-represented-eia-2024",
@@ -683,6 +667,22 @@
         "summary": "Represented EIA University in ICPC.",
         "details": "",
         "date": "2022"
+      }
+    ],
+    "honors": [
+      {
+        "id": "leadership-recognition-eia-university",
+        "title": "Recognition of Leadership — EIA University",
+        "summary": "Recognized for representing the undergraduate program in systems and computer engineering.",
+        "details": "",
+        "date": "2026-02-12"
+      },
+      {
+        "id": "award-sistecredito-hackathon-mentor-judge-4th",
+        "title": "Mentor and Judge — Sistecredito's Fourth Hackathon",
+        "summary": "Selected as mentor and judge for Sistecredito's fourth hackathon.",
+        "details": "The hackathon focused on AI agents used as debt negotiators.",
+        "date": "2025-03"
       },
       {
         "id": "honor-eia-deans-list-2023-02",
