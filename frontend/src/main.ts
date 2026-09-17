@@ -80,6 +80,8 @@ const music=new MusicPlayer();
 let lastAudibleVolume=music.currentVolume;
 const updateMusicVolumeDisplay=()=>{musicVolumeInput.value=String(Math.round(music.currentVolume*100));musicVolumeValue.value=`${Math.round(music.currentVolume*100)}%`;musicVolumeValue.textContent=musicVolumeValue.value;};
 updateMusicVolumeDisplay();
+const syncPartyMode=()=>atmosphere.setPartyMode(music.currentVolume>config.audio.partyVolumeThreshold);
+syncPartyMode();
 const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicControl.contains(target);
 const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>unlockAudio(document.activeElement!==musicButton));input.yaw=.18;
 const target=new THREE.Vector3(),desiredCamera=new THREE.Vector3();
@@ -107,7 +109,7 @@ let musicStarting=false;
 let musicPreference:boolean|null=null;
 function setMusicEnabled(enabled:boolean):Promise<void>{const request=music.setEnabled(enabled).catch(()=>{announce(t('Music could not play. Try enabling it again.'));}).finally(updateMusicButton);updateMusicButton();return request;}
 function unlockAudio(startMusic=true){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(startMusic&&musicPreference!==false&&!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
-function setMusicVolume(volume:number){music.setVolume(volume);if(volume>0)lastAudibleVolume=volume;updateMusicVolumeDisplay();updateMusicButton();}
+function setMusicVolume(volume:number){music.setVolume(volume);syncPartyMode();if(volume>0)lastAudibleVolume=volume;updateMusicVolumeDisplay();updateMusicButton();}
 function handleMusicVolumeInput(){const volume=Number(musicVolumeInput.value)/100;setMusicVolume(volume);if(volume===0){musicPreference=false;void setMusicEnabled(false);return;}musicPreference=true;unlockAudio(false);if(!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
 musicVolumeInput.addEventListener('input',handleMusicVolumeInput);
 // Browsers require a user gesture before any audible playback.

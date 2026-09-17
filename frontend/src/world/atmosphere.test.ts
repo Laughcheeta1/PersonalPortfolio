@@ -1,0 +1,27 @@
+import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
+import { Atmosphere } from './atmosphere';
+
+describe('party atmosphere', () => {
+  it('cycles the sky after party mode is enabled and fades back out when disabled', () => {
+    const colorDistance = (a: THREE.Color, b: THREE.Color) => Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
+    const scene = new THREE.Scene();
+    const atmosphere = new Atmosphere(scene);
+    const position = new THREE.Vector3(0, 0, 0);
+
+    atmosphere.update(position, .5);
+    const daytime = (scene.background as THREE.Color).clone();
+    atmosphere.setPartyMode(true);
+    atmosphere.update(position, .5);
+    const firstPartyColor = (scene.background as THREE.Color).clone();
+    atmosphere.update(position, .5);
+    const secondPartyColor = (scene.background as THREE.Color).clone();
+
+    expect(firstPartyColor.equals(daytime)).toBe(false);
+    expect(secondPartyColor.equals(firstPartyColor)).toBe(false);
+
+    atmosphere.setPartyMode(false);
+    for (let i = 0; i < 30; i++) atmosphere.update(position, .1);
+    expect(colorDistance(scene.background as THREE.Color, daytime)).toBeLessThan(colorDistance(firstPartyColor, daytime));
+  });
+});
