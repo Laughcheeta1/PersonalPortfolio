@@ -1,5 +1,6 @@
 export const config = {
-  player: { walkSpeed: 5, runSpeed: 10, acceleration: 10, deceleration: 13, rotationSpeed: 12, radius: .45, jumpSpeed: 8.5, gravity: 22, jumpBuffer: .12, spawn: [0, 8] as [number, number] },
+  // Main-road midpoint between the rocket/jet and network/statue junctions.
+  player: { walkSpeed: 5, runSpeed: 10, acceleration: 10, deceleration: 13, rotationSpeed: 12, radius: .45, jumpSpeed: 8.5, gravity: 22, jumpBuffer: .12, spawn: [-3.5, -0.3826266256465049] as [number, number] },
   camera: { distance: 17, height: 2, pitch: .57, minPitch: -.1, maxPitch: .57, mouseSensitivity: .005, touchSensitivity: .007, smoothing: 7, fov: 48, near: .1, far: 420 },
   companion: { followRadius: 7, chatRadius: 3.2, targetRadius: 5.25, speed: 5.8, roadSpeed: 6.8, acceleration: 7, deceleration: 10, rotationSpeed: 8, arrivalRadius: .4, guidedHold: 6, repathInterval: .6 },
   panels: { activationRadius: 8, deactivationRadius: 10, openDuration: .65, closeDuration: .3, verticalOffset: 7, rise: 3, viewportFraction: 2 / 3, viewportHeightFraction: (2 / 3) * .95, width: 660, height: 510 },
