@@ -111,9 +111,8 @@ export const workProjects: readonly ProjectCard[] = [
 
 export interface TimelineEntry {
   id: string;
-  side: 'left' | 'right';
   start: string;
-  end: string;
+  end: string | null;
   kicker: string;
   role: string;
   company: string;
@@ -125,19 +124,17 @@ export interface TimelineEntry {
 export const workTimeline: readonly TimelineEntry[] = [
   {
     id: 'stealth-startup',
-    side: 'left',
     start: '2026-03-01',
-    end: '2026-09-30',
+    end: null,
     kicker: 'Current role · companies',
-    role: 'AI Engineer',
+    role: 'Co-Founder',
     company: 'Stealth Startup · Colombia',
     period: 'March 2026 — present',
-    copy: 'Current AI Engineer role at a technology startup operating in stealth.',
+    copy: 'Co-Founder of a technology startup operating in stealth in Colombia.',
     current: true,
   },
   {
     id: 'telepatia',
-    side: 'left',
     start: '2025-08-01',
     end: '2026-02-28',
     kicker: 'Companies',
@@ -148,7 +145,6 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
   {
     id: 'data-structures-tutor',
-    side: 'left',
     start: '2024-09-01',
     end: '2025-07-31',
     kicker: 'Teaching',
@@ -159,7 +155,6 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
   {
     id: 'programming-fundamentals-tutor',
-    side: 'left',
     start: '2023-06-01',
     end: '2023-11-30',
     kicker: 'Teaching',
@@ -170,7 +165,6 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
   {
     id: 'systems-representative',
-    side: 'right',
     start: '2025-09-01',
     end: '2026-09-30',
     kicker: 'Leadership',
@@ -181,7 +175,6 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
   {
     id: 'mc2-ambassador',
-    side: 'right',
     start: '2025-03-01',
     end: '2025-09-30',
     kicker: 'Leadership & entrepreneurship',
@@ -192,7 +185,6 @@ export const workTimeline: readonly TimelineEntry[] = [
   },
   {
     id: 'nao-aeronautics',
-    side: 'right',
     start: '2023-08-01',
     end: '2025-09-30',
     kicker: 'Leadership & entrepreneurship',
@@ -493,21 +485,21 @@ export const fitnessStats: readonly FitnessStat[] = [
     id: 'deadlift',
     label: 'Deadlift',
     value: '120 kg',
-    detail: 'A heavy pull, built one session at a time.',
+    detail: '',
     accent: 'strength',
   },
   {
     id: 'squat',
     label: 'Squat',
     value: '100 kg',
-    detail: 'Leg day has entered the chat.',
+    detail: '',
     accent: 'strength',
   },
   {
     id: 'bench-press',
     label: 'Bench press',
     value: '75 kg × 2 reps',
-    detail: 'Two clean repetitions in the log.',
+    detail: '',
     accent: 'strength',
   },
   {
@@ -528,7 +520,7 @@ export const fitnessStats: readonly FitnessStat[] = [
     id: 'longest-bike-ride',
     label: 'Longest bike ride',
     value: '61 km',
-    detail: '+1,000 m elevation · after years away from a real bicycle; I haven’t touched another since JAJAJA.',
+    detail: '',
     accent: 'cycling',
   },
   {
@@ -542,26 +534,18 @@ export const fitnessStats: readonly FitnessStat[] = [
 
 export interface ProfileMemoryPanel {
   theme: string;
-  eyebrow: string;
-  icon: string;
   title: string;
   song: string;
-  videoUrl: string;
   embedUrl: string;
   story: string;
-  closing: string;
 }
 
 export const profileMemory: ProfileMemoryPanel = {
   theme: 'secret-garden',
-  eyebrow: 'fun fact · behind the profile',
-  icon: '✿',
   title: 'Fun fact:',
   song: 'Baile Inolvidable - Bad Bunny',
-  videoUrl: 'https://www.youtube.com/watch?v=a1Femq4NPxs&list=RDa1Femq4NPxs&start_radio=1',
   embedUrl: 'https://www.youtube-nocookie.com/embed/a1Femq4NPxs?list=RDa1Femq4NPxs&start=1',
-  story: 'I paid 366 USD just to be able to go to his concert and hear it live.',
-  closing: 'I would do it again.',
+  story: 'I paid 366 USD just to be able to go to his concert and hear it live ... I would do it again.',
 };
 
 export interface SecretPanel {
@@ -581,16 +565,16 @@ export interface SecretPanel {
 export const secretPanels: Readonly<Record<string, SecretPanel>> = {
   starship: {
     theme: 'secret-launch',
-    eyebrow: 'classified · behind the launchpad',
+    eyebrow: '',
     icon: '🚀',
     title: 'Ship Baby Ship!',
-    copy: "I loved so much Telpatia's CEO motto that I now have it as my phone wallpaper.",
+    copy: "I loved so much Telepatia's CEO motto that I now have it as my phone wallpaper.",
     signature: '',
   },
   f22: {
     theme: 'secret-flight',
-    eyebrow: 'classified · turbulence ahead',
-    icon: '✈︎',
+    eyebrow: '',
+    icon: '',
     title: 'I live by two sacred phrases in my life:',
     copy: '1. Either you come and give it all, or do not come',
     signature: '2. Not really a phrase, but rather this image:',
@@ -601,7 +585,7 @@ export const secretPanels: Readonly<Record<string, SecretPanel>> = {
   },
   'neural-network': {
     theme: 'secret-node',
-    eyebrow: 'private connection',
+    eyebrow: '',
     icon: '✺',
     title: 'The infinite Why.',
     copy: 'The thing I love most about AI is not the productivity and the possibility of just letting my wildest dreams come true quicker, but rather that I can finally ask infinite “Why” questions at someone, and that someone not getting angry at me for questioning everything.',
@@ -609,7 +593,7 @@ export const secretPanels: Readonly<Record<string, SecretPanel>> = {
   },
   'victory-statue': {
     theme: 'secret-pedestal',
-    eyebrow: 'inscription on the hidden side',
+    eyebrow: '',
     icon: '♛',
     title: 'A different kind of achievement.',
     copy: "In reality my greatest achievement comes to me when I find myself saying something that an old friend, or person I used to know, said. It reminds me that a small piece of everyone I've loved still lives with me, regardless of anything that may have happened between us.",
@@ -618,19 +602,18 @@ export const secretPanels: Readonly<Record<string, SecretPanel>> = {
   },
   'squat-rack': {
     theme: 'secret-training',
-    eyebrow: 'personal stats · still growing',
-    icon: '↗',
+    eyebrow: '',
+    icon: '',
     title: 'Progress, not perfection.',
     copy: 'I want to use this panel to show a little bit about my stats. There is still a lot of room to grow, but I am happy with what I have accomplished:',
-    signature: 'keep showing up',
+    signature: '',
   },
   'pergamon-library': {
     theme: 'secret-archive',
-    eyebrow: 'sealed archive · do not cite',
+    eyebrow: '',
     icon: '📜',
-    title: 'A desk full of ideas.',
-    copy: 'My desk is constantly filled with post-it notes of things I have to do, and learning of things I have done.',
-    additionalCopy: 'This is genuinely a problem, there are way too many post-its!',
+    title: 'I WILL BE REMEMBERED BY HISTORY',
+    copy: '',
     signature: '',
   },
 };

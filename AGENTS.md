@@ -9,6 +9,8 @@
 
 ## Lessons
 
+- Preserve the semantic encoding of a requested visualization: on a duration timeline, card positions and heights must map to actual dates; balancing layout must not replace that axis with equal-height rows.
+
 - Treat supplied visual references as acceptance criteria, not merely thematic inspiration. Review rendered assets against their silhouettes, materials, and distinctive details before describing them as finished; an initial primitive blockout is not reference fidelity.
 - Keep character roles explicit when applying visual changes: changing the visitor avatar does not implicitly change the companion.
 - Treat an explicit UI-preservation request as an immutability boundary: preserve existing visual design and 3D model geometry, and limit changes to data or service wiring unless the user explicitly expands the scope.
@@ -24,3 +26,6 @@
 - For hover-driven UI, keep the initial state neutral and do not invoke selection or activation during initialization unless it is explicitly requested.
 - For timeline layouts with a shared axis, reserve a clear label gutter and verify stacking order so date markers remain readable beside adjacent content.
 - Treat explicit 3D model immutability as a hard boundary: renderer, panel, and UI changes must not modify procedural model geometry, materials, proportions, or model-generation files.
+
+- Use visual references as guidance for frontend recreations; do not embed supplied images as panel backdrops unless the user explicitly requests image placement.
+- Adapt reference compositions to the existing panel layout; portrait references must not force narrow portrait framing when the panel calls for a full-width scene.

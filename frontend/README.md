@@ -93,9 +93,13 @@ each project is represented by an unlabeled planet-like asteroid, and hovering
 or focusing one shows its project details in a floating card while a CSS/SVG
 spaceship follows the mouse.
 
-The Work panel uses a date-scaled timeline. Hovering a role card opens its full
-experience popup beside the pointer; there is no persistent “Select a role”
-detail panel.
+The Work panel positions each experience from its end date to its start date on a
+shared vertical date axis. Overlapping experiences are balanced between both sides
+and placed in non-overlapping lanes with equal-width cards. The current month and
+active experiences advance with the calendar. Add
+entries to `workTimeline` without assigning a side or position; mark ongoing roles
+with `current: true` and `end: null`. Hovering or focusing a card opens its full
+experience popup, which stays open while the pointer moves into it for scrolling.
 
 The Awards panel is presented as an olive grove with five Roman columns and
 distinctive relics representing the recognitions. Clicking a relic brings it

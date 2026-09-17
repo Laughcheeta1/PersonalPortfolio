@@ -122,7 +122,7 @@ function frame(now:number){
   if(!dialog.open){if(started)player.update(input,dt,time);companion.update(player.model.position,dt,time,chat.speech.snapshot.state!=='idle');}
   const mouth=companion.model.getObjectByName('speakingMouth');if(mouth){mouth.visible=chat.speech.snapshot.state==='displaying'&&!config.animation.reducedMotion;mouth.scale.y=.045*(.4+Math.abs(Math.sin(time*config.animation.speechFrequency))*.6);}
   bugHunt.update(dt,time);
-  cameraUpdate(dt);atmosphere.update(player.model.position,dt);environment.update(time,player.model.position);panels.update(player.model.position,camera,dt);chat.update(player.model.position,companion.model.position,camera,dt);
+  cameraUpdate(dt);atmosphere.update(player.model.position,dt);environment.update(time,player.model.position);panels.update(player.model.position,camera,dt);chat.update(player.model.position,companion.model.position,camera,dt,Boolean(panels.active));
   ambientAudio.update(player.model.position);
   if(panels.active)discovered.add(panels.active.id);
   document.querySelector('#discovered')!.textContent=`${discovered.size} / ${landmarks.length}`;

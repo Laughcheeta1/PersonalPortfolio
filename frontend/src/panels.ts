@@ -12,6 +12,13 @@ export function choosePanel(player:{x:number;z:number},current:Landmark|null):La
   if(current&&distance(player,{x:current.position[0],z:current.position[1]})<=config.panels.deactivationRadius)return current;
   return landmarks.filter(l=>distance(player,{x:l.position[0],z:l.position[1]})<=l.proximityRadius).sort((a,b)=>distance(player,{x:a.position[0],z:a.position[1]})-distance(player,{x:b.position[0],z:b.position[1]}))[0]??null;
 }
+export function panelScaleForViewport(distanceToPanel:number,fov:number,viewportWidth:number,viewportHeight:number) {
+  const availableWidth=Math.max(1,viewportWidth-2*config.ui.viewportPadding)*config.panels.viewportFraction;
+  const availableHeight=Math.max(1,viewportHeight-2*config.ui.viewportPadding)*config.panels.viewportHeightFraction;
+  const projectedPanelHeight=Math.min(availableHeight,availableWidth*config.panels.height/config.panels.width);
+  const visibleWorldHeight=distanceToPanel*2*Math.tan(THREE.MathUtils.degToRad(fov/2));
+  return projectedPanelHeight*visibleWorldHeight/(viewportHeight*config.panels.height);
+}
 export function isolatePanel(element:HTMLElement) {
   for(const event of ['pointerdown','pointermove','pointerup','wheel','keydown','keyup'])element.addEventListener(event,e=>e.stopPropagation());
 }
@@ -52,11 +59,8 @@ export class PanelSystem {
       const p=config.animation.reducedMotion?Number(open):s.progress;
       const eased=open?1+2.70158*(p-1)**3+1.70158*(p-1)**2:p*p;
       s.group.position.set(s.landmark.position[0],config.panels.verticalOffset-config.panels.rise*(1-eased),s.landmark.position[1]);
-      // Keep text legible on portrait screens while retaining a fixed world orientation.
-      const mobile=window.innerWidth<config.ui.mobileBreakpoint;
-      const width=mobile?config.panels.mobileWidth:config.panels.width;
-      s.elements.forEach(el=>{el.style.width=`${width}px`;});
-      const scale=mobile?Math.min(.025,(window.innerWidth-36)*camera.position.distanceTo(s.group.position)*2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/(window.innerHeight*width)):config.panels.scale;
+      // Fill a two-thirds viewport box while retaining the panel's world orientation.
+      const scale=panelScaleForViewport(camera.position.distanceTo(s.group.position),camera.fov,window.innerWidth,window.innerHeight);
       s.group.scale.setScalar(scale*Math.max(.001,eased));s.group.updateMatrixWorld(true);
       const toward=camera.position.clone().sub(s.group.position),normal=new THREE.Vector3(Math.sin(s.landmark.rotation),0,Math.cos(s.landmark.rotation));
       const front=toward.dot(normal)>0;

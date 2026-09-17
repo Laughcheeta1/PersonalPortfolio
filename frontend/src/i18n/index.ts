@@ -32,7 +32,7 @@ const spanish: Record<string, string> = {
   'Projects':'Proyectos','PERSONAL PROJECTS':'PROYECTOS PERSONALES',
   'Work experience':'Experiencia laboral','WORK & LEADERSHIP':'TRABAJO Y LIDERAZGO',
   'Skills & education':'Habilidades y educación','SKILLS & LEARNING':'HABILIDADES Y APRENDIZAJE',
-  'About me':'Sobre mí','PROFILE & CURIOSITY':'PERFIL Y CURIOSIDAD',
+  'About me':'Sobre mí','PROFILE':'PERFIL',
   'Honors & awards':'Honores y premios','ACHIEVEMENTS':'LOGROS',
   'Hobbies':'Pasatiempos','LIFE BEYOND CODE':'VIDA MÁS ALLÁ DEL CÓDIGO',
   'Library of Pergamon':'Biblioteca de Pérgamo','EMPIRE CONSTRUCTION IN PROGRESS':'IMPERIO EN CONSTRUCCIÓN',

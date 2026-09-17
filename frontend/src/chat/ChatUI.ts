@@ -63,10 +63,10 @@ export class ChatUI {
     this.comic.textContent=snapshot.text;this.comic.scrollTop=this.comic.scrollHeight;this.log.scrollTop=this.log.scrollHeight;
     if(snapshot.state==='finished')this.live=null;
   }
-  update(player:THREE.Vector3,companion:THREE.Vector3,camera:THREE.Camera,dt:number){
+  update(player:THREE.Vector3,companion:THREE.Vector3,camera:THREE.Camera,dt:number,suppressed=false){
     this.speech.tick(dt);this.near=Math.hypot(player.x-companion.x,player.z-companion.z)<=config.companion.chatRadius;
     const talking=this.speech.snapshot.state!=='idle';this.element.classList.toggle('is-far',!this.near);
-    const visible=this.near||talking;this.element.style.visibility=visible?'visible':'hidden';this.element.style.pointerEvents=visible?'auto':'none';this.element.inert=!visible;
+    const visible=!suppressed&&(this.near||talking);this.element.style.visibility=visible?'visible':'hidden';this.element.style.pointerEvents=visible?'auto':'none';this.element.inert=!visible;
     this.object.position.copy(companion).add(new THREE.Vector3(0,this.near?config.ui.chatHeight:config.ui.speechHeight,0));this.object.quaternion.copy(camera.quaternion);
     if(camera instanceof THREE.PerspectiveCamera){
       const distance=camera.position.distanceTo(this.object.position),worldPerPixel=distance*2*Math.tan(THREE.MathUtils.degToRad(camera.fov/2))/innerHeight;

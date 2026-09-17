@@ -5,7 +5,7 @@ import { config } from './config';
 import { landmarks } from './world/registry';
 import { entrance, guidedRoute, localRoute, navigation, segmentClear, shortestPath } from './world/navigation';
 import { moveWithCollisions, onIsland, turn } from './world/physics';
-import { choosePanel } from './panels';
+import { choosePanel, panelScaleForViewport } from './panels';
 import { biomeWeights } from './world/atmosphere';
 import { biomes } from './world/registry';
 import { createEnvironment } from './world/environment';
@@ -36,6 +36,22 @@ describe('service contracts', () => {
 });
 
 describe('panel selection and biome blending', () => {
+  it.each([
+    { width: 1920, height: 1080 },
+    { width: 390, height: 844 },
+    { width: 844, height: 390 },
+  ])('fits panels inside two-thirds of a $width x $height viewport', ({ width, height }) => {
+    const distance = 15;
+    const scale = panelScaleForViewport(distance, config.camera.fov, width, height);
+    const pixelsPerWorldUnit = height / (distance * 2 * Math.tan(config.camera.fov * Math.PI / 360));
+    const panelWidth = config.panels.width * scale * pixelsPerWorldUnit;
+    const panelHeight = config.panels.height * scale * pixelsPerWorldUnit;
+    const availableWidth = (width - 2 * config.ui.viewportPadding) * config.panels.viewportFraction;
+    const availableHeight = (height - 2 * config.ui.viewportPadding) * config.panels.viewportHeightFraction;
+    expect(panelWidth).toBeLessThanOrEqual(availableWidth + .001);
+    expect(panelHeight).toBeLessThanOrEqual(availableHeight + .001);
+    expect(Math.max(panelWidth / availableWidth, panelHeight / availableHeight)).toBeCloseTo(1);
+  });
   it('retains an open panel in the hysteresis band, then closes beyond it', () => {
     const landmark = landmarks[0];
     const point = (offset: number) => ({ x: landmark.position[0], z: landmark.position[1] - offset });
