@@ -221,6 +221,10 @@ try {
   assert.equal(await node.getAttribute('aria-pressed'), 'true');
   assert.match(await panel.locator('.education-graph__detail').textContent(), /Escuela de Ingeniería de Antioquia/);
   assert.ok(await panel.locator('.education-connection.is-active').count() > 0);
+  await panel.locator('.education-graph').hover({ position: { x: 2, y: 2 } });
+  assert.equal(await panel.locator('.education-graph__detail').count(), 0, 'Hover details close when the pointer leaves an unselected card.');
+  assert.equal(await node.getAttribute('aria-pressed'), 'false');
+  await node.hover();
   await node.click();
   const lockedDetail = await panel.locator('.education-graph__detail p').textContent();
   assert.equal(lockedDetail, 'University degree in Systems Engineering, in progress at Escuela de Ingeniería de Antioquia.');
@@ -229,6 +233,11 @@ try {
   assert.equal(await node.getAttribute('data-locked'), 'true');
   assert.equal(await node.getAttribute('aria-pressed'), 'true');
   assert.equal(await panel.locator('.education-graph__detail p').textContent(), lockedDetail);
+  await panel.locator('.education-graph').hover({ position: { x: 2, y: 2 } });
+  assert.equal(await panel.locator('.education-graph__detail p').textContent(), lockedDetail, 'Selected details remain after the pointer leaves the card.');
+  await node.click();
+  assert.equal(await panel.locator('.education-graph__detail').count(), 0, 'Clicking the selected card again deselects it.');
+  assert.equal(await node.getAttribute('aria-pressed'), 'false');
   console.log('PASS: education neural network has fourteen credentials plus two language inputs in five capped layers with accessible details.');
 
   await page.evaluate(() => window.__visit(2, 'back'));

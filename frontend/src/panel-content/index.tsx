@@ -473,14 +473,25 @@ function EducationGraph(): ReactElement {
                     data-testid="education-node"
                     key={entry.id}
                     onClick={() => {
-                      setSelectedId(entry.id);
-                      setLockedId(entry.id);
+                      const isLocked = lockedId === entry.id;
+                      setSelectedId(isLocked ? null : entry.id);
+                      setLockedId(isLocked ? null : entry.id);
+                    }}
+                    onBlur={() => {
+                      if (lockedId === null) {
+                        setSelectedId(current => current === entry.id ? null : current);
+                      }
                     }}
                     onFocus={() => {
                       if (lockedId === null) setSelectedId(entry.id);
                     }}
                     onPointerEnter={event => {
                       if (event.pointerType === 'mouse' && lockedId === null) setSelectedId(entry.id);
+                    }}
+                    onPointerLeave={event => {
+                      if (event.pointerType === 'mouse' && lockedId === null) {
+                        setSelectedId(current => current === entry.id ? null : current);
+                      }
                     }}
                     style={{ top: `${networkNodeY(entryIndex, layer.entries.length)}%` }}
                     type="button"
