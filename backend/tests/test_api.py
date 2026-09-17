@@ -101,9 +101,15 @@ async def test_chat_route_validates_structured_provider_reply() -> None:
     assert provider.messages[0]["role"] == "system"
     assert "<portfolio_guide>" in provider.messages[0]["content"]
     assert "NAO Aeronautics" in provider.messages[0]["content"]
-    assert "Legal_IA" in provider.messages[0]["content"]
+    assert "Telepatia AI" in provider.messages[0]["content"]
+    assert "Employee Absence Management" in provider.messages[0]["content"]
     assert "Review VS Code Extension" in provider.messages[0]["content"]
-    assert "do not append category" in provider.messages[0]["content"]
+    assert "Legal_IA" not in provider.messages[0]["content"]
+    assert "Be proactive" in provider.messages[0]["content"]
+    assert "pergamon-library" in provider.messages[0]["content"]
+    assert "<secret_panels>" not in provider.messages[0]["content"]
+    assert "Baile Inolvidable" not in provider.messages[0]["content"]
+    assert "I WILL BE REMEMBERED BY HISTORY" not in provider.messages[0]["content"]
     assert "<conversation_messages>" in provider.messages[1]["content"]
 
 

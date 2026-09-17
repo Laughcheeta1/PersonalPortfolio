@@ -8,6 +8,8 @@ on:
     paths:
       - frontend/**
       - backend/**
+      - infra/tailnet-db-proxy/**
+      - infra/deploy/**
       - package.json
       - pnpm-lock.yaml
       - pnpm-workspace.yaml
@@ -49,6 +51,8 @@ jobs:
               - 'nx.json'
             backend:
               - 'backend/**'
+              - 'infra/tailnet-db-proxy/**'
+              - 'infra/deploy/**'
 
   frontend:
     name: Test and build frontend
@@ -189,13 +193,35 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Guard against tracked environment files
+        run: |
+          set -euo pipefail
+          tracked_env_files="$(git ls-files | awk '
+              ((/\/\.env($|\.)/ || /^\.env($|\.)/ || /\.env$/) &&
+                $0 !~ /\.example$/ && $0 !~ /\.example\.env$/) { print }
+            ')"
+          if [[ -n "${tracked_env_files}" ]]; then
+            echo "::error::A non-example environment file is tracked. Remove it before deploying."
+            printf '%s\n' "${tracked_env_files}"
+            exit 1
+          fi
+
       - name: Validate deployment configuration
         env:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_REGION: ${{ vars.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
           CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
           GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
           WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+          TAILSCALE_DB_HOST: ${{ vars.TAILSCALE_DB_HOST }}
+          TAILSCALE_DB_PORT: ${{ vars.TAILSCALE_DB_PORT }}
+          TAILSCALE_SOCKS_PORT: ${{ vars.TAILSCALE_SOCKS_PORT }}
+          LOCAL_DB_PROXY_PORT: ${{ vars.LOCAL_DB_PROXY_PORT }}
+          PROXY_HEALTH_PORT: ${{ vars.PROXY_HEALTH_PORT }}
+          TS_HOSTNAME: ${{ vars.TS_HOSTNAME }}
           OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
           OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
           OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
@@ -206,9 +232,18 @@ jobs:
           for variable in \
             GCP_PROJECT_ID \
             GCP_REGION \
+            ARTIFACT_REGISTRY_REPOSITORY \
             CLOUD_RUN_SERVICE \
             GCP_SERVICE_ACCOUNT \
             WIF_PROVIDER \
+            DATABASE_URL \
+            TS_AUTHKEY \
+            TAILSCALE_DB_HOST \
+            TAILSCALE_DB_PORT \
+            TAILSCALE_SOCKS_PORT \
+            LOCAL_DB_PROXY_PORT \
+            PROXY_HEALTH_PORT \
+            TS_HOSTNAME \
             OLLAMA_BASE_URL \
             OLLAMA_MODEL \
             OLLAMA_TIMEOUT_SECONDS \
@@ -243,11 +278,49 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy backend source to Cloud Run
+      - name: Set up Python for manifest rendering
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv for manifest rendering
+        uses: astral-sh/setup-uv@v6
+
+      - name: Build backend and Tailscale sidecar images
         env:
           GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
           GCP_REGION: ${{ vars.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          backend_image="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}/personal-portfolio-backend:${IMAGE_TAG}"
+          proxy_image="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}/tailnet-db-proxy:${IMAGE_TAG}"
+          gcloud builds submit backend \
+            --project "${GCP_PROJECT_ID}" \
+            --tag "${backend_image}" \
+            --quiet
+          gcloud builds submit infra/tailnet-db-proxy \
+            --project "${GCP_PROJECT_ID}" \
+            --tag "${proxy_image}" \
+            --quiet
+
+      - name: Render and deploy backend with Tailscale sidecar
+        env:
+          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ vars.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
           CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          IMAGE_TAG: ${{ github.sha }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+          TAILSCALE_DB_HOST: ${{ vars.TAILSCALE_DB_HOST }}
+          TAILSCALE_DB_PORT: ${{ vars.TAILSCALE_DB_PORT }}
+          TAILSCALE_SOCKS_PORT: ${{ vars.TAILSCALE_SOCKS_PORT }}
+          LOCAL_DB_PROXY_PORT: ${{ vars.LOCAL_DB_PROXY_PORT }}
+          PROXY_HEALTH_PORT: ${{ vars.PROXY_HEALTH_PORT }}
+          TS_HOSTNAME: ${{ vars.TS_HOSTNAME }}
           OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
           OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
           OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
@@ -255,14 +328,18 @@ jobs:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
           set -euo pipefail
-          env_vars="^|||^OLLAMA_BASE_URL=${OLLAMA_BASE_URL}"
-          env_vars="${env_vars}|||OLLAMA_MODEL=${OLLAMA_MODEL}"
-          env_vars="${env_vars}|||OLLAMA_TIMEOUT_SECONDS=${OLLAMA_TIMEOUT_SECONDS}"
-          env_vars="${env_vars}|||CORS_ORIGINS=[\"${ALLOWED_CORS_ORIGIN}\"]"
-          env_vars="${env_vars}|||OLLAMA_API_KEY=${OLLAMA_API_KEY}"
-          gcloud run deploy "${CLOUD_RUN_SERVICE}" \
+          umask 077
+          manifest="$(mktemp "${RUNNER_TEMP}/personal-portfolio-backend.XXXXXX.json")"
+          trap 'rm -f -- "${manifest}"' EXIT
+          uv run --no-project python infra/deploy/render_cloud_run_manifest.py \
+            --output "${manifest}"
+          gcloud run services replace "${manifest}" \
             --project "${GCP_PROJECT_ID}" \
             --region "${GCP_REGION}" \
-            --source ./backend \
-            --allow-unauthenticated \
-            --set-env-vars "${env_vars}"
+            --quiet
+          gcloud run services add-iam-policy-binding "${CLOUD_RUN_SERVICE}" \
+            --project "${GCP_PROJECT_ID}" \
+            --region "${GCP_REGION}" \
+            --member="allUsers" \
+            --role="roles/run.invoker" \
+            --quiet

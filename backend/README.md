@@ -65,17 +65,33 @@ uv run pytest
 
 The [`deploy.yml`](../.github/workflows/deploy.yml) workflow is the repository's
 single deployment workflow. It uses the `dorny/paths-filter` action to identify
-applications, then runs backend tests and deploys the `backend/` source
-directly to Cloud Run only when backend files changed. The `Procfile` supplies
-the FastAPI/Uvicorn
-entrypoint. The workflow can also be started manually. The `backend` GitHub
-environment must provide:
+applications, runs backend tests, builds the backend and the reusable
+Tailscale userspace proxy images with Cloud Build, and replaces a two-container
+Cloud Run service only when backend or deployment files changed. The workflow
+can also be started manually.
 
-- Actions secrets: `GCP_WORKLOAD_IDENTITY_PROVIDER`, `OLLAMA_API_KEY`, and
-  `ALLOWED_CORS_ORIGIN`.
-- Actions variables: `GCP_PROJECT_ID`, `GCP_REGION`,
-  `CLOUD_RUN_SERVICE`, `GCP_SERVICE_ACCOUNT`, `OLLAMA_BASE_URL`,
-  `OLLAMA_MODEL`, and `OLLAMA_TIMEOUT_SECONDS`.
+The app container listens on Cloud Run port `8080`. The `tailnet` sidecar starts
+`tailscaled --tun=userspace-networking`, exposes a local SOCKS5 listener, and
+forwards `127.0.0.1:15432` to the configured PostgreSQL endpoint through the
+tailnet. Cloud Run starts the app only after the sidecar's `/healthz` probe can
+reach that endpoint. The app receives a database URL rewritten to
+`127.0.0.1:15432`; it never connects directly to the remote Tailscale address.
+
+The `backend` GitHub environment must provide these secrets:
+
+- `GCP_WORKLOAD_IDENTITY_PROVIDER`
+- `DATABASE_URL` (the PostgreSQL URL containing the database credentials)
+- `TS_AUTHKEY` (a reusable, preferably ephemeral Tailscale auth key)
+- `OLLAMA_API_KEY`
+- `ALLOWED_CORS_ORIGIN`
+
+It must provide these variables:
+
+- `GCP_PROJECT_ID`, `GCP_REGION`, `ARTIFACT_REGISTRY_REPOSITORY`,
+  `CLOUD_RUN_SERVICE`, and `GCP_SERVICE_ACCOUNT`
+- `TAILSCALE_DB_HOST`, `TAILSCALE_DB_PORT`, `TAILSCALE_SOCKS_PORT`,
+  `LOCAL_DB_PROXY_PORT`, `PROXY_HEALTH_PORT`, and `TS_HOSTNAME`
+- `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and `OLLAMA_TIMEOUT_SECONDS`
 
 Set `ALLOWED_CORS_ORIGIN` to the exact deployed Pages origin, without a path
 or trailing slash, for example `https://laughcheeta1.github.io`. The workflow
@@ -84,12 +100,20 @@ rejects browser preflight requests from other origins. CORS controls browser
 cross-origin access; it is not API authentication. The Cloud Run service must
 be publicly invokable because the browser calls it from GitHub Pages.
 
-Source deployment requires Cloud Run Source Developer, Service Usage Consumer,
-and Service Account User permissions for the deployer, plus the Cloud Run
-Builder permission for the Cloud Build service account. Because the workflow
-uses `--allow-unauthenticated`, the deployer also needs permission to set the
-service IAM policy, typically through Cloud Run Admin. Enable the Cloud Run
-and Cloud Build APIs in the Google Cloud project.
+For local development or manifest tests, `backend/.env` and
+`backend/.env.deploy` are private, owner-readable-only files. They are ignored
+by Git and are not read by CI. Production deployment is intentionally handled
+only by the GitHub Actions workflow above. The workflow receives credentials
+from the `backend` environment, keeps the rendered manifest in a `0600`
+runner-temporary file, deletes it after deployment, and sends `TS_AUTHKEY`
+only to the `tailnet` container. Both Cloud Build contexts exclude local env
+files as an additional safeguard.
+
+The deployment identity needs permission to create Cloud Build builds, push to
+Artifact Registry, replace Cloud Run services, use the runtime service account,
+and set the public Cloud Run invoker policy. Enable the Cloud Run, Cloud Build,
+and Artifact Registry APIs in the Google Cloud project. The Cloud Build service
+account also needs permission to push the two images.
 
 ## Bug hunt scores
 

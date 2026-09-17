@@ -2,10 +2,18 @@ node_modules/
 frontend/dist/
 frontend/test-results/
 frontend/playwright-report/
-backend/.env
 backend/.venv/
+**/__pycache__/
 backend/**/__pycache__/
 backend/**/*.pyc
-frontend/.env
+infra/cloudrun/*.rendered.json
 .mypy_cache/
 .nx/
+
+# Local environment files. Checked-in examples remain visible.
+.env
+*.env
+.env.*
+!**/.env.example
+!**/.env.*.example
+!**/*.example.env
