@@ -4,7 +4,7 @@ import { config } from '../config';
 import { Atmosphere } from './atmosphere';
 
 describe('party atmosphere', () => {
-  it('cycles the sky after party mode is enabled and fades back out when disabled', () => {
+  it('switches the sky on beat events and fades back out when disabled', () => {
     const colorDistance = (a: THREE.Color, b: THREE.Color) => Math.hypot(a.r - b.r, a.g - b.g, a.b - b.b);
     const scene = new THREE.Scene();
     const atmosphere = new Atmosphere(scene);
@@ -16,7 +16,8 @@ describe('party atmosphere', () => {
     atmosphere.update(position, .1);
     const firstPartyColor = (scene.background as THREE.Color).clone();
     const firstPartyLight = atmosphere.sun.color.clone();
-    atmosphere.update(position, .5);
+    atmosphere.triggerPartyBeat();
+    atmosphere.update(position, .016);
     const secondPartyColor = (scene.background as THREE.Color).clone();
     const secondPartyLight = atmosphere.sun.color.clone();
 

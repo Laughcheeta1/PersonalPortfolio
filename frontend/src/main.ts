@@ -131,6 +131,7 @@ const bugHunt=new BugHunt(scene,app,player,renderer.domElement,()=>started&&!dia
 const discovered=new Set<LandmarkId>();let previous=performance.now(),time=0;
 function frame(now:number){
   const dt=Math.min((now-previous)/1000,config.performance.maxDelta);previous=now;time+=dt;
+  if(music.update(dt))atmosphere.triggerPartyBeat();
   if(!dialog.open){if(started)player.update(input,dt,time);companion.update(player.model.position,dt,time,chat.speech.snapshot.state!=='idle');}
   const mouth=companion.model.getObjectByName('speakingMouth');if(mouth){mouth.visible=chat.speech.snapshot.state==='displaying'&&!config.animation.reducedMotion;mouth.scale.y=.045*(.4+Math.abs(Math.sin(time*config.animation.speechFrequency))*.6);}
   bugHunt.update(dt,time);

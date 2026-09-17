@@ -12,6 +12,8 @@ function audioHarness() {
   const sources: Array<{ stop: ReturnType<typeof vi.fn> }> = [];
   const gains: Array<{ gain: { value: number; setValueAtTime: ReturnType<typeof vi.fn>; setTargetAtTime: ReturnType<typeof vi.fn>; linearRampToValueAtTime: ReturnType<typeof vi.fn>; cancelScheduledValues: ReturnType<typeof vi.fn> } }> = [];
   const parameter = () => ({ value: 0, setValueAtTime: vi.fn(), setTargetAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), cancelScheduledValues: vi.fn() });
+  const analyser = { fftSize: 0, frequencyBinCount: 8, smoothingTimeConstant: 0, connect: vi.fn(), disconnect: vi.fn(), getByteFrequencyData: vi.fn((data: Uint8Array) => data.fill(0)) };
+  const mediaSource = { connect: vi.fn(), disconnect: vi.fn() };
   const context = {
     currentTime: 0, state: 'running', sampleRate: 100, destination: {}, resume: vi.fn().mockResolvedValue(undefined), close: vi.fn().mockResolvedValue(undefined),
     decodeAudioData: vi.fn().mockResolvedValue({}),
@@ -19,9 +21,11 @@ function audioHarness() {
     createBufferSource: vi.fn(() => { const source = { connect: vi.fn(), disconnect: vi.fn(), start: vi.fn(), stop: vi.fn(), playbackRate: { value: 1 } }; sources.push(source); return source; }),
     createGain: vi.fn(() => { const gain = { gain: parameter(), connect: vi.fn(), disconnect: vi.fn() }; gains.push(gain); return gain; }),
     createBiquadFilter: vi.fn(() => ({ frequency: parameter(), connect: vi.fn(), disconnect: vi.fn() })),
+    createMediaElementSource: vi.fn(() => mediaSource),
+    createAnalyser: vi.fn(() => analyser),
   };
   vi.stubGlobal('AudioContext', vi.fn(function () { return context; }));
-  return { context, sources, gains };
+  return { context, sources, gains, analyser };
 }
 
 describe('sampled speech audio', () => {
@@ -84,6 +88,24 @@ describe('optional music', () => {
     audio.play.mockRejectedValueOnce(new Error('Playback unavailable'));
     await expect(music.setEnabled(true)).rejects.toThrow('Playback unavailable');
     expect(music.enabled).toBe(false);
+    music.dispose();
+  });
+
+  it('detects low-frequency onsets with an adaptive energy baseline', async () => {
+    const { analyser } = audioHarness();
+    let level = 0;
+    analyser.getByteFrequencyData.mockImplementation(data => data.fill(level));
+    const audio = { loop: false, preload: '', muted: false, volume: 0, play: vi.fn().mockResolvedValue(undefined), pause: vi.fn(), removeAttribute: vi.fn(), load: vi.fn() };
+    vi.stubGlobal('Audio', vi.fn(function () { return audio; }));
+    const music = new MusicPlayer(); music.unlock(); await music.setEnabled(true);
+
+    level = 100;
+    expect(music.update(.016)).toBe(true);
+    expect(music.update(.016)).toBe(false);
+    level = 0;
+    for (let i = 0; i < 20; i++) music.update(.02);
+    level = 220;
+    expect(music.update(.2)).toBe(true);
     music.dispose();
   });
 });

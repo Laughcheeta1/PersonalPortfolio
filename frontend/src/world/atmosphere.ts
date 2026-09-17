@@ -12,7 +12,7 @@ export class Atmosphere {
   private cloudMaterial=new THREE.MeshBasicMaterial({color:'#fff9e9',transparent:true,opacity:.85,depthWrite:false,fog:false});
   private starMaterial=new THREE.PointsMaterial({color:'#e4f1ff',size:.45,transparent:true,opacity:0,depthWrite:false,fog:false});
   private partyMode=false;
-  private partyTime=0;
+  private partyColorIndex=0;
   private readonly normalCloudColor=new THREE.Color('#fff9e9');
   private readonly normalStarColor=new THREE.Color('#e4f1ff');
   private readonly partySkyColor=new THREE.Color();
@@ -42,15 +42,17 @@ export class Atmosphere {
   setPartyMode(enabled:boolean) {
     if(this.partyMode===enabled)return;
     this.partyMode=enabled;
-    if(!enabled)this.partyTime=0;
+    this.partyColorIndex=0;
+  }
+  triggerPartyBeat() {
+    if(this.partyMode&&!config.animation.reducedMotion)this.partyColorIndex=(this.partyColorIndex+1)%config.atmosphere.partyLightPalette.length;
   }
   update(position:THREE.Vector3,dt:number) {
     const {base,weights}=biomeWeights(position), sky=new THREE.Color(config.atmosphere.sky).multiplyScalar(base),light=new THREE.Color(config.atmosphere.sunColor).multiplyScalar(base);
     let fog=config.atmosphere.fog*base,ambient=config.atmosphere.ambient*base;
     for(const b of weights){sky.add(new THREE.Color(b.biome.sky).multiplyScalar(b.weight));light.add(new THREE.Color(b.biome.light).multiplyScalar(b.weight));fog+=b.biome.fog*b.weight;ambient+=b.biome.ambient*b.weight;}
     const alpha=damping(config.atmosphere.smoothing,dt);
-    if(this.partyMode&&!config.animation.reducedMotion)this.partyTime+=dt;
-    const beat=Math.floor(this.partyTime/config.atmosphere.partyBeatDuration),paletteIndex=beat%config.atmosphere.partyLightPalette.length;
+    const paletteIndex=this.partyColorIndex;
     this.partyLightColor.set(config.atmosphere.partyLightPalette[paletteIndex]!);this.partySkyColor.copy(this.partyLightColor).multiplyScalar(config.atmosphere.partySkyScale);this.partyFillColor.set(config.atmosphere.partyLightPalette[(paletteIndex+2)%config.atmosphere.partyLightPalette.length]!);
     if(this.partyMode){
       sky.copy(this.partySkyColor);light.copy(this.partyLightColor);fog=config.atmosphere.partyFog;ambient=config.atmosphere.partyAmbient;
