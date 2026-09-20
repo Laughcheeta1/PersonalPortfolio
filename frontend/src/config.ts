@@ -8,7 +8,7 @@ export const config = {
   world: { centerX: -23, radiusX: 83, radiusZ: 35, groundHeight: 0, shoreline: 2.5, roadWidth: 3.6, pathWidth: 2.5 },
   atmosphere: { smoothing: 2, sky: '#9ad7e1', fog: .004, ambient: 1.6, sun: 2.8, sunColor: '#fff0cf', exposure: .85, environmentIntensity: .18, partyLightPalette: ['#ff176f', '#823cff', '#00d9ff', '#8cff3f', '#ffd21f'] as const, partySkyScale: .42, partyFog: .012, partyAmbient: 2.1 },
   sky: { clouds: 18, cloudRadius: 100, cloudHeight: 30, cloudDrift: .08, stars: 240, starRadius: 180 },
-  audio: { ambientVolume: .065, biomeVolume: .10, musicVolume: .5, partyVolumeThreshold: .9, beatFftSize: 1024, beatFrequencyBins: 10, beatThreshold: 1.06, beatMinimumEnergy: .0175, beatAverageSmoothing: .02, beatCooldown: .045, beatSmoothing: .005, bufferSeconds: 3, baseFilter: 350, altitudeFilter: 900, blendTime: .5 },
+  audio: { ambientVolume: .065, biomeVolume: .10, musicVolume: .10, partyVolumeThreshold: .9, beatFftSize: 1024, beatFrequencyBins: 10, beatThreshold: 1.06, beatMinimumEnergy: .0175, beatAverageSmoothing: .02, beatCooldown: .045, beatSmoothing: .005, bufferSeconds: 3, baseFilter: 350, altitudeFilter: 900, blendTime: .5 },
   performance: { maxDpr: 1.6, mobileDpr: 1.25, shadowMap: 1024, maxDelta: .05, trees: 150, flowers: 450, particles: 100, lodDistance: 65 },
   animation: { walkFrequency: 9, walkAmplitude: .45, bobAmplitude: .045, waterSpeed: .55, waterAmplitude: .12, speechFrequency: 18, reducedMotion: typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches },
   input: { joystickRadius: 45 },

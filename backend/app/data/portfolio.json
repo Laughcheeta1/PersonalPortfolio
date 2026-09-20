@@ -127,29 +127,40 @@
     ],
     "workProjects": [
       {
-        "id": "work-project-placeholder-legal",
-        "title": "Place holder planet for future projects",
-        "paragraphs": []
+        "id": "legal-ia",
+        "title": "Legal_IA",
+        "paragraphs": [
+          "Created and deployed an AI web application now in use by a legal professional. Lawyers manage their knowledge bases, clients, and documents, then ask an AI agent questions about that private context.",
+          "Administrator pages let the owner independently change each agent's LLM provider, model, and prompt, keeping the product maintainable without engineering intervention."
+        ]
       },
       {
-        "id": "work-project-placeholder-rpa",
-        "title": "Place holder planet for future projects",
-        "paragraphs": []
+        "id": "medical-scales-calculator",
+        "title": "Medical Scales Calculator",
+        "paragraphs": [
+          "AI agent that calculates complex medical scales from consultation context and chat."
+        ]
       },
       {
-        "id": "work-project-placeholder-medical-scales",
-        "title": "Place holder planet for future projects",
-        "paragraphs": []
+        "id": "rpa-integration-agent",
+        "title": "RPA Integration Agent",
+        "paragraphs": [
+          "AI agent built to automate and test RPA system integrations."
+        ]
       },
       {
-        "id": "work-project-placeholder-medical-decision-support",
-        "title": "Place holder planet for future projects",
-        "paragraphs": []
+        "id": "medical-decision-support-agent",
+        "title": "Medical Decision Support Agent",
+        "paragraphs": [
+          "AI agent system for medical decision support."
+        ]
       },
       {
-        "id": "work-project-placeholder-evaluations",
-        "title": "Place holder planet for future projects",
-        "paragraphs": []
+        "id": "ai-agent-tests-and-evaluations",
+        "title": "AI Agent Tests and Evaluations",
+        "paragraphs": [
+          "Tests and evaluations for AI agent systems."
+        ]
       },
       {
         "id": "rpa-emr-chrome-integrations",

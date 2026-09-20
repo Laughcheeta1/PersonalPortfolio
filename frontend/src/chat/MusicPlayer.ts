@@ -26,7 +26,7 @@ export class MusicPlayer {
       if (this.audioContext) void this.audioContext.resume().catch(() => undefined);
       return;
     }
-    this.audio = new Audio(new URL('../../assets/music/party_bathroom_audio.mp3', import.meta.url).href);
+    this.audio = new Audio(new URL('../../assets/music/new_audio.mp3', import.meta.url).href);
     this.audio.loop = true;
     this.audio.preload = 'none';
     this.audio.volume = this.volume;

@@ -55,11 +55,34 @@ export const personalProjects: readonly ProjectCard[] = [
 ];
 
 export const workProjects: readonly ProjectCard[] = [
-  placeholderProject('work-project-placeholder-legal'),
-  placeholderProject('work-project-placeholder-rpa'),
-  placeholderProject('work-project-placeholder-medical-scales'),
-  placeholderProject('work-project-placeholder-medical-decision-support'),
-  placeholderProject('work-project-placeholder-evaluations'),
+  {
+    id: 'legal-ia',
+    title: 'Legal_IA',
+    paragraphs: [
+      'Created and deployed an AI web application now in use by a legal professional. Lawyers manage their knowledge bases, clients, and documents, then ask an AI agent questions about that private context.',
+      "Administrator pages let the owner independently change each agent's LLM provider, model, and prompt, keeping the product maintainable without engineering intervention.",
+    ],
+  },
+  {
+    id: 'medical-scales-calculator',
+    title: 'Medical Scales Calculator',
+    paragraphs: ['AI agent that calculates complex medical scales from consultation context and chat.'],
+  },
+  {
+    id: 'rpa-integration-agent',
+    title: 'RPA Integration Agent',
+    paragraphs: ['AI agent built to automate and test RPA system integrations.'],
+  },
+  {
+    id: 'medical-decision-support-agent',
+    title: 'Medical Decision Support Agent',
+    paragraphs: ['AI agent system for medical decision support.'],
+  },
+  {
+    id: 'ai-agent-tests-and-evaluations',
+    title: 'AI Agent Tests and Evaluations',
+    paragraphs: ['Tests and evaluations for AI agent systems.'],
+  },
   {
     id: 'rpa-emr-chrome-integrations',
     title: 'RPA Integration Agent & EMR Mapping Agent & Chrome Extension for RPA Integrations',

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import type { Player } from '../world/actors';
 import { bugHuntConfig as c } from '../world/bugHuntConfig';
 import { createBugIsland } from '../world/bugIsland';
-import { hitTarget, inBugArena, secondsLeft } from './logic';
+import { bugPartyJumpOffset, bugVerticalOffset, hitTarget, inBugArena, secondsLeft } from './logic';
 import { HuntServiceError, huntService, saveVisitor, visitorIdentity, type HuntSession } from './service';
 import './style.css';
 
@@ -18,6 +18,8 @@ export class BugHunt {
   private phase:'idle'|'starting'|'playing'|'saving'|'finished'|'unsaved'='idle';
   private swingAt=-Infinity;
   private struck=false;
+  private partyMode=false;
+  private partyJumpProgress=1;
   private nearby=false;
   private boardLoaded=false;
   private boardBusy=false;
@@ -53,7 +55,9 @@ export class BugHunt {
     surface.addEventListener('pointerup',event=>{if(press?.id===event.pointerId)this.attack();press=null;});
     surface.addEventListener('pointercancel',()=>{press=null;});
   }
-  get snapshot(){return {phase:this.phase,score:this.score,remaining:secondsLeft(this.deadline,performance.now()),nearby:this.nearby,bugs:this.bugs.filter(b=>b.model.visible).map(b=>({x:b.model.position.x,z:b.model.position.z})),swingAt:this.swingAt};}
+  setPartyMode(enabled:boolean){this.partyMode=enabled;if(!enabled)this.partyJumpProgress=1;}
+  triggerPartyBeat(){if(this.partyMode)this.partyJumpProgress=0;}
+  get snapshot(){return {phase:this.phase,score:this.score,remaining:secondsLeft(this.deadline,performance.now()),nearby:this.nearby,partyMode:this.partyMode,bugs:this.bugs.filter(b=>b.model.visible).map(b=>({x:b.model.position.x,z:b.model.position.z})),swingAt:this.swingAt};}
   private createBug(index:number){
     const group=new THREE.Group();group.name='Code bug';
     const shell=new THREE.MeshStandardMaterial({color:['#c97154','#658eab','#9c75aa','#79a65b'][index%4],roughness:.65});
@@ -116,6 +120,7 @@ export class BugHunt {
   }
   update(dt:number,time:number){
     const now=performance.now(),p=this.player.model.position;
+    if(this.partyMode)this.partyJumpProgress=Math.min(1,this.partyJumpProgress+dt/c.bugPartyJumpDuration);
     const near=inBugArena(p)||(p.x>=c.bridge.endX-8&&p.x<=c.bridge.endX+2&&Math.abs(p.z-c.bridge.z)<7);
     if(near&&!this.nearby){this.boardLoaded=true;void this.refreshBoard();}
     this.nearby=near;this.hud.hidden=!near&&this.phase!=='playing'&&this.phase!=='saving'&&this.phase!=='unsaved';
@@ -135,13 +140,15 @@ export class BugHunt {
     this.bugs.forEach((bug,index)=>{
       if(!bug.model.visible){if(now>=bug.respawnAt)this.placeBug(bug,index);else return;}
       const position=bug.model.position,gap=Math.hypot(p.x-position.x,p.z-position.z);
-      const outward=Math.atan2(position.x-c.island.x,position.z-c.island.z);
-      if(Math.hypot(position.x-c.island.x,position.z-c.island.z)>c.arenaRadius)bug.heading=outward+Math.PI;
-      else if(gap<3.5&&this.phase==='playing')bug.heading=Math.atan2(position.x-p.x,position.z-p.z);
-      else bug.heading+=Math.sin(time*.8+index)*dt*.7;
-      position.x+=Math.sin(bug.heading)*c.bugSpeed*dt;position.z+=Math.cos(bug.heading)*c.bugSpeed*dt;
-      const radius=Math.hypot(position.x-c.island.x,position.z-c.island.z);if(radius>c.arenaRadius+.1){position.x=c.island.x+(position.x-c.island.x)/radius*c.arenaRadius;position.z=c.island.z+(position.z-c.island.z)/radius*c.arenaRadius;}
-      bug.model.rotation.y=bug.heading;position.y=Math.abs(Math.sin(time*14+index))*.07;
+      if(!this.partyMode||this.phase==='playing'){
+        const outward=Math.atan2(position.x-c.island.x,position.z-c.island.z);
+        if(Math.hypot(position.x-c.island.x,position.z-c.island.z)>c.arenaRadius)bug.heading=outward+Math.PI;
+        else if(gap<3.5&&this.phase==='playing')bug.heading=Math.atan2(position.x-p.x,position.z-p.z);
+        else bug.heading+=Math.sin(time*.8+index)*dt*.7;
+        position.x+=Math.sin(bug.heading)*c.bugSpeed*dt;position.z+=Math.cos(bug.heading)*c.bugSpeed*dt;
+        const radius=Math.hypot(position.x-c.island.x,position.z-c.island.z);if(radius>c.arenaRadius+.1){position.x=c.island.x+(position.x-c.island.x)/radius*c.arenaRadius;position.z=c.island.z+(position.z-c.island.z)/radius*c.arenaRadius;}
+      }
+      bug.model.rotation.y=bug.heading;position.y=this.partyMode?bugPartyJumpOffset(this.partyJumpProgress):bugVerticalOffset(time,index);
       bug.model.children.filter(child=>child.name.startsWith('leg')).forEach((leg,j)=>{leg.rotation.x=Math.sin(time*18+j)*.35;});
     });
     this.hud.querySelector('[data-timer]')!.textContent=`${this.phase==='playing'?secondsLeft(this.deadline,now):this.phase==='idle'||this.phase==='starting'?45:0}s`;

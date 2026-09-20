@@ -75,9 +75,9 @@ describe('optional music', () => {
     const audioFactory = vi.fn(function () { return audio; });
     vi.stubGlobal('Audio', audioFactory);
     const music = new MusicPlayer(); music.unlock();
-    expect(audioFactory).toHaveBeenCalledWith(expect.stringContaining('party_bathroom_audio.mp3'));
+    expect(audioFactory).toHaveBeenCalledWith(expect.stringContaining('new_audio.mp3'));
     expect(audio.volume).toBe(config.audio.musicVolume);
-    expect(audio.volume).toBe(.5);
+    expect(audio.volume).toBe(.1);
     music.setVolume(.25);
     expect(audio.volume).toBe(.25);
     expect(audio.play).not.toHaveBeenCalled();

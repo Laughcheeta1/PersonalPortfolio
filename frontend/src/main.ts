@@ -37,7 +37,8 @@ const world=document.querySelector<HTMLElement>('#world')!;
 const languageControl=createLanguageMenu();
 document.querySelector('.top-right')!.prepend(languageControl);
 const musicButton=document.querySelector<HTMLButtonElement>('#music')!;
-const musicControl=document.createElement('div');musicControl.className='music-control';musicButton.replaceWith(musicControl);musicControl.append(musicButton);musicControl.insertAdjacentHTML('beforeend','<div class="music-volume-popover" role="group" aria-label="Music volume"><label for="music-volume">Volume <output id="music-volume-value" for="music-volume">50%</output></label><input id="music-volume" aria-label="Music volume" max="100" min="0" step="1" type="range" value="50" /></div>');
+const defaultMusicVolumePercent=Math.round(config.audio.musicVolume*100);
+const musicControl=document.createElement('div');musicControl.className='music-control';musicButton.replaceWith(musicControl);musicControl.append(musicButton);musicControl.insertAdjacentHTML('beforeend',`<div class="music-volume-popover" role="group" aria-label="Music volume"><label for="music-volume">Volume <output id="music-volume-value" for="music-volume">${defaultMusicVolumePercent}%</output></label><input id="music-volume" aria-label="Music volume" max="100" min="0" step="1" type="range" value="${defaultMusicVolumePercent}" /></div>`);
 const musicVolumeInput=musicControl.querySelector<HTMLInputElement>('#music-volume')!;
 const musicVolumeValue=musicControl.querySelector<HTMLOutputElement>('#music-volume-value')!;
 const jumpButton=document.createElement('button');jumpButton.id='jump';jumpButton.textContent='Jump';jumpButton.setAttribute('aria-label','Jump');document.querySelector('#joystick')!.after(jumpButton);
@@ -78,7 +79,8 @@ const music=new MusicPlayer();
 let lastAudibleVolume=music.currentVolume;
 const updateMusicVolumeDisplay=()=>{musicVolumeInput.value=String(Math.round(music.currentVolume*100));musicVolumeValue.value=`${Math.round(music.currentVolume*100)}%`;musicVolumeValue.textContent=musicVolumeValue.value;};
 updateMusicVolumeDisplay();
-const syncPartyMode=()=>atmosphere.setPartyMode(music.currentVolume>config.audio.partyVolumeThreshold);
+let partyModeTarget:Pick<BugHunt,'setPartyMode'>|undefined;
+const syncPartyMode=()=>{const enabled=music.currentVolume>config.audio.partyVolumeThreshold;atmosphere.setPartyMode(enabled);partyModeTarget?.setPartyMode(enabled);};
 syncPartyMode();
 const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicControl.contains(target);
 const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>unlockAudio(document.activeElement!==musicButton));input.yaw=.18;
@@ -126,10 +128,11 @@ window.addEventListener('keydown',event=>{if(event.code==='Escape')toggleMap(fal
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,isSmallViewport()?config.performance.mobileDpr:config.performance.maxDpr));renderer.setSize(innerWidth,innerHeight);cssRenderer.setSize(innerWidth,innerHeight);orientationTip.update();});
 renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();announce(t('The graphics connection was interrupted. Reload to return to the island.'));});
 const bugHunt=new BugHunt(scene,app,player,renderer.domElement,()=>started&&!dialog.open&&!input.editing);
+partyModeTarget=bugHunt;syncPartyMode();
 const discovered=new Set<LandmarkId>();let previous=performance.now(),time=0;
 function frame(now:number){
   const dt=Math.min((now-previous)/1000,config.performance.maxDelta);previous=now;time+=dt;
-  if(music.update(dt))atmosphere.triggerPartyBeat();
+  if(music.update(dt)){atmosphere.triggerPartyBeat();bugHunt.triggerPartyBeat();}
   if(!dialog.open){if(started)player.update(input,dt,time);companion.update(player.model.position,dt,time,chat.speech.snapshot.state!=='idle');}
   const mouth=companion.model.getObjectByName('speakingMouth');if(mouth){mouth.visible=chat.speech.snapshot.state==='displaying'&&!config.animation.reducedMotion;mouth.scale.y=.045*(.4+Math.abs(Math.sin(time*config.animation.speechFrequency))*.6);}
   bugHunt.update(dt,time);
