@@ -25,11 +25,14 @@ concurrency:
 
 jobs:
   changes:
-    name: Filter changed applications
+    name: Detect changed applications
     runs-on: ubuntu-latest
     outputs:
-      frontend_changed: ${{ steps.filter.outputs.frontend }}
-      backend_changed: ${{ steps.filter.outputs.backend }}
+      frontend_changed: ${{ steps.filter.outputs.frontend_changed }}
+      backend_app_changed: ${{ steps.filter.outputs.backend_app_changed }}
+      tailnet_proxy_changed: ${{ steps.filter.outputs.tailnet_proxy_changed }}
+      deployment_config_changed: ${{ steps.filter.outputs.deployment_config_changed }}
+      backend_changed: ${{ steps.filter.outputs.backend_changed }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -37,22 +40,62 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Filter changed applications
+      - name: Determine changed applications
         id: filter
-        uses: dorny/paths-filter@v4
-        with:
-          base: ${{ github.ref }}
-          filters: |
-            frontend:
-              - 'frontend/**'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-              - 'nx.json'
-            backend:
-              - 'backend/**'
-              - 'infra/tailnet-db-proxy/**'
-              - 'infra/deploy/**'
+        env:
+          BEFORE_SHA: ${{ github.event.before || github.sha }}
+        run: |
+          set -euo pipefail
+          frontend_changed=false
+          backend_app_changed=false
+          tailnet_proxy_changed=false
+          deployment_config_changed=false
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            frontend_changed=true
+            backend_app_changed=true
+            tailnet_proxy_changed=true
+            deployment_config_changed=true
+          else
+            if [[ "${BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]]; then
+              changed_files="$(git ls-tree -r --name-only "${GITHUB_SHA}")"
+            else
+              changed_files="$(git diff --name-only "${BEFORE_SHA}" "${GITHUB_SHA}")"
+            fi
+
+            while IFS= read -r path; do
+              [[ -z "${path}" ]] && continue
+              case "${path}" in
+                frontend/*|package.json|pnpm-lock.yaml|pnpm-workspace.yaml|nx.json)
+                  frontend_changed=true
+                  ;;
+                backend/*)
+                  backend_app_changed=true
+                  ;;
+                infra/tailnet-db-proxy/*)
+                  tailnet_proxy_changed=true
+                  ;;
+                infra/deploy/*|.github/workflows/deploy.yml)
+                  deployment_config_changed=true
+                  ;;
+              esac
+            done <<< "${changed_files}"
+          fi
+
+          backend_changed=false
+          if [[ "${backend_app_changed}" == "true" ||
+            "${tailnet_proxy_changed}" == "true" ||
+            "${deployment_config_changed}" == "true" ]]; then
+            backend_changed=true
+          fi
+
+          {
+            echo "frontend_changed=${frontend_changed}"
+            echo "backend_app_changed=${backend_app_changed}"
+            echo "tailnet_proxy_changed=${tailnet_proxy_changed}"
+            echo "deployment_config_changed=${deployment_config_changed}"
+            echo "backend_changed=${backend_changed}"
+          } >> "${GITHUB_OUTPUT}"
 
   frontend:
     name: Test and build frontend
@@ -79,7 +122,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
           cache: pnpm
 
       - name: Configure GitHub Pages
@@ -90,11 +133,11 @@ jobs:
 
       - name: Validate frontend API URL
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: |
           set -euo pipefail
           if [ -z "${VITE_API_BASE_URL}" ]; then
-            echo "::error::Missing github-pages variable: VITE_API_BASE_URL"
+            echo "::error::Missing github-pages secret: VITE_API_BASE_URL"
             exit 1
           fi
           case "${VITE_API_BASE_URL}" in
@@ -117,7 +160,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: pnpm exec nx run frontend:build
 
       - name: Upload Pages artifact
@@ -208,23 +251,23 @@ jobs:
 
       - name: Validate deployment configuration
         env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ vars.GCP_REGION }}
-          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
-          CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
-          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ secrets.ARTIFACT_REGISTRY_REPOSITORY }}
+          CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
-          TAILSCALE_DB_HOST: ${{ vars.TAILSCALE_DB_HOST }}
-          TAILSCALE_DB_PORT: ${{ vars.TAILSCALE_DB_PORT }}
-          TAILSCALE_SOCKS_PORT: ${{ vars.TAILSCALE_SOCKS_PORT }}
-          LOCAL_DB_PROXY_PORT: ${{ vars.LOCAL_DB_PROXY_PORT }}
-          PROXY_HEALTH_PORT: ${{ vars.PROXY_HEALTH_PORT }}
-          TS_HOSTNAME: ${{ vars.TS_HOSTNAME }}
-          OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
-          OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
+          TAILSCALE_DB_HOST: ${{ secrets.TAILSCALE_DB_HOST }}
+          TAILSCALE_DB_PORT: ${{ secrets.TAILSCALE_DB_PORT }}
+          TAILSCALE_SOCKS_PORT: ${{ secrets.TAILSCALE_SOCKS_PORT }}
+          LOCAL_DB_PROXY_PORT: ${{ secrets.LOCAL_DB_PROXY_PORT }}
+          PROXY_HEALTH_PORT: ${{ secrets.PROXY_HEALTH_PORT }}
+          TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
+          OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL }}
+          OLLAMA_MODEL: ${{ secrets.OLLAMA_MODEL }}
+          OLLAMA_TIMEOUT_SECONDS: ${{ secrets.OLLAMA_TIMEOUT_SECONDS }}
           ALLOWED_CORS_ORIGIN: ${{ secrets.ALLOWED_CORS_ORIGIN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |
@@ -235,7 +278,7 @@ jobs:
             ARTIFACT_REGISTRY_REPOSITORY \
             CLOUD_RUN_SERVICE \
             GCP_SERVICE_ACCOUNT \
-            WIF_PROVIDER \
+            GCP_WORKLOAD_IDENTITY_PROVIDER \
             DATABASE_URL \
             TS_AUTHKEY \
             TAILSCALE_DB_HOST \
@@ -273,7 +316,7 @@ jobs:
         with:
           workload_identity_provider: >-
             ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -286,44 +329,69 @@ jobs:
       - name: Set up uv for manifest rendering
         uses: astral-sh/setup-uv@v6
 
-      - name: Build backend and Tailscale sidecar images
+      - name: Resolve and build missing deterministic images
+        id: images
         env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ vars.GCP_REGION }}
-          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ secrets.ARTIFACT_REGISTRY_REPOSITORY }}
         run: |
           set -euo pipefail
-          backend_image="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}/personal-portfolio-backend:${IMAGE_TAG}"
-          proxy_image="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}/tailnet-db-proxy:${IMAGE_TAG}"
-          gcloud builds submit backend \
-            --project "${GCP_PROJECT_ID}" \
-            --tag "${backend_image}" \
-            --quiet
-          gcloud builds submit infra/tailnet-db-proxy \
-            --project "${GCP_PROJECT_ID}" \
-            --tag "${proxy_image}" \
-            --quiet
+          backend_source_sha="$(git rev-parse HEAD:backend)"
+          tailnet_source_sha="$(git rev-parse HEAD:infra/tailnet-db-proxy)"
+          image_prefix="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPOSITORY}"
+          backend_image="${image_prefix}/personal-portfolio-backend:${backend_source_sha}"
+          tailnet_image="${image_prefix}/tailnet-db-proxy:${tailnet_source_sha}"
+
+          image_exists() {
+            local image="$1"
+            gcloud artifacts docker images describe "${image}" \
+              --project="${GCP_PROJECT_ID}" \
+              --quiet \
+              >/dev/null 2>&1
+          }
+
+          build_if_missing() {
+            local image="$1"
+            local context="$2"
+            if image_exists "${image}"; then
+              return 0
+            fi
+            gcloud builds submit "${context}" \
+              --project "${GCP_PROJECT_ID}" \
+              --tag "${image}" \
+              --quiet
+            image_exists "${image}"
+          }
+
+          build_if_missing "${backend_image}" backend
+          build_if_missing "${tailnet_image}" infra/tailnet-db-proxy
+
+          {
+            printf 'backend_image=%s\n' "${backend_image}"
+            printf 'tailnet_image=%s\n' "${tailnet_image}"
+          } >> "${GITHUB_OUTPUT}"
 
       - name: Render and deploy backend with Tailscale sidecar
         env:
-          GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-          GCP_REGION: ${{ vars.GCP_REGION }}
-          ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY }}
-          CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE }}
-          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
-          IMAGE_TAG: ${{ github.sha }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          ARTIFACT_REGISTRY_REPOSITORY: ${{ secrets.ARTIFACT_REGISTRY_REPOSITORY }}
+          CLOUD_RUN_SERVICE: ${{ secrets.CLOUD_RUN_SERVICE }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          BACKEND_IMAGE: ${{ steps.images.outputs.backend_image }}
+          TAILNET_PROXY_IMAGE: ${{ steps.images.outputs.tailnet_image }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
-          TAILSCALE_DB_HOST: ${{ vars.TAILSCALE_DB_HOST }}
-          TAILSCALE_DB_PORT: ${{ vars.TAILSCALE_DB_PORT }}
-          TAILSCALE_SOCKS_PORT: ${{ vars.TAILSCALE_SOCKS_PORT }}
-          LOCAL_DB_PROXY_PORT: ${{ vars.LOCAL_DB_PROXY_PORT }}
-          PROXY_HEALTH_PORT: ${{ vars.PROXY_HEALTH_PORT }}
-          TS_HOSTNAME: ${{ vars.TS_HOSTNAME }}
-          OLLAMA_BASE_URL: ${{ vars.OLLAMA_BASE_URL }}
-          OLLAMA_MODEL: ${{ vars.OLLAMA_MODEL }}
-          OLLAMA_TIMEOUT_SECONDS: ${{ vars.OLLAMA_TIMEOUT_SECONDS }}
+          TAILSCALE_DB_HOST: ${{ secrets.TAILSCALE_DB_HOST }}
+          TAILSCALE_DB_PORT: ${{ secrets.TAILSCALE_DB_PORT }}
+          TAILSCALE_SOCKS_PORT: ${{ secrets.TAILSCALE_SOCKS_PORT }}
+          LOCAL_DB_PROXY_PORT: ${{ secrets.LOCAL_DB_PROXY_PORT }}
+          PROXY_HEALTH_PORT: ${{ secrets.PROXY_HEALTH_PORT }}
+          TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
+          OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL }}
+          OLLAMA_MODEL: ${{ secrets.OLLAMA_MODEL }}
+          OLLAMA_TIMEOUT_SECONDS: ${{ secrets.OLLAMA_TIMEOUT_SECONDS }}
           ALLOWED_CORS_ORIGIN: ${{ secrets.ALLOWED_CORS_ORIGIN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         run: |

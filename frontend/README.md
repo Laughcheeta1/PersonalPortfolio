@@ -217,13 +217,12 @@ The default `ChatService` calls the FastAPI backend at `VITE_API_BASE_URL` (defa
 ## Deploy to GitHub Pages
 
 The [`deploy.yml`](../.github/workflows/deploy.yml) workflow is the repository's
-single deployment workflow. It uses the `dorny/paths-filter` action to identify
-applications, then runs the frontend tests, production build, and GitHub Pages
-deployment only when
+single deployment workflow. It classifies changed files into frontend,
+backend, tailnet proxy, and deployment configuration areas, then runs the
+frontend tests, production build, and GitHub Pages deployment only when
 frontend or shared workspace build files changed. It can also be started
 manually. The `github-pages` environment must provide the `VITE_API_BASE_URL`
-Actions variable, set to the Cloud Run API base URL including `/api`, for
-example:
+Secret, set to the Cloud Run API base URL including `/api`, for example:
 
 ```text
 https://<cloud-run-service-url>/api

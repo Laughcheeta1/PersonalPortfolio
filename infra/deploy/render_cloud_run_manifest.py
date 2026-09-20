@@ -38,6 +38,31 @@ def optional_setting(values: dict[str, str], name: str, default: str) -> str:
     return os.environ.get(name, values.get(name, default)).strip()
 
 
+def resolve_image(
+    values: dict[str, str],
+    name: str,
+    tag_name: str,
+    image_prefix: str,
+    image_name: str,
+) -> str:
+    image = os.environ.get(name, values.get(name))
+    if image is not None and image.strip():
+        return image.strip()
+    tag = optional_setting(values, tag_name, "local")
+    return f"{image_prefix}/{image_name}:{tag}"
+
+
+def positive_port(values: dict[str, str], name: str) -> str:
+    value = setting(values, name)
+    try:
+        port = int(value)
+    except ValueError as exc:
+        raise SystemExit(f"{name} must be a positive integer") from exc
+    if not 1 <= port <= 65535:
+        raise SystemExit(f"{name} must be between 1 and 65535")
+    return str(port)
+
+
 def rewrite_database_url(database_url: str, local_port: str) -> str:
     parsed = urlsplit(database_url)
     if not parsed.scheme or not parsed.netloc:
@@ -71,22 +96,34 @@ def render(values: dict[str, str]) -> dict:
     service = setting(values, "CLOUD_RUN_SERVICE")
     service_account = setting(values, "GCP_SERVICE_ACCOUNT")
     repository = setting(values, "ARTIFACT_REGISTRY_REPOSITORY")
-    image_tag = optional_setting(values, "IMAGE_TAG", "local")
-    backend_name = optional_setting(values, "BACKEND_IMAGE_NAME", "personal-portfolio-backend")
-    proxy_name = optional_setting(values, "TAILNET_PROXY_IMAGE_NAME", "tailnet-db-proxy")
     image_prefix = f"{region}-docker.pkg.dev/{project}/{repository}"
-    backend_image = optional_setting(
-        values, "BACKEND_IMAGE", f"{image_prefix}/{backend_name}:{image_tag}"
+    backend_image = resolve_image(
+        values,
+        "BACKEND_IMAGE",
+        "BACKEND_IMAGE_TAG",
+        image_prefix,
+        "personal-portfolio-backend",
     )
-    proxy_image = optional_setting(
-        values, "TAILNET_PROXY_IMAGE", f"{image_prefix}/{proxy_name}:{image_tag}"
+    proxy_image = resolve_image(
+        values,
+        "TAILNET_PROXY_IMAGE",
+        "TAILNET_IMAGE_TAG",
+        image_prefix,
+        "tailnet-db-proxy",
     )
 
-    local_db_proxy_port = setting(values, "LOCAL_DB_PROXY_PORT")
-    health_port = int(setting(values, "PROXY_HEALTH_PORT"))
-    socks_port = setting(values, "TAILSCALE_SOCKS_PORT")
+    local_db_proxy_port = positive_port(values, "LOCAL_DB_PROXY_PORT")
+    health_port = int(positive_port(values, "PROXY_HEALTH_PORT"))
+    socks_port = positive_port(values, "TAILSCALE_SOCKS_PORT")
     cors_origin = setting(values, "ALLOWED_CORS_ORIGIN")
-    if not cors_origin.startswith("https://") or "/" in cors_origin.removeprefix("https://"):
+    parsed_cors_origin = urlsplit(cors_origin)
+    if (
+        parsed_cors_origin.scheme != "https"
+        or not parsed_cors_origin.netloc
+        or parsed_cors_origin.path
+        or parsed_cors_origin.query
+        or parsed_cors_origin.fragment
+    ):
         raise SystemExit("ALLOWED_CORS_ORIGIN must be an HTTPS origin without a path")
 
     database_url = rewrite_database_url(setting(values, "DATABASE_URL"), local_db_proxy_port)
@@ -94,15 +131,21 @@ def render(values: dict[str, str]) -> dict:
         values, "TS_HOSTNAME", f"{service}-cloud-run"
     )
     tailnet_db_host = setting(values, "TAILSCALE_DB_HOST")
-    tailnet_db_port = setting(values, "TAILSCALE_DB_PORT")
+    tailnet_db_port = positive_port(values, "TAILSCALE_DB_PORT")
     ts_authkey = setting(values, "TS_AUTHKEY")
+    ollama_timeout_seconds = setting(values, "OLLAMA_TIMEOUT_SECONDS")
+    try:
+        if float(ollama_timeout_seconds) <= 0:
+            raise ValueError
+    except ValueError as exc:
+        raise SystemExit("OLLAMA_TIMEOUT_SECONDS must be positive") from exc
 
     app_environment = [
         env_entry("DATABASE_URL", database_url),
         env_entry("OLLAMA_BASE_URL", setting(values, "OLLAMA_BASE_URL")),
         env_entry("OLLAMA_MODEL", setting(values, "OLLAMA_MODEL")),
         env_entry("OLLAMA_API_KEY", setting(values, "OLLAMA_API_KEY")),
-        env_entry("OLLAMA_TIMEOUT_SECONDS", setting(values, "OLLAMA_TIMEOUT_SECONDS")),
+        env_entry("OLLAMA_TIMEOUT_SECONDS", ollama_timeout_seconds),
         env_entry("CORS_ORIGINS", json.dumps([cors_origin], separators=(",", ":"))),
     ]
     sidecar_environment = [
@@ -120,7 +163,13 @@ def render(values: dict[str, str]) -> dict:
     return {
         "apiVersion": "serving.knative.dev/v1",
         "kind": "Service",
-        "metadata": {"name": service},
+        "metadata": {
+            "name": service,
+            "annotations": {
+                "run.googleapis.com/minScale": "0",
+                "run.googleapis.com/maxScale": "1",
+            },
+        },
         "spec": {
             "template": {
                 "metadata": {
@@ -128,11 +177,13 @@ def render(values: dict[str, str]) -> dict:
                         "run.googleapis.com/container-dependencies": json.dumps(
                             {"app": ["tailnet"]}, separators=(",", ":")
                         ),
-                        "run.googleapis.com/startup-cpu-boost": "true",
+                        "run.googleapis.com/cpu-throttling": "true",
+                        "run.googleapis.com/execution-environment": "gen1",
+                        "run.googleapis.com/startup-cpu-boost": "false",
                     }
                 },
                 "spec": {
-                    "containerConcurrency": 80,
+                    "containerConcurrency": 1,
                     "timeoutSeconds": 300,
                     "serviceAccountName": service_account,
                     "containers": [
@@ -141,7 +192,9 @@ def render(values: dict[str, str]) -> dict:
                             "image": backend_image,
                             "ports": [{"name": "http1", "containerPort": 8080}],
                             "env": app_environment,
-                            "resources": {"limits": {"cpu": "1", "memory": "512Mi"}},
+                            "resources": {
+                                "limits": {"cpu": "0.75", "memory": "512Mi"}
+                            },
                             "startupProbe": probe(
                                 "/healthz", 8080, period=5, timeout=3, failures=48
                             ),
@@ -153,7 +206,9 @@ def render(values: dict[str, str]) -> dict:
                             "name": "tailnet",
                             "image": proxy_image,
                             "env": sidecar_environment,
-                            "resources": {"limits": {"cpu": "1", "memory": "256Mi"}},
+                            "resources": {
+                                "limits": {"cpu": "0.25", "memory": "256Mi"}
+                            },
                             "startupProbe": probe(
                                 "/healthz",
                                 health_port,
@@ -188,7 +243,7 @@ def main() -> None:
     manifest = render(values)
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(
-        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
 
