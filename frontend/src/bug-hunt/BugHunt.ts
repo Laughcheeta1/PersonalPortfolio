@@ -56,7 +56,7 @@ export class BugHunt {
     surface.addEventListener('pointercancel',()=>{press=null;});
   }
   setPartyMode(enabled:boolean){this.partyMode=enabled;if(!enabled)this.partyJumpProgress=1;}
-  triggerPartyBeat(){if(this.partyMode)this.partyJumpProgress=0;}
+  triggerPartyBeat(){if(this.partyMode&&this.partyJumpProgress>=1)this.partyJumpProgress=0;}
   get snapshot(){return {phase:this.phase,score:this.score,remaining:secondsLeft(this.deadline,performance.now()),nearby:this.nearby,partyMode:this.partyMode,bugs:this.bugs.filter(b=>b.model.visible).map(b=>({x:b.model.position.x,z:b.model.position.z})),swingAt:this.swingAt};}
   private createBug(index:number){
     const group=new THREE.Group();group.name='Code bug';
