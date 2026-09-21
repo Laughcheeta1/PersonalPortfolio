@@ -2,6 +2,17 @@ name: Deploy application
 
 on:
   workflow_dispatch:
+    inputs:
+      deploy_frontend:
+        description: Deploy the frontend to GitHub Pages
+        required: false
+        default: true
+        type: boolean
+      deploy_backend:
+        description: Test and deploy the backend to Cloud Run
+        required: false
+        default: true
+        type: boolean
   push:
     branches:
       - master
@@ -44,6 +55,8 @@ jobs:
         id: filter
         env:
           BEFORE_SHA: ${{ github.event.before || github.sha }}
+          MANUAL_DEPLOY_FRONTEND: ${{ inputs.deploy_frontend }}
+          MANUAL_DEPLOY_BACKEND: ${{ inputs.deploy_backend }}
         run: |
           set -euo pipefail
           frontend_changed=false
@@ -52,10 +65,10 @@ jobs:
           deployment_config_changed=false
 
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
-            frontend_changed=true
-            backend_app_changed=true
-            tailnet_proxy_changed=true
-            deployment_config_changed=true
+            frontend_changed="${MANUAL_DEPLOY_FRONTEND}"
+            backend_app_changed="${MANUAL_DEPLOY_BACKEND}"
+            tailnet_proxy_changed="${MANUAL_DEPLOY_BACKEND}"
+            deployment_config_changed="${MANUAL_DEPLOY_BACKEND}"
           else
             if [[ "${BEFORE_SHA}" == "0000000000000000000000000000000000000000" ]]; then
               changed_files="$(git ls-tree -r --name-only "${GITHUB_SHA}")"
@@ -213,10 +226,10 @@ jobs:
           cache-dependency-glob: backend/uv.lock
 
       - name: Install locked dependencies
-        run: uv sync --locked
+        run: uv --no-config sync --locked
 
       - name: Run backend tests
-        run: uv run pytest
+        run: uv --no-config run pytest
 
   deploy-backend:
     name: Deploy backend
