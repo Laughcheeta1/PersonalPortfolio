@@ -30,3 +30,4 @@
 - Use visual references as guidance for frontend recreations; do not embed supplied images as panel backdrops unless the user explicitly requests image placement.
 - Adapt reference compositions to the existing panel layout; portrait references must not force narrow portrait framing when the panel calls for a full-width scene.
 - When a secondary flow must match a primary page exactly, reuse the primary page's components, assets, styles, and world-space transform path instead of recreating a lookalike overlay.
+
