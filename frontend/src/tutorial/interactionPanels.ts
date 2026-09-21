@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
-import { isolatePanel } from '../panels';
+import { config } from '../config';
+import { isolatePanel, panelScaleForViewport, renderContent, type PanelContentRenderer } from '../panels';
+import type { TutorialPanelGuideCopy } from '../panel-content';
 import type { TutorialInteractionCopy } from './i18n';
 
 export type TutorialInteractionStep = 'model' | 'guide' | null;
@@ -19,18 +21,13 @@ export interface TutorialInteractionPresence {
 
 const modelActivationRadius = 8;
 const guideActivationRadius = 3.8;
-const modelPanelWidth = 560;
-const modelPanelHeight = 430;
-const guidePanelWidth = 500;
-const guidePanelHeight = 420;
 
 export class TutorialInteractionPanels {
   private readonly modelElement = document.createElement('article');
-  private readonly guideElement = document.createElement('article');
+  private readonly guideElement = document.createElement('section');
   private readonly modelObject: CSS3DObject;
   private readonly guideObject: CSS3DObject;
-  private readonly modelContinue: HTMLButtonElement;
-  private readonly modelStatus: HTMLElement;
+  private readonly modelContentRenderer: PanelContentRenderer;
   private readonly guideLog: HTMLElement;
   private readonly guideForm: HTMLFormElement;
   private readonly guideInput: HTMLInputElement;
@@ -38,77 +35,49 @@ export class TutorialInteractionPanels {
   private readonly guideStatus: HTMLElement;
   private readonly guideContinue: HTMLButtonElement;
   private readonly callbacks: TutorialInteractionCallbacks;
-  private readonly modelPanelAnchor = new THREE.Vector3();
   private activeStep: TutorialInteractionStep = null;
-  private modelClicked = false;
+  private modelGuideCopy: TutorialPanelGuideCopy | undefined;
+  private modelResetKey = 0;
+  private modelProgress = 0;
   private guideMessageSent = false;
 
   constructor(scene: THREE.Scene, callbacks: TutorialInteractionCallbacks) {
     this.callbacks = callbacks;
 
-    this.modelElement.className = 'tutorial-interaction-panel tutorial-model-panel';
+    this.modelElement.className = 'world-panel tutorial-model-panel';
     this.modelElement.setAttribute('aria-label', 'Rocket interaction panel');
-    this.modelElement.innerHTML = `<div class="tutorial-interaction-panel__header">
-      <span class="tutorial-interaction-panel__eyebrow" data-role="model-eyebrow"></span>
-      <h2 data-role="model-title"></h2>
-    </div>
-    <div class="tutorial-interaction-panel__scroll" data-role="model-scroll">
-      <p data-role="model-center"></p>
-      <ul>
-        <li data-role="model-scroll-hint"></li>
-        <li data-role="model-click-hint"></li>
-      </ul>
-      <p class="tutorial-interaction-panel__extra" data-role="model-extra"></p>
-    </div>
-    <div class="tutorial-interaction-panel__actions">
-      <button type="button" class="tutorial-panel-button" data-role="model-click"></button>
-      <p class="tutorial-interaction-panel__status" role="status" data-role="model-status"></p>
-      <button type="button" class="tutorial-panel-button tutorial-panel-button--secondary" data-role="model-continue" hidden></button>
-    </div>`;
+    this.modelElement.style.width = `${config.panels.width}px`;
+    this.modelElement.style.height = `${config.panels.height}px`;
     isolatePanel(this.modelElement);
+    this.modelContentRenderer = renderContent(this.modelElement, 'starship:front');
     this.modelObject = new CSS3DObject(this.modelElement);
-    this.modelObject.visible = false;
+    this.modelObject.rotation.y = 0;
+    this.modelObject.position.z = .02;
+    this.hide(this.modelObject, this.modelElement);
     scene.add(this.modelObject);
 
-    const modelClick = this.modelElement.querySelector<HTMLButtonElement>('[data-role="model-click"]')!;
-    this.modelStatus = this.modelElement.querySelector<HTMLElement>('[data-role="model-status"]')!;
-    this.modelContinue = this.modelElement.querySelector<HTMLButtonElement>('[data-role="model-continue"]')!;
-    modelClick.addEventListener('click', () => {
-      this.modelClicked = true;
-      this.modelStatus.textContent = '';
-      this.modelContinue.hidden = false;
-      modelClick.disabled = true;
-      this.modelStatus.textContent = this.modelElement.dataset.clickedCopy ?? '';
-      this.callbacks.onModelClick();
-    });
-    this.modelContinue.addEventListener('click', () => this.callbacks.onModelContinue());
-
-    this.guideElement.className = 'tutorial-interaction-panel tutorial-guide-panel';
-    this.guideElement.setAttribute('aria-label', 'Guide interaction panel');
-    this.guideElement.innerHTML = `<div class="tutorial-interaction-panel__header">
-      <span class="tutorial-interaction-panel__eyebrow" data-role="guide-eyebrow"></span>
-      <h2 data-role="guide-title"></h2>
-    </div>
-    <p class="tutorial-guide-panel__prompt" data-role="guide-prompt"></p>
-    <div class="tutorial-guide-panel__log" role="log" aria-live="polite" data-role="guide-log"></div>
-    <form class="tutorial-guide-panel__form">
-      <label class="tutorial-sr-only" data-role="guide-label" for="tutorial-guide-message"></label>
-      <input id="tutorial-guide-message" type="text" maxlength="300" autocomplete="off" data-role="guide-input">
-      <button type="submit" class="tutorial-panel-button tutorial-panel-button--send" data-role="guide-send"></button>
-    </form>
-    <p class="tutorial-interaction-panel__status" role="status" data-role="guide-status"></p>
-    <button type="button" class="tutorial-panel-button tutorial-panel-button--secondary" data-role="guide-continue" hidden></button>`;
+    this.guideElement.className = 'chat-anchor';
+    this.guideElement.setAttribute('aria-label', 'Companion conversation');
+    this.guideElement.style.setProperty('--chat-open-duration', `${config.panels.openDuration}s`);
     isolatePanel(this.guideElement);
+    this.guideElement.innerHTML = `<div class="chat-full">
+      <header><span class="guide-avatar">✦</span><div><strong>Island guide</strong></div><span class="online-dot"></span><button type="button" class="clear-chat">Clear history</button></header>
+      <div class="chat-log" role="log" aria-label="Conversation history"></div>
+      <p class="chat-status" role="status"></p>
+      <form><input aria-label="Message your guide" placeholder="Where shall we go?" maxlength="300" autocomplete="off"><button aria-label="Send message" type="submit">↑</button></form>
+      <footer><span data-role="guide-footer"></span><button type="button" class="clear-chat tutorial-guide-continue" hidden></button></footer>
+    </div><div class="comic"><strong>YOUR GUIDE</strong><p></p></div>`;
     this.guideObject = new CSS3DObject(this.guideElement);
-    this.guideObject.visible = false;
+    this.hide(this.guideObject, this.guideElement);
     scene.add(this.guideObject);
 
-    this.guideLog = this.guideElement.querySelector<HTMLElement>('[data-role="guide-log"]')!;
+    this.guideLog = this.guideElement.querySelector<HTMLElement>('.chat-log')!;
     this.guideForm = this.guideElement.querySelector<HTMLFormElement>('form')!;
-    this.guideInput = this.guideElement.querySelector<HTMLInputElement>('[data-role="guide-input"]')!;
-    this.guideSend = this.guideElement.querySelector<HTMLButtonElement>('[data-role="guide-send"]')!;
-    this.guideStatus = this.guideElement.querySelector<HTMLElement>('[data-role="guide-status"]')!;
-    this.guideContinue = this.guideElement.querySelector<HTMLButtonElement>('[data-role="guide-continue"]')!;
+    this.guideInput = this.guideElement.querySelector<HTMLInputElement>('input')!;
+    this.guideSend = this.guideElement.querySelector<HTMLButtonElement>('form button')!;
+    this.guideStatus = this.guideElement.querySelector<HTMLElement>('.chat-status')!;
+    this.guideContinue = this.guideElement.querySelector<HTMLButtonElement>('.tutorial-guide-continue')!;
+    this.guideElement.querySelector<HTMLButtonElement>('.clear-chat:not(.tutorial-guide-continue)')!.addEventListener('click', () => this.resetGuide());
     this.guideForm.addEventListener('submit', event => {
       event.preventDefault();
       const message = this.guideInput.value.trim();
@@ -127,27 +96,22 @@ export class TutorialInteractionPanels {
   }
 
   setCopy(copy: TutorialInteractionCopy): void {
-    this.setText(this.modelElement, 'model-eyebrow', copy.model.panelEyebrow);
-    this.setText(this.modelElement, 'model-title', copy.model.panelTitle);
-    this.setText(this.modelElement, 'model-center', copy.model.center);
-    this.setText(this.modelElement, 'model-scroll-hint', copy.model.scroll);
-    this.setText(this.modelElement, 'model-click-hint', copy.model.click);
-    this.setText(this.modelElement, 'model-extra', copy.model.extra);
-    this.setText(this.modelElement, 'model-click', copy.model.clickButton);
-    this.modelElement.dataset.clickedCopy = copy.model.clicked;
-    this.setText(this.modelElement, 'model-continue', copy.model.continueButton);
-    if (this.modelClicked) this.modelStatus.textContent = copy.model.clicked;
+    this.modelGuideCopy = {
+      ...copy.model,
+      resetKey: this.modelResetKey,
+      onClick: () => this.callbacks.onModelClick(),
+      onContinue: () => this.callbacks.onModelContinue(),
+    };
+    this.modelContentRenderer(this.modelGuideCopy);
     this.modelElement.setAttribute('aria-label', copy.model.panelTitle);
 
-    this.setText(this.guideElement, 'guide-eyebrow', copy.guide.panelEyebrow);
-    this.setText(this.guideElement, 'guide-title', copy.guide.panelTitle);
-    this.setText(this.guideElement, 'guide-prompt', copy.guide.prompt);
-    this.setText(this.guideElement, 'guide-label', copy.guide.inputLabel);
-    this.guideInput.placeholder = copy.guide.inputPlaceholder;
-    this.guideSend.textContent = copy.guide.sendButton;
-    this.guideElement.dataset.responseCopy = copy.guide.response;
-    this.setText(this.guideElement, 'guide-continue', copy.guide.continueButton);
     this.guideElement.setAttribute('aria-label', copy.guide.panelTitle);
+    this.guideInput.setAttribute('aria-label', copy.guide.inputLabel);
+    this.guideInput.placeholder = copy.guide.inputPlaceholder;
+    this.guideSend.setAttribute('aria-label', copy.guide.sendButton);
+    this.guideElement.dataset.responseCopy = copy.guide.response;
+    this.guideElement.dataset.promptCopy = copy.guide.prompt;
+    this.guideContinue.textContent = copy.guide.continueButton;
     if (this.guideMessageSent) {
       const response = this.guideLog.querySelector<HTMLElement>('[data-guide-role="assistant"]');
       if (response) response.textContent = copy.guide.response;
@@ -159,32 +123,69 @@ export class TutorialInteractionPanels {
     this.activeStep = step;
     if (step === 'model') this.resetModel();
     if (step === 'guide') this.resetGuide();
-    if (step !== 'model') this.hide(this.modelObject, this.modelElement);
+    if (step !== 'model') {
+      this.modelProgress = 0;
+      this.hide(this.modelObject, this.modelElement);
+    }
     if (step !== 'guide') this.hide(this.guideObject, this.guideElement);
   }
 
-  update(step: TutorialInteractionStep, player: THREE.Vector3, rocket: THREE.Vector3, guide: THREE.Vector3, camera: THREE.PerspectiveCamera): TutorialInteractionPresence {
+  update(step: TutorialInteractionStep, player: THREE.Vector3, rocket: THREE.Vector3, guide: THREE.Vector3, camera: THREE.PerspectiveCamera, dt: number): TutorialInteractionPresence {
     const modelNear = step === 'model' && player.distanceTo(rocket) <= modelActivationRadius;
     const guideNear = step === 'guide' && player.distanceTo(guide) <= guideActivationRadius;
-    this.modelPanelAnchor.copy(rocket).z += 4;
-    if (modelNear) this.show(this.modelObject, this.modelElement, this.modelPanelAnchor, camera, 4.8, modelPanelWidth, modelPanelHeight);
-    else this.hide(this.modelObject, this.modelElement);
-    if (guideNear) this.show(this.guideObject, this.guideElement, guide, camera, 4.1, guidePanelWidth, guidePanelHeight);
-    else this.hide(this.guideObject, this.guideElement);
+    this.updateModel(step === 'model' && modelNear, rocket, camera, dt);
+    this.updateGuide(guideNear, guide, camera);
     return { modelNear, guideNear };
   }
 
+  private updateModel(open: boolean, rocket: THREE.Vector3, camera: THREE.PerspectiveCamera, dt: number): void {
+    this.modelProgress = THREE.MathUtils.clamp(this.modelProgress + (open ? dt / config.panels.openDuration : -dt / config.panels.closeDuration), 0, 1);
+    const p = config.animation.reducedMotion ? Number(open) : this.modelProgress;
+    const eased = open ? 1 + 2.70158 * (p - 1) ** 3 + 1.70158 * (p - 1) ** 2 : p * p;
+    const panelPosition = new THREE.Vector3(rocket.x, config.panels.verticalOffset - config.panels.rise * (1 - eased), rocket.z + .02);
+    const toward = camera.position.clone().sub(panelPosition);
+    const front = toward.dot(new THREE.Vector3(0, 0, 1)) > 0;
+    const visible = p > 0 && front;
+    this.modelObject.position.copy(panelPosition);
+    this.modelObject.rotation.y = 0;
+    this.modelObject.scale.setScalar(panelScaleForViewport(camera.position.distanceTo(panelPosition), camera.fov, innerWidth, innerHeight) * Math.max(.001, eased));
+    this.modelObject.updateMatrixWorld(true);
+    this.modelObject.visible = visible;
+    this.modelElement.style.visibility = visible ? 'visible' : 'hidden';
+    this.modelElement.style.pointerEvents = visible && p > .8 ? 'auto' : 'none';
+    this.modelElement.inert = !visible;
+    this.modelElement.style.opacity = String(Math.min(1, p * 3));
+    this.modelElement.dataset.state = open ? (p >= 1 ? 'active' : 'opening') : (p <= 0 ? 'inactive' : 'closing');
+  }
+
+  private updateGuide(open: boolean, guide: THREE.Vector3, camera: THREE.PerspectiveCamera): void {
+    this.guideObject.position.copy(guide).add(new THREE.Vector3(0, config.ui.chatHeight, 0));
+    this.guideObject.quaternion.copy(camera.quaternion);
+    const distance = camera.position.distanceTo(this.guideObject.position);
+    const worldPerPixel = distance * 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / innerHeight;
+    const desiredWidth = Math.min(config.ui.chatWidth, innerWidth - config.ui.viewportPadding * 2);
+    const elementWidth = innerWidth < 600 ? config.ui.mobileChatWidth : config.ui.chatWidth;
+    this.guideObject.scale.setScalar(desiredWidth * worldPerPixel / elementWidth);
+    const projected = this.guideObject.position.clone().project(camera);
+    const screenX = (projected.x + 1) * innerWidth / 2;
+    const clampedX = THREE.MathUtils.clamp(screenX, desiredWidth / 2 + config.ui.viewportPadding, innerWidth - desiredWidth / 2 - config.ui.viewportPadding);
+    this.guideObject.position.add(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).multiplyScalar((clampedX - screenX) * worldPerPixel));
+    this.setVisibility(this.guideObject, this.guideElement, open);
+  }
+
   private resetModel(): void {
-    this.modelClicked = false;
-    const button = this.modelElement.querySelector<HTMLButtonElement>('[data-role="model-click"]')!;
-    button.disabled = false;
-    this.modelContinue.hidden = true;
-    this.modelStatus.textContent = '';
+    this.modelResetKey += 1;
+    this.modelProgress = 0;
+    if (this.modelGuideCopy) {
+      this.modelGuideCopy = { ...this.modelGuideCopy, resetKey: this.modelResetKey };
+      this.modelContentRenderer(this.modelGuideCopy);
+    }
   }
 
   private resetGuide(): void {
     this.guideMessageSent = false;
     this.guideLog.replaceChildren();
+    this.appendGuideMessage('assistant', this.guideElement.dataset.promptCopy ?? '');
     this.guideInput.value = '';
     this.guideInput.disabled = false;
     this.guideSend.disabled = false;
@@ -194,34 +195,21 @@ export class TutorialInteractionPanels {
 
   private appendGuideMessage(role: 'user' | 'assistant', text: string): void {
     const message = document.createElement('p');
-    message.className = `tutorial-guide-panel__message tutorial-guide-panel__message--${role}`;
+    message.className = `message ${role}`;
     message.dataset.guideRole = role;
     message.textContent = text;
     this.guideLog.append(message);
     this.guideLog.scrollTop = this.guideLog.scrollHeight;
   }
 
-  private setText(root: HTMLElement, role: string, text: string): void {
-    root.querySelector<HTMLElement>(`[data-role="${role}"]`)!.textContent = text;
-  }
-
-  private show(object: CSS3DObject, element: HTMLElement, anchor: THREE.Vector3, camera: THREE.PerspectiveCamera, height: number, width: number, panelHeight: number): void {
-    object.visible = true;
-    element.style.visibility = 'visible';
-    element.style.pointerEvents = 'auto';
-    object.position.set(anchor.x, height, anchor.z);
-    object.quaternion.copy(camera.quaternion);
-    const distance = camera.position.distanceTo(object.position);
-    const worldPerPixel = distance * 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) / innerHeight;
-    const desiredWidth = Math.min(width, Math.max(240, innerWidth - 28));
-    object.scale.setScalar(Math.max(.001, desiredWidth * worldPerPixel / width));
-    element.style.width = `${width}px`;
-    element.style.height = `${panelHeight}px`;
+  private setVisibility(object: CSS3DObject, element: HTMLElement, visible: boolean): void {
+    object.visible = visible;
+    element.style.visibility = visible ? 'visible' : 'hidden';
+    element.style.pointerEvents = visible ? 'auto' : 'none';
+    element.inert = !visible;
   }
 
   private hide(object: CSS3DObject, element: HTMLElement): void {
-    object.visible = false;
-    element.style.visibility = 'hidden';
-    element.style.pointerEvents = 'none';
+    this.setVisibility(object, element, false);
   }
 }

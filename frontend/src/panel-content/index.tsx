@@ -50,6 +50,21 @@ interface PanelPageProps {
   children: ReactNode;
 }
 
+export interface TutorialPanelGuideCopy {
+  panelEyebrow: string;
+  panelTitle: string;
+  center: string;
+  scroll: string;
+  click: string;
+  extra: string;
+  clickButton: string;
+  clicked: string;
+  continueButton: string;
+  resetKey: number;
+  onClick: () => void;
+  onContinue: () => void;
+}
+
 function PanelPage({ theme, eyebrow, title, intro, children }: PanelPageProps): ReactElement {
   return (
     <main className={`panel-page ${theme}`}>
@@ -58,6 +73,42 @@ function PanelPage({ theme, eyebrow, title, intro, children }: PanelPageProps): 
       {intro ? <p className="panel-intro">{intro}</p> : null}
       {children}
     </main>
+  );
+}
+
+function TutorialPanelGuide({ guide }: { guide: TutorialPanelGuideCopy }): ReactElement {
+  const [clicked, setClicked] = useState(false);
+  return (
+    <section className="panel-section tutorial-panel-guide" aria-label={guide.panelTitle}>
+      <div className="panel-card tutorial-panel-guide__card">
+        <div className="panel-eyebrow">{guide.panelEyebrow}</div>
+        <h2>{guide.panelTitle}</h2>
+        <p>{guide.center}</p>
+        <ul className="tutorial-panel-guide__list">
+          <li>{guide.scroll}</li>
+          <li>{guide.click}</li>
+        </ul>
+        <p className="panel-footnote tutorial-panel-guide__extra">{guide.extra}</p>
+        <button
+          className="tutorial-panel-guide__button"
+          onClick={() => {
+            setClicked(true);
+            guide.onClick();
+          }}
+          type="button"
+        >
+          {guide.clickButton}
+        </button>
+        {clicked ? (
+          <>
+            <p className="tutorial-panel-guide__success">{guide.clicked}</p>
+            <button className="tutorial-panel-guide__continue" onClick={guide.onContinue} type="button">
+              {guide.continueButton}
+            </button>
+          </>
+        ) : null}
+      </div>
+    </section>
   );
 }
 
@@ -254,13 +305,14 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
   );
 }
 
-function ProjectsPanel(): ReactElement {
+function ProjectsPanel({ tutorialGuide }: { tutorialGuide?: TutorialPanelGuideCopy } = {}): ReactElement {
   return (
     <PanelPage
       theme="panel-projects"
       eyebrow="01"
       title={t('Projects')}
     >
+      {tutorialGuide ? <TutorialPanelGuide guide={tutorialGuide} key={tutorialGuide.resetKey} /> : null}
       <ProjectUniverse title={t('Personal projects')} projects={personalProjects} />
       <ProjectUniverse title={t('Work projects')} projects={workProjects} designOffset={personalProjects.length} />
     </PanelPage>
@@ -784,7 +836,7 @@ function LibraryPanel(): ReactElement {
     >
       <div className="library-message">
         <p className="library-message__title">{t('Changing how the world works')}</p>
-        <p className="library-message__status">{t('Currently in stealth mode')}</p>
+        <p className="library-message__status">{t('Startup currently in stealth mode')}</p>
       </div>
     </PanelPage>
   );
@@ -881,7 +933,7 @@ function SecretPanel({ panel }: { panel: SecretPanel }): ReactElement {
   );
 }
 
-type PanelComponent = () => ReactElement;
+type PanelComponent = (props?: { tutorialGuide?: TutorialPanelGuideCopy }) => ReactElement;
 
 const panelRegistry: Readonly<Record<string, PanelComponent>> = {
   'starship:front': ProjectsPanel,
@@ -908,8 +960,8 @@ function MissingPanel(): ReactElement {
   );
 }
 
-export function PanelContent({ panelId }: { panelId: string }): ReactElement {
+export function PanelContent({ panelId, tutorialGuide }: { panelId: string; tutorialGuide?: TutorialPanelGuideCopy }): ReactElement {
   usePanelLanguage();
   const Panel = panelRegistry[panelId] ?? MissingPanel;
-  return <Panel />;
+  return <Panel tutorialGuide={tutorialGuide} />;
 }

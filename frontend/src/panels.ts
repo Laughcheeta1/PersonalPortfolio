@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { config } from './config';
 import { landmarks, type Landmark } from './world/registry';
 import { distance } from './world/navigation';
-import { PanelContent } from './panel-content';
+import { PanelContent, type TutorialPanelGuideCopy } from './panel-content';
 import { localize, onLanguageChange } from './i18n';
 export type PanelState = 'inactive' | 'opening' | 'active' | 'closing';
 export function choosePanel(player:{x:number;z:number},current:Landmark|null):Landmark|null {
@@ -22,7 +22,8 @@ export function panelScaleForViewport(distanceToPanel:number,fov:number,viewport
 export function isolatePanel(element:HTMLElement) {
   for(const event of ['pointerdown','pointermove','pointerup','wheel','keydown','keyup'])element.addEventListener(event,e=>e.stopPropagation());
 }
-export function renderContent(element:HTMLElement, panelId:string) {
+export type PanelContentRenderer = (tutorialGuide?: TutorialPanelGuideCopy) => void;
+export function renderContent(element:HTMLElement, panelId:string, tutorialGuide?: TutorialPanelGuideCopy): PanelContentRenderer {
   element.dataset.panelType='react';
   delete element.dataset.i18nSkip;
   element.replaceChildren();
@@ -31,7 +32,10 @@ export function renderContent(element:HTMLElement, panelId:string) {
   host.className='panel-react-root';
   host.dataset.i18nSkip='';
   element.append(host);
-  createRoot(host).render(createElement(PanelContent,{panelId}));
+  const root=createRoot(host);
+  const render=(guide?:TutorialPanelGuideCopy)=>root.render(createElement(PanelContent,{panelId,tutorialGuide:guide}));
+  render(tutorialGuide);
+  return render;
 }
 interface Surface {landmark:Landmark;group:THREE.Group;elements:HTMLElement[];state:PanelState;progress:number}
 export class PanelSystem {

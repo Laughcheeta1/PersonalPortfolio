@@ -151,7 +151,7 @@ export const panelSpanish: Record<string, string> = {
 
   'Go Big or Go Home': 'A lo grande o nada',
   'Changing how the world works': 'Cambiando la forma en que funciona el mundo',
-  'Currently in stealth mode': 'Actualmente en modo confidencial',
+  'Startup currently in stealth mode': 'Startup actualmente en modo confidencial',
   'Progress, not perfection.': 'Progreso, no perfección.',
   'I want to use this panel to show a little bit about my stats. There is still a lot of room to grow, but I am happy with what I have accomplished:': 'Quiero usar este panel para mostrar un poco de mis estadísticas. Todavía hay mucho espacio para crecer, pero estoy feliz con lo que he logrado:',
   'Fitness and endurance statistics': 'Estadísticas de fuerza y resistencia',

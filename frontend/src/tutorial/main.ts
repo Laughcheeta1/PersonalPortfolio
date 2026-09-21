@@ -9,16 +9,16 @@ import { createCharacter, createLandmark } from '../world/models';
 import { damping } from '../world/physics';
 import { getLanguage, onLanguageChange } from '../i18n';
 import { createLanguageMenu } from '../i18n/LanguageMenu';
-import { getTutorialCopy, type FingerId } from './i18n';
+import { getTutorialCopy } from './i18n';
 import { TutorialInteractionPanels, type TutorialInteractionStep } from './interactionPanels';
 import { isInFrontalCone, isTutorialComplete, joystickMatchesStep, keyMatchesStep, nextStepIndex, tutorialSteps } from './state';
+import '../style.css';
 import './style.css';
 
 const app = document.querySelector<HTMLDivElement>('#tutorial-app');
 if (!app) throw new Error('Tutorial host is missing.');
 
 const homeUrl = new URL('../', document.baseURI).toString();
-const handImageUrl = new URL('../../assets/tutorial-hand.png', import.meta.url).href;
 const handPlacementImageUrl = new URL('../../assets/tutorial-hand-placement.png', import.meta.url).href;
 const tutorialChoiceKey = 'portfolio.tutorial.v1.choice';
 const roomCenter = { x: -23, z: 0 } as const;
@@ -35,7 +35,7 @@ app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLab
         <p id="tutorial-hand-placement-body">${initialCopy.handPlacement.body}</p>
         <div class="tutorial-hand-placement__instruction">
           <strong id="tutorial-hand-placement-keyboard-label">${initialCopy.handPlacement.keyboardLabel}</strong>
-          <p id="tutorial-hand-placement-keyboard-instructions">${initialCopy.handPlacement.keyboardInstructions}</p>
+          <ul id="tutorial-hand-placement-keyboard-instructions"></ul>
         </div>
         <div class="tutorial-hand-placement__instruction">
           <strong id="tutorial-hand-placement-mouse-label">${initialCopy.handPlacement.mouseLabel}</strong>
@@ -62,17 +62,13 @@ app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLab
     <div class="tutorial-route"><span id="tutorial-route-heading">${initialCopy.routeHeading}</span><ol id="tutorial-steps"></ol></div>
   </section>
 
-  <aside id="tutorial-finger-guide" class="finger-guide" aria-label="${initialCopy.fingerGuide.diagramLabel}">
-    <div class="finger-guide__heading"><span id="tutorial-finger-eyebrow" class="tutorial-eyebrow">${initialCopy.fingerGuide.eyebrow}</span><strong id="tutorial-finger-title">${initialCopy.fingerGuide.title}</strong></div>
-    <div id="tutorial-keyboard-diagram" class="keyboard-diagram" aria-label="${initialCopy.fingerGuide.diagramLabel}">
-      <div class="keyboard-keys">
-        <div class="keyboard-row keyboard-row--wasd"><span class="keyboard-spacer"></span><kbd data-finger-key="w" data-key-label="w">W</kbd><span class="keyboard-spacer"></span></div>
-        <div class="keyboard-row keyboard-row--wasd"><kbd data-finger-key="a" data-key-label="a">A</kbd><kbd data-finger-key="s" data-key-label="s">S</kbd><kbd data-finger-key="d" data-key-label="d">D</kbd></div>
-        <div class="keyboard-row keyboard-row--actions"><kbd data-finger-key="shift" data-key-label="shift">shift</kbd><kbd data-finger-key="space" data-key-label="space">space</kbd></div>
-      </div>
-      <img id="tutorial-hand" class="tutorial-hand" src="${handImageUrl}" alt="${initialCopy.fingerGuide.handAlt}">
-    </div>
-    <div id="tutorial-finger-legend" class="finger-legend"></div>
+  <aside id="tutorial-finger-guide" class="finger-guide" aria-label="${initialCopy.handPlacement.title}">
+    <div class="finger-guide__heading"><span class="tutorial-eyebrow">${initialCopy.handPlacement.eyebrow}</span><strong>${initialCopy.handPlacement.title}</strong></div>
+    <button id="tutorial-show-hand-placement" class="finger-guide__show-hand" type="button">
+      <span class="finger-guide__show-hand-icon" aria-hidden="true">✋</span>
+      <span id="tutorial-show-hand-placement-label">${initialCopy.handPlacement.showButton}</span>
+      <span aria-hidden="true">↗</span>
+    </button>
   </aside>
 
   <div id="tutorial-camera-hint" class="tutorial-camera-hint" hidden><span class="tutorial-crosshair" aria-hidden="true">+</span><span id="tutorial-camera-hint-label">${initialCopy.cameraHint}</span></div>
@@ -98,10 +94,11 @@ const handPlacementEyebrow = document.querySelector<HTMLElement>('#tutorial-hand
 const handPlacementTitle = document.querySelector<HTMLElement>('#tutorial-hand-placement-title')!;
 const handPlacementBody = document.querySelector<HTMLElement>('#tutorial-hand-placement-body')!;
 const handPlacementKeyboardLabel = document.querySelector<HTMLElement>('#tutorial-hand-placement-keyboard-label')!;
-const handPlacementKeyboardInstructions = document.querySelector<HTMLElement>('#tutorial-hand-placement-keyboard-instructions')!;
+const handPlacementKeyboardInstructions = document.querySelector<HTMLUListElement>('#tutorial-hand-placement-keyboard-instructions')!;
 const handPlacementMouseLabel = document.querySelector<HTMLElement>('#tutorial-hand-placement-mouse-label')!;
 const handPlacementMouseInstructions = document.querySelector<HTMLElement>('#tutorial-hand-placement-mouse-instructions')!;
 const handPlacementOk = document.querySelector<HTMLButtonElement>('#tutorial-hand-placement-ok')!;
+const handPlacementShowButton = document.querySelector<HTMLButtonElement>('#tutorial-show-hand-placement')!;
 const tutorialCard = document.querySelector<HTMLElement>('.tutorial-card')!;
 const title = document.querySelector<HTMLElement>('#tutorial-title')!;
 const eyebrow = document.querySelector<HTMLElement>('#tutorial-eyebrow')!;
@@ -118,25 +115,17 @@ const focusLabel = document.querySelector<HTMLElement>('#tutorial-focus-label')!
 const cameraHint = document.querySelector<HTMLElement>('#tutorial-camera-hint')!;
 const cameraHintLabel = document.querySelector<HTMLElement>('#tutorial-camera-hint-label')!;
 const fingerGuide = document.querySelector<HTMLElement>('#tutorial-finger-guide')!;
-const fingerEyebrow = document.querySelector<HTMLElement>('#tutorial-finger-eyebrow')!;
-const fingerTitle = document.querySelector<HTMLElement>('#tutorial-finger-title')!;
-const keyboardDiagram = document.querySelector<HTMLElement>('#tutorial-keyboard-diagram')!;
-const hand = document.querySelector<HTMLImageElement>('#tutorial-hand')!;
-const fingerLegend = document.querySelector<HTMLElement>('#tutorial-finger-legend')!;
 const completeEyebrow = document.querySelector<HTMLElement>('#tutorial-complete-eyebrow')!;
 const completeTitle = document.querySelector<HTMLElement>('#tutorial-complete-title')!;
 const completeCopy = document.querySelector<HTMLElement>('#tutorial-complete-copy')!;
 const enterLabel = document.querySelector<HTMLElement>('#tutorial-enter-label')!;
 const languageControl = createLanguageMenu();
-languageControl.classList.add('tutorial-language-menu');
 document.querySelector<HTMLElement>('#tutorial-language')!.append(languageControl);
 const completeCard = document.querySelector<HTMLElement>('#tutorial-complete')!;
 const notice = document.querySelector<HTMLElement>('#tutorial-notice')!;
 const runButton = document.querySelector<HTMLButtonElement>('#tutorial-run')!;
 const jumpButton = document.querySelector<HTMLButtonElement>('#tutorial-jump')!;
 const stick = document.querySelector<HTMLElement>('#tutorial-stick')!;
-const fingerOrder: FingerId[] = ['index', 'middle', 'ring', 'thumb', 'little'];
-
 let renderer: THREE.WebGLRenderer;
 try {
   renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
@@ -222,6 +211,28 @@ guide.position.copy(guidePosition);
 guide.rotation.y = Math.PI;
 scene.add(guide);
 
+const tutorialArrowMaterial = new THREE.MeshStandardMaterial({
+  color: '#e9ab54',
+  emissive: '#8b4d1b',
+  emissiveIntensity: .8,
+  roughness: .42,
+  metalness: .08,
+});
+const tutorialTargetArrow = new THREE.Group();
+tutorialTargetArrow.name = 'tutorial-target-arrow';
+const arrowShaft = new THREE.Mesh(new THREE.CylinderGeometry(.18, .18, 1.85, 14), tutorialArrowMaterial);
+arrowShaft.position.y = 1.85;
+arrowShaft.castShadow = true;
+const arrowHead = new THREE.Mesh(new THREE.ConeGeometry(.62, 1.1, 16), tutorialArrowMaterial);
+arrowHead.position.y = .5;
+arrowHead.rotation.z = Math.PI;
+arrowHead.castShadow = true;
+tutorialTargetArrow.add(arrowShaft, arrowHead);
+tutorialTargetArrow.visible = false;
+scene.add(tutorialTargetArrow);
+const rocketArrowBase = new THREE.Box3().setFromObject(rocket).max.y + .6;
+const guideArrowBase = new THREE.Box3().setFromObject(guide).max.y + .6;
+
 const camera = new THREE.PerspectiveCamera(config.camera.fov, innerWidth / innerHeight, config.camera.near, config.camera.far);
 const input = new Input(renderer.domElement, stick, () => renderer.domElement.focus());
 input.yaw = .34;
@@ -292,13 +303,22 @@ const interactionPanels = new TutorialInteractionPanels(domScene, {
 });
 interactionPanels.setCopy(initialCopy.interactions);
 
-handPlacementOk.addEventListener('click', () => {
+function openHandPlacement() {
+  handPlacementOpen = true;
+  handPlacement.hidden = false;
+  handPlacement.removeAttribute('aria-hidden');
+  input.clear();
+  window.requestAnimationFrame(() => handPlacementOk.focus({ preventScroll: true }));
+}
+function closeHandPlacement() {
   handPlacementOpen = false;
   handPlacement.hidden = true;
   handPlacement.setAttribute('aria-hidden', 'true');
   input.clear();
   renderer.domElement.focus();
-});
+}
+handPlacementOk.addEventListener('click', closeHandPlacement);
+handPlacementShowButton.addEventListener('click', openHandPlacement);
 window.requestAnimationFrame(() => handPlacementOk.focus({ preventScroll: true }));
 
 function currentTutorialStep() {
@@ -308,14 +328,25 @@ function currentInteractionStep(): TutorialInteractionStep {
   const step = currentTutorialStep();
   return step?.kind === 'model' || step?.kind === 'guide' ? step.kind : null;
 }
+function updateTutorialArrow(step: TutorialInteractionStep) {
+  if (!step) {
+    tutorialTargetArrow.visible = false;
+    return;
+  }
+  const target = step === 'model' ? rocketPosition : guidePosition;
+  const baseY = step === 'model' ? rocketArrowBase : guideArrowBase;
+  tutorialTargetArrow.visible = true;
+  tutorialTargetArrow.position.set(
+    target.x,
+    baseY + (config.animation.reducedMotion ? 0 : Math.sin(time * 2.8) * .34),
+    target.z,
+  );
+}
 function showNotice(message: string) {
   notice.textContent = message;
   notice.classList.add('is-visible');
   if (noticeTimeout) clearTimeout(noticeTimeout);
   noticeTimeout = setTimeout(() => notice.classList.remove('is-visible'), 2600);
-}
-function setActiveFinger(key: string | undefined) {
-  for (const keycap of document.querySelectorAll<HTMLElement>('[data-finger-key]')) keycap.classList.toggle('is-active', keycap.dataset.fingerKey === key);
 }
 function renderLanguage() {
   const language = getLanguage();
@@ -344,26 +375,22 @@ function renderLanguage() {
   handPlacementTitle.textContent = strings.handPlacement.title;
   handPlacementBody.textContent = strings.handPlacement.body;
   handPlacementKeyboardLabel.textContent = strings.handPlacement.keyboardLabel;
-  handPlacementKeyboardInstructions.textContent = strings.handPlacement.keyboardInstructions;
+  handPlacementKeyboardInstructions.replaceChildren(...strings.handPlacement.keyboardInstructions.map(instruction => {
+    const item = document.createElement('li');
+    item.append(document.createTextNode(`${instruction.instruction} `));
+    const key = document.createElement('strong');
+    key.textContent = `${instruction.key}.`;
+    item.append(key);
+    return item;
+  }));
   handPlacementMouseLabel.textContent = strings.handPlacement.mouseLabel;
   handPlacementMouseInstructions.textContent = strings.handPlacement.mouseInstructions;
   handPlacementImage.alt = strings.handPlacement.imageAlt;
   handPlacementOk.textContent = strings.handPlacement.ok;
+  handPlacementShowButton.setAttribute('aria-label', strings.handPlacement.showButton);
+  document.querySelector<HTMLElement>('#tutorial-show-hand-placement-label')!.textContent = strings.handPlacement.showButton;
   interactionPanels.setCopy(strings.interactions);
-  fingerGuide.setAttribute('aria-label', strings.fingerGuide.diagramLabel);
-  fingerEyebrow.textContent = strings.fingerGuide.eyebrow;
-  fingerTitle.textContent = strings.fingerGuide.title;
-  keyboardDiagram.setAttribute('aria-label', strings.fingerGuide.diagramLabel);
-  hand.alt = strings.fingerGuide.handAlt;
-  const keyLabels = new Map(fingerOrder.map(id => [strings.fingerGuide.fingers[id].key, strings.fingerGuide.fingers[id].keyLabel]));
-  for (const keycap of keyboardDiagram.querySelectorAll<HTMLElement>('[data-key-label]')) {
-    const keyLabel = keyLabels.get(keycap.dataset.keyLabel ?? '');
-    if (keyLabel) keycap.textContent = keyLabel;
-  }
-  fingerLegend.innerHTML = fingerOrder.map(id => {
-    const finger = strings.fingerGuide.fingers[id];
-    return `<div class="finger-legend__item finger-legend__item--${id}"><span class="finger-legend__finger" aria-hidden="true"></span><span><strong>${finger.name}</strong><small>${strings.fingerGuide.in} <kbd>${finger.keyLabel}</kbd></small></span></div>`;
-  }).join('');
+  fingerGuide.setAttribute('aria-label', strings.handPlacement.title);
   completeEyebrow.textContent = strings.complete.eyebrow;
   completeTitle.textContent = strings.complete.title;
   completeCopy.textContent = strings.complete.body;
@@ -405,7 +432,6 @@ function renderStage() {
   cameraHint.hidden = !isCamera;
   for (const ball of focusBalls) ball.mesh.visible = isCamera;
   if (isCamera && !focusBalls.some(ball => ball.mesh.visible)) placeFocusBalls();
-  setActiveFinger(isCamera || isInteraction ? undefined : step.keyLabel.toLowerCase());
   feedback.textContent = '';
   tutorialCard.dataset.stage = step.id;
 }
@@ -532,7 +558,9 @@ function frame(now: number) {
   updateCamera(dt);
   sunLight.target.position.copy(player.model.position);
   if (!handPlacementOpen) updateFocus();
-  interactionPresence = interactionPanels.update(currentInteractionStep(), player.model.position, rocketPosition, guidePosition, camera);
+  const interactionStep = currentInteractionStep();
+  updateTutorialArrow(interactionStep);
+  interactionPresence = interactionPanels.update(interactionStep, player.model.position, rocketPosition, guidePosition, camera, dt);
   if (!config.animation.reducedMotion) {
     for (const ball of focusBalls) ball.mesh.position.y = 2.35 + Math.sin(time * 1.4 + focusDirections.findIndex(direction => direction.id === ball.id)) * .08;
   }
@@ -560,6 +588,7 @@ Object.defineProperty(window, 'tutorialDebug', { get: () => ({
   complete: isTutorialComplete(currentStep),
   focusedBalls: focusBalls.filter(ball => ball.focused).map(ball => ball.id),
   sceneObjects: scene.children.map(object => object.name).filter(Boolean),
+  targetArrow: { visible: tutorialTargetArrow.visible, step: currentInteractionStep() },
   interaction: { step: currentInteractionStep(), ...interactionPresence },
   player: { x: player.model.position.x, y: player.model.position.y, z: player.model.position.z, grounded: player.grounded },
   camera: { yaw: input.yaw, pitch: input.pitch },

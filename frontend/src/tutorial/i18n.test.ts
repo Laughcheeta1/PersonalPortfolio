@@ -13,9 +13,14 @@ describe('tutorial translations', () => {
       expect(spanish.steps[step.id].body).not.toBe(english.steps[step.id].body);
       expect(spanish.steps[step.id].route).not.toBe(english.steps[step.id].route);
     }
-    expect(spanish.fingerGuide.title).not.toBe(english.fingerGuide.title);
-    expect(spanish.fingerGuide.handAlt).not.toBe(english.fingerGuide.handAlt);
-    expect(english.handPlacement.keyboardInstructions).toContain('Pinky on Shift');
+    expect(english.handPlacement.keyboardInstructions).toEqual([
+      { instruction: 'Pinky on', key: 'Shift' },
+      { instruction: 'Ring finger on', key: 'A' },
+      { instruction: 'Middle finger on', key: 'W' },
+      { instruction: 'Index finger on', key: 'D' },
+      { instruction: 'Thumb on', key: 'Space' },
+    ]);
+    expect(english.handPlacement.showButton).toBe('Press here to show hand placement');
     expect(english.handPlacement.mouseInstructions).toContain('right hand on the mouse');
     expect(english.interactions.model.center).toBe('Move the camera to center the panel.');
     expect(english.interactions.model.scroll).toBe('You can scroll on the panel.');
