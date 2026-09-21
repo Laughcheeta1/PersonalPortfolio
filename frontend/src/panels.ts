@@ -20,6 +20,51 @@ export function panelScaleForViewport(distanceToPanel:number,fov:number,viewport
   return projectedPanelHeight*visibleWorldHeight/(viewportHeight*config.panels.height);
 }
 export function isolatePanel(element:HTMLElement) {
+  if(typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(pointer: coarse)').matches){
+    element.style.touchAction='none';
+    let gesture:{id:number;x:number;y:number;target:HTMLElement;scale:number;active:boolean}|null=null;
+    const isScrollable=(candidate:HTMLElement)=>{
+      const overflow=getComputedStyle(candidate).overflowY;
+      return (overflow==='auto'||overflow==='scroll')&&candidate.scrollHeight>candidate.clientHeight+1;
+    };
+    const scrollTarget=(target:EventTarget|null)=>{
+      let candidate=target instanceof HTMLElement?target:null;
+      while(candidate&&element.contains(candidate)){
+        if(isScrollable(candidate))return candidate;
+        if(candidate===element)break;
+        candidate=candidate.parentElement;
+      }
+      return isScrollable(element)?element:null;
+    };
+    const scrollScale=(target:HTMLElement)=>{
+      const localHeight=target.offsetHeight;
+      const renderedHeight=target.getBoundingClientRect().height;
+      return localHeight>0&&renderedHeight>0?Math.max(.1,renderedHeight/localHeight):1;
+    };
+    element.addEventListener('pointerdown',event=>{
+      if(event.pointerType==='mouse'||gesture)return;
+      const target=scrollTarget(event.target);
+      if(!target)return;
+      gesture={id:event.pointerId,x:event.clientX,y:event.clientY,target,scale:scrollScale(target),active:false};
+    },{capture:true,passive:true});
+    element.addEventListener('pointermove',event=>{
+      if(!gesture||event.pointerId!==gesture.id)return;
+      const deltaX=event.clientX-gesture.x,deltaY=event.clientY-gesture.y;
+      if(!gesture.active&&Math.hypot(deltaX,deltaY)<6)return;
+      gesture.active=true;
+      if(!element.hasPointerCapture(event.pointerId))element.setPointerCapture(event.pointerId);
+      gesture.target.scrollTop-=deltaY/gesture.scale;
+      gesture.x=event.clientX;gesture.y=event.clientY;
+      event.preventDefault();
+    },{passive:false});
+    const endGesture=(event:PointerEvent)=>{
+      if(!gesture||event.pointerId!==gesture.id)return;
+      if(gesture.active)event.preventDefault();
+      if(element.hasPointerCapture(event.pointerId))element.releasePointerCapture(event.pointerId);
+      gesture=null;
+    };
+    for(const type of ['pointerup','pointercancel','lostpointercapture'] as const)element.addEventListener(type,endGesture,{passive:false});
+  }
   for(const event of ['pointerdown','pointermove','pointerup','wheel','keydown','keyup'])element.addEventListener(event,e=>e.stopPropagation());
 }
 export type PanelContentRenderer = (tutorialGuide?: TutorialPanelGuideCopy) => void;

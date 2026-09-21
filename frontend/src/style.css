@@ -29,4 +29,5 @@ select{font:inherit;color:inherit}#language{max-width:100px;border:1px solid #ff
 @media(pointer:coarse){
   html,body{touch-action:manipulation}
   .map-card,.touch-hint{display:none}
+  .world-panel,.chat-anchor{-webkit-overflow-scrolling:touch}
 }
