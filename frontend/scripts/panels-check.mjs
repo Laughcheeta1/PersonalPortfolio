@@ -392,7 +392,7 @@ try {
   panel = page.locator('.world-panel:visible');
   assert.equal(await panel.getByText('Go Big or Go Home', { exact: true }).count(), 1);
   assert.equal(await panel.getByText('Changing how the world works', { exact: true }).count(), 1);
-  assert.equal(await panel.getByText('Currently in stealth mode', { exact: true }).count(), 1);
+  assert.equal(await panel.getByText('Startup currently in stealth mode', { exact: true }).count(), 1);
   assert.equal(await panel.locator('.panel-columns, .panel-note, .panel-status').count(), 0);
   console.log('PASS: Library of Pergamon displays the requested world-changing phrase.');
 

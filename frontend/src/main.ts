@@ -25,7 +25,7 @@ const app=document.querySelector<HTMLDivElement>('#app')!;
 void warmBackend();
 app.innerHTML=`<main id="world" aria-label="Interactive island portfolio"></main>
 <header class="masthead"><a href="#" class="brand" aria-label="My world home"><span class="brand-mark">✳</span><span>My world<span class="brand-caption">A PERSONAL PORTFOLIO</span></span></a><div class="top-right"><button id="music" class="round-button" aria-label="Play background music" title="Play background music" aria-pressed="false">♫<span class="mute-slash" aria-hidden="true">/</span></button><button id="help" class="round-button" aria-label="Show controls">?</button></div></header>
-<aside class="welcome"><h1>A piece of me</h1><button id="explore" class="explore-button">Let’s wander <span>↗</span></button></aside>
+<aside class="welcome"><h1>A piece of me</h1><section class="welcome-warning" aria-labelledby="photosensitivity-warning-title"><h2 id="photosensitivity-warning-title">PHOTOSENSITIVITY / SEIZURE WARNING</h2><p>This experience contains flashing lights, rapidly changing visual effects, and/or high-contrast patterns that may trigger seizures or other adverse reactions in people with photosensitive epilepsy or other visual sensitivities.</p><p>Viewer discretion is advised.</p><p class="welcome-warning__volume">DO NOT TURN UP THE VOLUME TO 90 OR MORE IF YOU HAVE EPILEPSY.</p><button id="epilepsy-safe-mode" class="welcome-warning__safe" type="button" aria-pressed="false">YES I AM EPILEPTIC</button></section><button id="explore" class="explore-button">Let’s wander <span>↗</span></button></aside>
 <aside class="map-card"><button id="map-toggle" aria-expanded="false"><span>⌘ &nbsp; ISLAND MAP</span><span id="discovered">0 / 7</span></button><svg id="minimap" viewBox="-112 -43 204 86" aria-label="Island map"><ellipse cx="-23" cy="0" rx="83" ry="35" fill="#b9cda4"/><path d="M-87 2 L-65 1 L-43 -1 L-14 -1 L7 1 L29 2" fill="none" stroke="#fff0ce" stroke-width="3"/>${landmarks.map((l,i)=>`<g><circle cx="${l.position[0]}" cy="${l.position[1]}" r="3" fill="${l.color}" stroke="#fff9e9" stroke-width="1"/><text x="${l.position[0]}" y="${l.position[1]+1.1}" text-anchor="middle">${i+1}</text></g>`).join('')}<path d="M29 2H74" stroke="#fff0ce" stroke-width="3"/><circle cx="74" cy="0" r="12" fill="#b9cda4"/><text x="74" y="1" text-anchor="middle" style="font-size:4px">BUGS</text><circle id="map-player" r="2.4" fill="#244b42" stroke="white" stroke-width="1"/></svg><div class="map-legend"><span><i></i> You are here</span></div></aside>
 <nav class="destination-list" aria-label="Guide destinations" hidden><header><span>WHERE TO?</span><button id="map-close" aria-label="Close destinations">×</button></header><p>Your guide will lead the way.</p>${landmarks.map((l,i)=>`<button data-destination="${l.id}"><span class="destination-number" style="background:${l.color}">${i+1}</span><span><strong>${l.title}</strong></span><span>↗</span></button>`).join('')}</nav>
 <footer class="controls"><span><kbd>W</kbd><span class="keys-row"><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span>Move</span><i></i><span class="mouse-icon">↔</span><span>Drag to look</span><i></i><kbd>shift</kbd><span>Take a little run</span></footer>
@@ -41,6 +41,7 @@ const defaultMusicVolumePercent=Math.round(config.audio.musicVolume*100);
 const musicControl=document.createElement('div');musicControl.className='music-control';musicButton.replaceWith(musicControl);musicControl.append(musicButton);musicControl.insertAdjacentHTML('beforeend',`<div class="music-volume-popover" role="group" aria-label="Music volume"><label for="music-volume">Volume <output id="music-volume-value" for="music-volume">${defaultMusicVolumePercent}%</output></label><input id="music-volume" aria-label="Music volume" max="100" min="0" step="1" type="range" value="${defaultMusicVolumePercent}" /></div>`);
 const musicVolumeInput=musicControl.querySelector<HTMLInputElement>('#music-volume')!;
 const musicVolumeValue=musicControl.querySelector<HTMLOutputElement>('#music-volume-value')!;
+const epilepsySafeButton=document.querySelector<HTMLButtonElement>('#epilepsy-safe-mode')!;
 const jumpButton=document.createElement('button');jumpButton.id='jump';jumpButton.textContent='Jump';jumpButton.setAttribute('aria-label','Jump');document.querySelector('#joystick')!.after(jumpButton);
 const runButton=document.createElement('button');runButton.id='run';runButton.textContent='Run';runButton.setAttribute('aria-label','Hold to run');runButton.setAttribute('aria-pressed','false');jumpButton.after(runButton);
 const orientationTip=createOrientationTip(app,{label:'A wider view',title:'A wider view',body:'Turn your phone sideways for more room to explore.',continueLabel:'Continue in portrait'},'orientation-tip');
@@ -76,11 +77,13 @@ for(const [i,landmark] of landmarks.entries()){
 const panels=new PanelSystem(domScene),chat=new ChatUI(domScene,id=>companion.guide(id));
 const ambientAudio=new AmbientAudio();
 const music=new MusicPlayer();
+let epilepsySafeMode=false;
+const epilepsySafeVolumeLimit=Math.max(0,config.audio.partyVolumeThreshold-.01);
 let lastAudibleVolume=music.currentVolume;
 const updateMusicVolumeDisplay=()=>{musicVolumeInput.value=String(Math.round(music.currentVolume*100));musicVolumeValue.value=`${Math.round(music.currentVolume*100)}%`;musicVolumeValue.textContent=musicVolumeValue.value;};
 updateMusicVolumeDisplay();
 let partyModeTarget:Pick<BugHunt,'setPartyMode'>|undefined;
-const syncPartyMode=()=>{const enabled=music.currentVolume>config.audio.partyVolumeThreshold;atmosphere.setPartyMode(enabled);partyModeTarget?.setPartyMode(enabled);};
+const syncPartyMode=()=>{const enabled=!epilepsySafeMode&&music.currentVolume>config.audio.partyVolumeThreshold;atmosphere.setPartyMode(enabled);partyModeTarget?.setPartyMode(enabled);};
 syncPartyMode();
 const isMusicControl=(target:EventTarget|null)=>target instanceof Node&&musicControl.contains(target);
 const input=new Input(renderer.domElement,document.querySelector('#joystick')!,()=>unlockAudio(document.activeElement!==musicButton));input.yaw=.18;
@@ -109,9 +112,10 @@ let musicStarting=false;
 let musicPreference:boolean|null=null;
 function setMusicEnabled(enabled:boolean):Promise<void>{const request=music.setEnabled(enabled).catch(()=>{announce(t('Music could not play. Try enabling it again.'));}).finally(updateMusicButton);updateMusicButton();return request;}
 function unlockAudio(startMusic=true){chat.speech.unlockAudio();ambientAudio.unlock();music.unlock();if(startMusic&&musicPreference!==false&&!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
-function setMusicVolume(volume:number){music.setVolume(volume);syncPartyMode();if(volume>0)lastAudibleVolume=volume;updateMusicVolumeDisplay();updateMusicButton();}
+function setMusicVolume(volume:number){const nextVolume=epilepsySafeMode?Math.min(volume,epilepsySafeVolumeLimit):volume;music.setVolume(nextVolume);syncPartyMode();if(nextVolume>0)lastAudibleVolume=nextVolume;updateMusicVolumeDisplay();updateMusicButton();}
 function handleMusicVolumeInput(){const volume=Number(musicVolumeInput.value)/100;setMusicVolume(volume);if(volume===0){musicPreference=false;void setMusicEnabled(false);return;}musicPreference=true;unlockAudio(false);if(!music.enabled&&!musicStarting){musicStarting=true;void setMusicEnabled(true).finally(()=>{musicStarting=false;});}}
 musicVolumeInput.addEventListener('input',handleMusicVolumeInput);
+epilepsySafeButton.addEventListener('click',()=>{if(epilepsySafeMode)return;epilepsySafeMode=true;musicVolumeInput.max=String(Math.round(epilepsySafeVolumeLimit*100));setMusicVolume(music.currentVolume);epilepsySafeButton.setAttribute('aria-pressed','true');epilepsySafeButton.textContent=t('DISCO MODE DISABLED');});
 // Browsers require a user gesture before any audible playback.
 window.addEventListener('pointerdown',event=>unlockAudio(!isMusicControl(event.target)));window.addEventListener('keydown',event=>unlockAudio(!isMusicControl(event.target)));
 musicButton.addEventListener('click',()=>{if(music.enabled&&music.currentVolume>0){musicPreference=false;setMusicVolume(0);void setMusicEnabled(false);return;}const volume=music.currentVolume>0?music.currentVolume:lastAudibleVolume||config.audio.musicVolume;musicPreference=true;setMusicVolume(volume);unlockAudio(false);void setMusicEnabled(true);});

@@ -2,8 +2,6 @@ import type { Language } from '../i18n';
 import type { OrientationCopy } from '../orientation';
 import type { TutorialStepId } from './state';
 
-export type FingerId = 'index' | 'middle' | 'ring' | 'thumb' | 'little';
-
 export type TutorialInteractionCopy = {
   model: {
     panelEyebrow: string;
@@ -66,19 +64,12 @@ export type TutorialCopy = {
     title: string;
     body: string;
     keyboardLabel: string;
-    keyboardInstructions: string;
+    keyboardInstructions: Array<{ instruction: string; key: string }>;
     mouseLabel: string;
     mouseInstructions: string;
     imageAlt: string;
     ok: string;
-  };
-  fingerGuide: {
-    eyebrow: string;
-    title: string;
-    diagramLabel: string;
-    handAlt: string;
-    in: string;
-    fingers: Record<FingerId, { name: string; key: string; keyLabel: string }>;
+    showButton: string;
   };
   interactions: TutorialInteractionCopy;
   complete: {
@@ -140,25 +131,18 @@ const english: TutorialCopy = {
     title: 'Place your hands',
     body: 'Use your left hand on the keyboard and your right hand on the mouse.',
     keyboardLabel: 'Left hand · keyboard',
-    keyboardInstructions: 'Pinky on Shift · ring finger on A · middle finger on W · index finger on D · thumb on Space.',
+    keyboardInstructions: [
+      { instruction: 'Pinky on', key: 'Shift' },
+      { instruction: 'Ring finger on', key: 'A' },
+      { instruction: 'Middle finger on', key: 'W' },
+      { instruction: 'Index finger on', key: 'D' },
+      { instruction: 'Thumb on', key: 'Space' },
+    ],
     mouseLabel: 'Right hand · mouse',
     mouseInstructions: 'Keep your right hand on the mouse to look around the world.',
     imageAlt: 'Top-down view of the correct left-hand keyboard placement and right-hand mouse placement.',
     ok: 'OK',
-  },
-  fingerGuide: {
-    eyebrow: 'KEYBOARD MAP',
-    title: 'Place your hand here',
-    diagramLabel: 'Keyboard layout with a transparent hand showing finger placement',
-    handAlt: 'Semi-transparent left hand over the keys: index finger on D, middle finger on W, ring finger on A, thumb on Space, and little finger on Shift.',
-    in: 'in',
-    fingers: {
-      index: { name: 'index finger', key: 'd', keyLabel: 'D' },
-      middle: { name: 'middle finger', key: 'w', keyLabel: 'W' },
-      ring: { name: 'ring finger', key: 'a', keyLabel: 'A' },
-      thumb: { name: 'thumb', key: 'space', keyLabel: 'space' },
-      little: { name: 'little finger', key: 'shift', keyLabel: 'shift' },
-    },
+    showButton: 'Press here to show hand placement',
   },
   interactions: {
     model: {
@@ -252,25 +236,18 @@ const spanish: TutorialCopy = {
     title: 'Coloca las manos',
     body: 'Usa la mano izquierda en el teclado y la mano derecha en el ratón.',
     keyboardLabel: 'Mano izquierda · teclado',
-    keyboardInstructions: 'Meñique en Shift · anular en A · medio en W · índice en D · pulgar en Espacio.',
+    keyboardInstructions: [
+      { instruction: 'Meñique en', key: 'Shift' },
+      { instruction: 'Anular en', key: 'A' },
+      { instruction: 'Medio en', key: 'W' },
+      { instruction: 'Índice en', key: 'D' },
+      { instruction: 'Pulgar en', key: 'Espacio' },
+    ],
     mouseLabel: 'Mano derecha · ratón',
     mouseInstructions: 'Mantén la mano derecha en el ratón para mirar alrededor del mundo.',
     imageAlt: 'Vista superior de la posición correcta de la mano izquierda en el teclado y de la mano derecha en el ratón.',
     ok: 'OK',
-  },
-  fingerGuide: {
-    eyebrow: 'MAPA DEL TECLADO',
-    title: 'Coloca aquí la mano',
-    diagramLabel: 'Distribución del teclado con una mano transparente que muestra la posición de los dedos',
-    handAlt: 'Mano izquierda semitransparente sobre las teclas: dedo índice en D, dedo medio en W, dedo anular en A, pulgar en Espacio y meñique en Shift.',
-    in: 'en',
-    fingers: {
-      index: { name: 'dedo índice', key: 'd', keyLabel: 'D' },
-      middle: { name: 'dedo medio', key: 'w', keyLabel: 'W' },
-      ring: { name: 'dedo anular', key: 'a', keyLabel: 'A' },
-      thumb: { name: 'pulgar', key: 'space', keyLabel: 'espacio' },
-      little: { name: 'meñique', key: 'shift', keyLabel: 'shift' },
-    },
+    showButton: 'Pulsa aquí para mostrar la posición de las manos',
   },
   interactions: {
     model: {
