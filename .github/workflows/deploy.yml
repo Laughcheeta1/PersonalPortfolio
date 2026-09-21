@@ -373,6 +373,7 @@ jobs:
             gcloud builds submit "${context}" \
               --project "${GCP_PROJECT_ID}" \
               --tag "${image}" \
+              --suppress-logs \
               --quiet
             image_exists "${image}"
           }
