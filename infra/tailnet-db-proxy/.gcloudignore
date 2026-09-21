@@ -1,0 +1,6 @@
+.git/
+.env
+.env.*
+*.env
+README.md
+main_test.go

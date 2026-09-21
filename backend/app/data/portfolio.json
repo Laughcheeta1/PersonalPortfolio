@@ -1,0 +1,470 @@
+{
+  "personal": {
+    "about": {
+      "title": "About me",
+      "quote": "“I know of no better life purpose than to perish attempting the great and impossible.”",
+      "attribution": "— Friedrich Nietzsche",
+      "links": [
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/santiago-yepes-mesa-67ab80270"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/Laughcheeta1"
+        }
+      ]
+    },
+    "hobbies": [
+      {
+        "id": "learning",
+        "number": "01",
+        "title": "Learning new things",
+        "star": {
+          "x": "20%",
+          "y": "22%",
+          "size": 27,
+          "delay": 0
+        }
+      },
+      {
+        "id": "gym",
+        "number": "02",
+        "title": "Gym",
+        "star": {
+          "x": "48%",
+          "y": "14%",
+          "size": 23,
+          "delay": 1.1
+        }
+      },
+      {
+        "id": "gifts",
+        "number": "03",
+        "title": "Making Gifts and surprise parties",
+        "star": {
+          "x": "68%",
+          "y": "42%",
+          "size": 25,
+          "delay": 2.2
+        }
+      },
+      {
+        "id": "motorcycle",
+        "number": "04",
+        "title": "Listening to Fredy Vega Podcasts",
+        "star": {
+          "x": "81%",
+          "y": "23%",
+          "size": 29,
+          "delay": 0.6
+        }
+      },
+      {
+        "id": "working",
+        "number": "05",
+        "title": "Working",
+        "copy": "Really. I personaly work for the love of the game",
+        "star": {
+          "x": "34%",
+          "y": "39%",
+          "size": 31,
+          "delay": 1.8
+        }
+      }
+    ]
+  },
+  "projects": {
+    "personalProjects": [
+      {
+        "id": "review-vscode-extension",
+        "title": "Review VS Code Extension",
+        "paragraphs": [
+          "VS Code extension for keeping control of fast code changes in the era of coding agents, with line-by-line review of live updates without constant Git commits."
+        ],
+        "href": "https://github.com/Laughcheeta1/PersonalPortfolio"
+      },
+      {
+        "id": "vcow",
+        "title": "VCOW",
+        "paragraphs": [
+          "A CREATE-X project that pivoted from vertical farming for cattle-raising into a crowdfunding platform for cattle projects after interviews with farmers and investors."
+        ]
+      },
+      {
+        "id": "employee-absence-management",
+        "title": "Employee Absence Management",
+        "paragraphs": [
+          "Web application enabling employers to manage employee absences. Defined requirements, architecture, database, and backend service layers.",
+          "Monolith architecture using Next.js and GraphQL backed by Supabase."
+        ]
+      },
+      {
+        "id": "lookup",
+        "title": "Lookup",
+        "paragraphs": [
+          "Multi-brand clothing catalog with CSV inventory upload plus store and product geolocation.",
+          "REST microservice architecture using Spring Boot, NestJS, React, Vite, and MongoDB."
+        ]
+      },
+      {
+        "id": "personal-portfolio",
+        "title": "Personal Portfolio",
+        "paragraphs": [
+          "This little island: a Three.js world, a conversational guide, and a portfolio designed as a place to explore."
+        ]
+      },
+      {
+        "id": "personal-project-placeholder-review-slot",
+        "title": "Place holder planet for future projects",
+        "paragraphs": []
+      },
+      {
+        "id": "personal-project-placeholder-hackathon-slot",
+        "title": "Place holder planet for future projects",
+        "paragraphs": []
+      }
+    ],
+    "workProjects": [
+      {
+        "id": "legal-ia",
+        "title": "Legal_IA",
+        "paragraphs": [
+          "Created and deployed an AI web application now in use by a legal professional. Lawyers manage their knowledge bases, clients, and documents, then ask an AI agent questions about that private context.",
+          "Administrator pages let the owner independently change each agent's LLM provider, model, and prompt, keeping the product maintainable without engineering intervention."
+        ]
+      },
+      {
+        "id": "medical-scales-calculator",
+        "title": "Medical Scales Calculator",
+        "paragraphs": [
+          "AI agent that calculates complex medical scales from consultation context and chat."
+        ]
+      },
+      {
+        "id": "rpa-integration-agent",
+        "title": "RPA Integration Agent",
+        "paragraphs": [
+          "AI agent built to automate and test RPA system integrations."
+        ]
+      },
+      {
+        "id": "medical-decision-support-agent",
+        "title": "Medical Decision Support Agent",
+        "paragraphs": [
+          "AI agent system for medical decision support."
+        ]
+      },
+      {
+        "id": "ai-agent-tests-and-evaluations",
+        "title": "AI Agent Tests and Evaluations",
+        "paragraphs": [
+          "Tests and evaluations for AI agent systems."
+        ]
+      },
+      {
+        "id": "rpa-emr-chrome-integrations",
+        "title": "RPA Integration Agent & EMR Mapping Agent & Chrome Extension for RPA Integrations",
+        "paragraphs": [
+          "AI agent built to automate and test RPA system integrations.",
+          "Agent that maps any electronic medical record to a standard format from its HTML file.",
+          "Chrome extension compatible with Manifest V2 and V3 for RPA integrations."
+        ]
+      },
+      {
+        "id": "work-project-placeholder-chrome",
+        "title": "Place holder planet for future projects",
+        "paragraphs": []
+      },
+      {
+        "id": "work-project-placeholder-codebase",
+        "title": "Place holder planet for future projects",
+        "paragraphs": []
+      },
+      {
+        "id": "work-project-placeholder-forward-deployed",
+        "title": "Place holder planet for future projects",
+        "paragraphs": []
+      }
+    ]
+  },
+  "work": {
+    "workTimeline": [
+      {
+        "id": "stealth-startup",
+        "start": "2026-03-01",
+        "end": null,
+        "kicker": "Current role · companies",
+        "role": "Co-Founder",
+        "company": "Stealth Startup · Colombia",
+        "period": "March 2026 — present",
+        "copy": "Co-Founder of a technology startup operating in stealth in Colombia.",
+        "current": true
+      },
+      {
+        "id": "telepatia",
+        "start": "2025-08-01",
+        "end": "2026-02-28",
+        "kicker": "Companies",
+        "role": "Founding Team · AI Engineer Intern",
+        "company": "Telepatia AI",
+        "period": "August 2025 — February 2026",
+        "copy": "Worked on AI agents for RPA integration testing, complex medical-scale calculation, and medical decision support; created tests and evaluations, built a Manifest V2/V3 Chrome extension, supported codebase migration, and worked as a forward-deployed engineer providing direct support to large corporate customers."
+      },
+      {
+        "id": "data-structures-tutor",
+        "start": "2024-09-01",
+        "end": "2025-07-31",
+        "kicker": "Teaching",
+        "role": "Data Structures Class Private Tutor",
+        "company": "Escuela de Ingeniería de Antioquia",
+        "period": "September 2024 — July 2025"
+      },
+      {
+        "id": "programming-fundamentals-tutor",
+        "start": "2023-06-01",
+        "end": "2023-11-30",
+        "kicker": "Teaching",
+        "role": "Programming Fundamentals Tutor",
+        "company": "Escuela de Ingeniería de Antioquia",
+        "period": "June 2023 — November 2023",
+        "copy": "Selected as tutor for the programming fundamentals classes in the university"
+      },
+      {
+        "id": "systems-representative",
+        "start": "2025-09-01",
+        "end": "2026-09-30",
+        "kicker": "Leadership",
+        "role": "Systems Engineering Student Representative",
+        "company": "Escuela de Ingeniería de Antioquia",
+        "period": "September 2025 — September 2026",
+        "copy": "Helped, through student petition pressure, institute the program director the students wanted.\n\nExecuted three hackathons focused on:\n* business-model creation and V0s of startups\n* infrastructure\n* biotechnology and AI."
+      },
+      {
+        "id": "mc2-ambassador",
+        "start": "2025-03-01",
+        "end": "2025-09-30",
+        "kicker": "Leadership & entrepreneurship",
+        "role": "University Ambassador and Entrepreneur",
+        "company": "mc^2",
+        "period": "March 2025 — September 2025",
+        "copy": "Represented mc^2 at EIA, fostered connections, organized a hackathon, and facilitated university partnerships."
+      },
+      {
+        "id": "nao-aeronautics",
+        "start": "2023-08-01",
+        "end": "2025-09-30",
+        "kicker": "Leadership & entrepreneurship",
+        "role": "CEO and Founder",
+        "company": "NAO Aeronautics",
+        "period": "August 2023 — September 2025",
+        "copy": "Logistics startup concept bringing city resources to remote areas. Designed the business plan, made investor pitches, interviewed specialists in mining and defense, networked at startup festivals, and developed a prototype."
+      }
+    ]
+  },
+  "education": {
+    "educationLayers": [
+      {
+        "id": "languages",
+        "label": "Languages",
+        "role": "input",
+        "entries": [
+          {
+            "id": "spanish",
+            "title": "Spanish",
+            "provider": "Language proficiency",
+            "date": "Native/bilingual proficiency",
+            "copy": "Native or bilingual proficiency.",
+            "type": "language"
+          },
+          {
+            "id": "english",
+            "title": "English",
+            "provider": "Language proficiency",
+            "date": "Native/bilingual proficiency",
+            "copy": "Native or bilingual proficiency.",
+            "type": "language"
+          }
+        ]
+      },
+      {
+        "id": "courses-and-certifications-01",
+        "label": "Courses and certifications",
+        "role": "hidden",
+        "entries": [
+          {
+            "id": "ruta-n-tech-marathon",
+            "title": "Ruta N Tech Marathon",
+            "provider": "Ruta N Medellín",
+            "date": "September 2023",
+            "copy": "Competitive programming marathon",
+            "type": "course"
+          },
+          {
+            "id": "perficient-tech-camp",
+            "title": "Perficient Tech Camp 2023",
+            "provider": "Perficient Latin America",
+            "date": "December 2023",
+            "copy": "Web development training program",
+            "type": "course"
+          },
+          {
+            "id": "cs50x",
+            "title": "CS50x",
+            "provider": "Harvard University",
+            "date": "June 2024",
+            "copy": "Harvard University introduction to computer science course.",
+            "type": "course"
+          },
+          {
+            "id": "cs50-ai",
+            "title": "CS50 AI",
+            "provider": "Harvard University",
+            "date": "July 2024",
+            "copy": "Harvard University artificial intelligence course.",
+            "type": "course"
+          },
+          {
+            "id": "create-x",
+            "title": "Create-X",
+            "provider": "Georgia Institute of Technology",
+            "date": "October 2024",
+            "copy": "Startup-building program from the Georgia Institute of Technology.",
+            "type": "course"
+          }
+        ]
+      },
+      {
+        "id": "courses-and-certifications-02",
+        "label": "Courses and certifications",
+        "role": "hidden",
+        "entries": [
+          {
+            "id": "supervised-machine-learning",
+            "title": "Supervised Machine Learning: Regression and Classification",
+            "provider": "Stanford University & DeepLearning.AI",
+            "date": "January 2025",
+            "type": "course"
+          },
+          {
+            "id": "mc2-builders",
+            "title": "mc^2 Builders Program",
+            "provider": "mc^2",
+            "date": "Completed May 2025",
+            "copy": "Entrepreneurship and startup-building program",
+            "type": "course"
+          },
+          {
+            "id": "python-advanced",
+            "title": "Python Advanced Course",
+            "provider": "SoftServe",
+            "date": "March–July 2025",
+            "type": "course"
+          },
+          {
+            "id": "advanced-learning-algorithms",
+            "title": "Advanced Learning Algorithms",
+            "provider": "DeepLearning.AI",
+            "date": "April 2026",
+            "type": "course"
+          }
+        ]
+      },
+      {
+        "id": "formal-education",
+        "label": "Formal education",
+        "role": "output",
+        "entries": [
+          {
+            "id": "eia-systems-engineering",
+            "title": "Systems Engineering and Computing",
+            "provider": "Universidad EIA / Escuela de Ingeniería de Antioquia",
+            "date": "January 2022 – November 2026; in progress",
+            "type": "university"
+          },
+          {
+            "id": "data-analytics-diplomat",
+            "title": "Data Analytics Diploma",
+            "provider": "Escuela de Ingeniería de Antioquia",
+            "date": "Completed November 2023",
+            "type": "university"
+          },
+          {
+            "id": "leadership-diplomat",
+            "title": "Leadership Diploma",
+            "provider": "Escuela de Ingeniería de Antioquia",
+            "date": "May 2026",
+            "type": "university"
+          }
+        ]
+      }
+    ]
+  },
+  "skills": {},
+  "honors": {
+    "achievements": [
+      {
+        "group": "Awards",
+        "title": "First Place — Sistecredito's Third Hackathon",
+        "copy": "The challenge was focused on software development.",
+        "date": "2024-11"
+      },
+      {
+        "group": "Awards",
+        "title": "First Place — Sistecredito Hackathon",
+        "copy": "The hackathon was about making an efficient system for detecting fraudulent transactions via classification algorithms.",
+        "date": "2024-08"
+      },
+      {
+        "group": "Awards",
+        "title": "First Place — ISA Intercolombia's Hackathon",
+        "copy": "This one is pretty interesting. More about it in my LinkedIn",
+        "date": "2024-05"
+      },
+      {
+        "group": "Awards",
+        "title": "Regional ICPC EIA Representative",
+        "copy": "My team advanced to the regional round of ICPC.",
+        "date": "2024"
+      },
+      {
+        "group": "Awards",
+        "title": "Local ICPC EIA Representative",
+        "copy": "Represented EIA University in ICPC.",
+        "date": "2023"
+      },
+      {
+        "group": "Awards",
+        "title": "Local ICPC EIA Representative",
+        "copy": "Represented EIA University in ICPC.",
+        "date": "2022"
+      },
+      {
+        "group": "Honors",
+        "title": "Recognition of Leadership — EIA University",
+        "date": "2026-02"
+      },
+      {
+        "group": "Honors",
+        "title": "Mentor and Judge — Sistecredito's Fourth Hackathon",
+        "copy": "Asked to be a mentor and judge for Sistecredito's fourth hackathon.",
+        "date": "2025-03"
+      },
+      {
+        "group": "Honors",
+        "title": "Deans List — Second Semester",
+        "date": "2023-02"
+      },
+      {
+        "group": "Honors",
+        "title": "Deans List — First Semester",
+        "date": "2022-10"
+      }
+    ]
+  },
+  "library": {
+    "title": "Go Big or Go Home",
+    "copy": "Changing how the world works",
+    "status": "Currently in stealth mode"
+  }
+}

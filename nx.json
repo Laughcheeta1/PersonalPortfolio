@@ -1,7 +1,17 @@
 {
-  "installation": {
-    "version": "22.5.1"
-  },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "defaultBase": "master"
+  "tui": {
+    "enabled": false
+  },
+  "targetDefaults": {
+    "serve": {
+      "continuous": true
+    },
+    "build": {
+      "cache": true
+    },
+    "test": {
+      "cache": true
+    }
+  }
 }

@@ -1,31 +1,40 @@
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
-  assetsInclude: ['**/*.glb', '**/*.exr'],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://127.0.0.1:3000',
-        changeOrigin: true,
-      },
-    },
-  },
+const redirectTutorialWithoutSlash = (server: { middlewares: { use: (handler: (request: { url?: string }, response: { statusCode: number; setHeader: (name: string, value: string) => void; end: () => void }, next: () => void) => void) => void } }) => {
+  server.middlewares.use((request, response, next) => {
+    const match = request.url?.match(/^(.*\/tutorial)(\?.*)?$/);
+    if (!match) {
+      next();
+      return;
+    }
+    response.statusCode = 302;
+    response.setHeader('Location', `${match[1]}/${match[2] ?? ''}`);
+    response.end();
+  });
+};
+
+export default defineConfig(({ command }) => ({
+  root: '.',
+  envDir: '.',
+  base: command === 'build' ? '/PersonalPortfolio/' : '/',
+  appType: 'mpa',
+  plugins: [{ name: 'tutorial-canonical-route', configureServer: redirectTutorialWithoutSlash, configurePreviewServer: redirectTutorialWithoutSlash }],
   build: {
     rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          if (id.includes('node_modules/react')) {
-            return 'react-vendor';
-          }
-          if (id.includes('node_modules/three')) {
-            return 'three-vendor';
-          }
-          return undefined;
-        },
+      input: {
+        main: new URL('./index.html', import.meta.url).pathname,
+        tutorial: new URL('./tutorial/index.html', import.meta.url).pathname,
       },
     },
   },
-  base: "/PersonalPortfolio/",
-});
+  server: {
+    host: '0.0.0.0',
+    port: 53173,
+    strictPort: true,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 54173,
+    strictPort: true,
+  },
+}));
