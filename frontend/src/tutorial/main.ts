@@ -298,8 +298,8 @@ const interactionPanels = new TutorialInteractionPanels(domScene, {
   onModelContinue: () => advanceStep(),
   onGuideMessage: () => {
     feedback.textContent = getTutorialCopy(getLanguage()).feedback.guideSuccess;
+    advanceStep();
   },
-  onGuideContinue: () => advanceStep(),
 });
 interactionPanels.setCopy(initialCopy.interactions);
 

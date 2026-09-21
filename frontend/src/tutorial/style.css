@@ -35,7 +35,8 @@
 @media(max-width:600px){.language-menu #language{min-height:33px;padding:7px 9px;gap:6px;font-size:10px}.tutorial-hand-placement__image{max-height:44dvh}.tutorial-hand-placement__content h1{font-size:28px}.tutorial-hand-placement__content>p{font-size:11px}.tutorial-hand-placement__instruction p,.tutorial-hand-placement__instruction ul{font-size:10px}}
 .tutorial-hand-placement__instruction li strong{display:inline;color:#315d43;font-size:inherit;letter-spacing:normal;font-weight:800}
 
-/* The tutorial keeps the normal page's project panel and only adds its interaction lesson inside it. */
+/* The tutorial model panel is a dedicated instructional surface, separate from portfolio content. */
+.panel-tutorial{background:linear-gradient(145deg,#f4eedb,#d8c9ad);color:#334b3d}
 .tutorial-panel-guide{margin:0 0 20px}
 .tutorial-panel-guide__card{background:#162b4be6;border:1px solid #5b75a4;border-radius:15px;box-shadow:0 8px 20px #0005;color:#e7f0ff;padding:15px}
 .tutorial-panel-guide__card h2{color:#ffcf7a;font-family:Outfit,sans-serif;font-size:22px;letter-spacing:-.03em;line-height:1.1;margin:6px 0 10px;text-transform:none}

@@ -11,7 +11,6 @@ export interface TutorialInteractionCallbacks {
   onModelClick: () => void;
   onModelContinue: () => void;
   onGuideMessage: (message: string) => void;
-  onGuideContinue: () => void;
 }
 
 export interface TutorialInteractionPresence {
@@ -33,7 +32,6 @@ export class TutorialInteractionPanels {
   private readonly guideInput: HTMLInputElement;
   private readonly guideSend: HTMLButtonElement;
   private readonly guideStatus: HTMLElement;
-  private readonly guideContinue: HTMLButtonElement;
   private readonly callbacks: TutorialInteractionCallbacks;
   private activeStep: TutorialInteractionStep = null;
   private modelGuideCopy: TutorialPanelGuideCopy | undefined;
@@ -65,7 +63,6 @@ export class TutorialInteractionPanels {
       <div class="chat-log" role="log" aria-label="Conversation history"></div>
       <p class="chat-status" role="status"></p>
       <form><input aria-label="Message your guide" placeholder="Where shall we go?" maxlength="300" autocomplete="off"><button aria-label="Send message" type="submit">↑</button></form>
-      <footer><span data-role="guide-footer"></span><button type="button" class="clear-chat tutorial-guide-continue" hidden></button></footer>
     </div><div class="comic"><strong>YOUR GUIDE</strong><p></p></div>`;
     this.guideObject = new CSS3DObject(this.guideElement);
     this.hide(this.guideObject, this.guideElement);
@@ -76,8 +73,7 @@ export class TutorialInteractionPanels {
     this.guideInput = this.guideElement.querySelector<HTMLInputElement>('input')!;
     this.guideSend = this.guideElement.querySelector<HTMLButtonElement>('form button')!;
     this.guideStatus = this.guideElement.querySelector<HTMLElement>('.chat-status')!;
-    this.guideContinue = this.guideElement.querySelector<HTMLButtonElement>('.tutorial-guide-continue')!;
-    this.guideElement.querySelector<HTMLButtonElement>('.clear-chat:not(.tutorial-guide-continue)')!.addEventListener('click', () => this.resetGuide());
+    this.guideElement.querySelector<HTMLButtonElement>('.clear-chat')!.addEventListener('click', () => this.resetGuide());
     this.guideForm.addEventListener('submit', event => {
       event.preventDefault();
       const message = this.guideInput.value.trim();
@@ -87,12 +83,10 @@ export class TutorialInteractionPanels {
       this.appendGuideMessage('assistant', this.guideElement.dataset.responseCopy ?? '');
       this.guideInput.disabled = true;
       this.guideSend.disabled = true;
-      this.guideContinue.hidden = false;
       this.guideStatus.textContent = '';
       this.guideInput.value = '';
       this.callbacks.onGuideMessage(message);
     });
-    this.guideContinue.addEventListener('click', () => this.callbacks.onGuideContinue());
   }
 
   setCopy(copy: TutorialInteractionCopy): void {
@@ -111,7 +105,6 @@ export class TutorialInteractionPanels {
     this.guideSend.setAttribute('aria-label', copy.guide.sendButton);
     this.guideElement.dataset.responseCopy = copy.guide.response;
     this.guideElement.dataset.promptCopy = copy.guide.prompt;
-    this.guideContinue.textContent = copy.guide.continueButton;
     if (this.guideMessageSent) {
       const response = this.guideLog.querySelector<HTMLElement>('[data-guide-role="assistant"]');
       if (response) response.textContent = copy.guide.response;
@@ -189,7 +182,6 @@ export class TutorialInteractionPanels {
     this.guideInput.value = '';
     this.guideInput.disabled = false;
     this.guideSend.disabled = false;
-    this.guideContinue.hidden = true;
     this.guideStatus.textContent = '';
   }
 

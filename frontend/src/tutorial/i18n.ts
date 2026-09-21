@@ -22,7 +22,6 @@ export type TutorialInteractionCopy = {
     inputPlaceholder: string;
     sendButton: string;
     response: string;
-    continueButton: string;
   };
 };
 
@@ -146,7 +145,7 @@ const english: TutorialCopy = {
   },
   interactions: {
     model: {
-      panelEyebrow: 'ROCKET · PROJECTS',
+      panelEyebrow: 'FIELD GUIDE · PANEL',
       panelTitle: 'You found a 3D model.',
       center: 'Move the camera to center the panel.',
       scroll: 'You can scroll on the panel.',
@@ -164,7 +163,6 @@ const english: TutorialCopy = {
       inputPlaceholder: 'Say hello',
       sendButton: 'Send',
       response: 'You sent a message! In the actual world you will get a response from an AI',
-      continueButton: 'Finish the tutorial',
     },
   },
   complete: {
@@ -176,7 +174,7 @@ const english: TutorialCopy = {
   feedback: {
     success: 'Nice. Keep going.',
     jumpSuccess: 'Lovely hop. That’s all jumping is for here.',
-    guideSuccess: 'Message sent. Read the guide’s reply in the panel.',
+    guideSuccess: 'Message sent. The field guide is complete.',
     wrong: keyLabel => `Try ${keyLabel} for this step.`,
     cameraComplete: 'All four are green. Camera lesson complete.',
   },
@@ -251,7 +249,7 @@ const spanish: TutorialCopy = {
   },
   interactions: {
     model: {
-      panelEyebrow: 'COHETE · PROYECTOS',
+      panelEyebrow: 'GUÍA · PANEL',
       panelTitle: 'Has encontrado un modelo 3D.',
       center: 'Mueve la cámara para centrar el panel.',
       scroll: 'Puedes desplazarte por el panel.',
@@ -269,7 +267,6 @@ const spanish: TutorialCopy = {
       inputPlaceholder: 'Di hola',
       sendButton: 'Enviar',
       response: '¡Has enviado un mensaje! En el mundo real recibirás una respuesta de una IA',
-      continueButton: 'Terminar el tutorial',
     },
   },
   complete: {
@@ -281,7 +278,7 @@ const spanish: TutorialCopy = {
   feedback: {
     success: 'Bien. Continúa.',
     jumpSuccess: 'Buen salto. Para eso sirve saltar aquí.',
-    guideSuccess: 'Mensaje enviado. Lee la respuesta de la guía en el panel.',
+    guideSuccess: 'Mensaje enviado. La guía está completada.',
     wrong: keyLabel => `Prueba ${keyLabel} en este paso.`,
     cameraComplete: 'Las cuatro están verdes. Lección de cámara completada.',
   },

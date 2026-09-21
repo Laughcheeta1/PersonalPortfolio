@@ -22,6 +22,9 @@ describe('tutorial translations', () => {
     ]);
     expect(english.handPlacement.showButton).toBe('Press here to show hand placement');
     expect(english.handPlacement.mouseInstructions).toContain('right hand on the mouse');
+    expect(english.interactions.model.panelEyebrow).toBe('FIELD GUIDE · PANEL');
+    expect(english.interactions.model.panelEyebrow).not.toContain('PROJECTS');
+    expect(spanish.interactions.model.panelEyebrow).not.toContain('PROYECTOS');
     expect(english.interactions.model.center).toBe('Move the camera to center the panel.');
     expect(english.interactions.model.scroll).toBe('You can scroll on the panel.');
     expect(english.interactions.model.click).toBe('You can click things on the panel.');

@@ -306,13 +306,20 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
 }
 
 function ProjectsPanel({ tutorialGuide }: { tutorialGuide?: TutorialPanelGuideCopy } = {}): ReactElement {
+  if (tutorialGuide) {
+    return (
+      <main className="panel-page panel-tutorial">
+        <TutorialPanelGuide guide={tutorialGuide} key={tutorialGuide.resetKey} />
+      </main>
+    );
+  }
+
   return (
     <PanelPage
       theme="panel-projects"
       eyebrow="01"
       title={t('Projects')}
     >
-      {tutorialGuide ? <TutorialPanelGuide guide={tutorialGuide} key={tutorialGuide.resetKey} /> : null}
       <ProjectUniverse title={t('Personal projects')} projects={personalProjects} />
       <ProjectUniverse title={t('Work projects')} projects={workProjects} designOffset={personalProjects.length} />
     </PanelPage>
