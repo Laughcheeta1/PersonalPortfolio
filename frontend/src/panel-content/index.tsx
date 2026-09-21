@@ -38,6 +38,10 @@ import { getLanguage, onLanguageChange, t } from '../i18n';
 
 const publicAssetBaseUrl = ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.BASE_URL ?? '/');
 
+const isCoarsePointer = (): boolean => typeof window !== 'undefined'
+  && typeof window.matchMedia === 'function'
+  && window.matchMedia('(pointer: coarse)').matches;
+
 function usePanelLanguage(): void {
   useSyncExternalStore(onLanguageChange, getLanguage, getLanguage);
 }
@@ -144,10 +148,10 @@ function ProjectHoverCard({ hover, onEnter, onLeave }: { hover: HoveredProject; 
     <aside
       className={`project-hover-card project-hover-card--${hover.placement}`}
       id={`project-popover-${hover.project.id}`}
-      onBlur={onLeave}
-      onFocus={onEnter}
-      onPointerEnter={onEnter}
-      onPointerLeave={onLeave}
+      onBlur={() => { if (!isCoarsePointer()) onLeave(); }}
+      onFocus={() => { if (!isCoarsePointer()) onEnter(); }}
+      onPointerEnter={() => { if (!isCoarsePointer()) onEnter(); }}
+      onPointerLeave={() => { if (!isCoarsePointer()) onLeave(); }}
       role="tooltip"
       style={{ left: hover.x, top: hover.y }}
     >
@@ -253,6 +257,16 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
     closeTimer.current = setTimeout(() => setHovered(current => current?.project.id === project.id ? null : current), 250);
   };
 
+  const selectProject = (project: ProjectCard, element: HTMLElement, clientX?: number, clientY?: number) => {
+    if (!isCoarsePointer()) return;
+    if (hovered?.project.id === project.id) {
+      keepProjectHover();
+      setHovered(null);
+      return;
+    }
+    showProject(project, element, clientX, clientY);
+  };
+
   return (
     <section className="project-universe-section" aria-label={t('{title} project field', { title })}>
       <div className="project-universe-heading">
@@ -261,11 +275,13 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
       <div
         className="project-universe"
         onPointerEnter={updatePointer}
-        onPointerLeave={() => {
+        onPointerLeave={event => {
           previousPointer.current = null;
           setPointer(current => ({ ...current, visible: false }));
-          keepProjectHover();
-          setHovered(null);
+          if (event.pointerType === 'mouse') {
+            keepProjectHover();
+            setHovered(null);
+          }
         }}
         onPointerMove={updatePointer}
         ref={universeRef}
@@ -282,10 +298,11 @@ function ProjectUniverse({ title, projects, designOffset = 0 }: { title: string;
               aria-label={t('Explore project {title}', { title: t(project.title) })}
               className="project-planet"
               key={project.id}
-              onBlur={() => clearProject(project)}
-              onFocus={event => showProject(project, event.currentTarget)}
-              onPointerEnter={event => showProject(project, event.currentTarget, event.clientX, event.clientY)}
-              onPointerLeave={() => clearProject(project)}
+              onBlur={() => { if (!isCoarsePointer()) clearProject(project); }}
+              onClick={event => selectProject(project, event.currentTarget, event.clientX, event.clientY)}
+              onFocus={event => { if (!isCoarsePointer()) showProject(project, event.currentTarget); }}
+              onPointerEnter={event => { if (event.pointerType === 'mouse') showProject(project, event.currentTarget, event.clientX, event.clientY); }}
+              onPointerLeave={event => { if (event.pointerType === 'mouse') clearProject(project); }}
               style={{
                 '--planet-rotation': `${layout.rotation}deg`,
                 '--planet-size': `${layout.size}px`,
@@ -346,10 +363,10 @@ function ExperiencePopover({ hover, onEnter, onLeave, onDismiss }: {
       role="tooltip"
       style={{ left: hover.x, top: hover.y }}
       tabIndex={0}
-      onPointerEnter={onEnter}
-      onPointerLeave={onLeave}
-      onFocus={onEnter}
-      onBlur={onLeave}
+      onPointerEnter={() => { if (!isCoarsePointer()) onEnter(); }}
+      onPointerLeave={() => { if (!isCoarsePointer()) onLeave(); }}
+      onFocus={() => { if (!isCoarsePointer()) onEnter(); }}
+      onBlur={() => { if (!isCoarsePointer()) onLeave(); }}
       onKeyDown={event => { if (event.key === 'Escape') onDismiss(); }}
     >
       <span className="timeline-hover-card__kicker">{t(hover.entry.kicker)}</span>
@@ -411,6 +428,18 @@ function WorkTimeline(): ReactElement {
     setHovered({ entry, x, y, placement });
   };
 
+  const selectTimelineCard = (entry: TimelineEntry, element: HTMLElement) => {
+    if (!isCoarsePointer()) {
+      updateHover(entry, element);
+      return;
+    }
+    if (hovered?.entry.id === entry.id) {
+      dismissHover();
+      return;
+    }
+    updateHover(entry, element);
+  };
+
   return (
     <>
       <section className="timeline" aria-label={t('Experience timeline')}>
@@ -430,11 +459,11 @@ function WorkTimeline(): ReactElement {
                     data-end={entry.endTimestamp}
                     aria-describedby={describedBy}
                     className={`timeline-card${entry.current ? ' timeline-card--current' : ''}`}
-                    onBlur={scheduleClose}
-                    onFocus={event => updateHover(entry, event.currentTarget)}
-                    onPointerEnter={event => updateHover(entry, event.currentTarget, event.clientY)}
-                    onPointerLeave={scheduleClose}
-                    onClick={event => updateHover(entry, event.currentTarget)}
+                    onBlur={() => { if (!isCoarsePointer()) scheduleClose(); }}
+                    onFocus={event => { if (!isCoarsePointer()) updateHover(entry, event.currentTarget); }}
+                    onPointerEnter={event => { if (event.pointerType === 'mouse') updateHover(entry, event.currentTarget, event.clientY); }}
+                    onPointerLeave={event => { if (event.pointerType === 'mouse') scheduleClose(); }}
+                    onClick={event => selectTimelineCard(entry, event.currentTarget)}
                     onKeyDown={event => { if (event.key === 'Escape') dismissHover(); }}
                     tabIndex={0}
                   >
@@ -776,9 +805,9 @@ function HobbyConstellation(): ReactElement {
             key={hobby.id}
             role="listitem"
             onBlur={event => {
-              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActiveId(null);
+              if (!isCoarsePointer() && !event.currentTarget.contains(event.relatedTarget as Node | null)) setActiveId(null);
             }}
-            onFocus={() => setActiveId(hobby.id)}
+            onFocus={() => { if (!isCoarsePointer()) setActiveId(hobby.id); }}
             onKeyDown={event => {
               if (event.key === 'Escape') { event.stopPropagation(); setActiveId(null); }
             }}
@@ -802,7 +831,7 @@ function HobbyConstellation(): ReactElement {
               className={`hobby-star${activeId === hobby.id ? ' is-active' : ''}`}
               data-hobby-id={hobby.id}
               data-testid="hobby-star"
-              onClick={() => setActiveId(hobby.id)}
+              onClick={() => setActiveId(current => isCoarsePointer() && current === hobby.id ? null : hobby.id)}
               type="button"
             >
               <span aria-hidden="true" className="hobby-star__halo" />

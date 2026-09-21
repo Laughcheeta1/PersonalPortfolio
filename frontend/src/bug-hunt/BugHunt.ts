@@ -31,7 +31,11 @@ export class BugHunt {
   private startButton:HTMLButtonElement;
   private nameInput:HTMLInputElement;
   private attackButton:HTMLButtonElement;
+  private touchTimer:HTMLElement;
+  private touchAttackButton:HTMLButtonElement;
+  private readonly touchDevice:boolean;
   constructor(scene:THREE.Scene,host:HTMLElement,private player:Player,surface:HTMLElement,private canInteract:()=>boolean){
+    this.touchDevice=typeof window!=='undefined'&&typeof window.matchMedia==='function'&&window.matchMedia('(pointer: coarse)').matches;
     this.group.add(createBugIsland());scene.add(this.group);
     this.boardCanvas.width=1040;this.boardCanvas.height=840;
     this.boardTexture=new THREE.CanvasTexture(this.boardCanvas);this.boardTexture.colorSpace=THREE.SRGBColorSpace;
@@ -44,15 +48,19 @@ export class BugHunt {
     this.hud.innerHTML='<span class="bug-hunt-eyebrow">THE DEBUGGING GROVE</span><h2>Catch it. Patch it.</h2><p>Chase the code bugs. Face one and left-click to swing your cane.</p><label>Leaderboard name <input maxlength="24" autocomplete="nickname" aria-label="Leaderboard name"></label><div class="bug-hunt-counts"><span data-timer>45s</span><span data-score>0 bugs</span></div><p data-status role="status" aria-live="polite">A 45-second hunt. Every bug is one point.</p><div class="bug-hunt-actions"><button data-start>Start hunt</button><button data-attack hidden>Swing cane</button><button data-refresh aria-label="Refresh leaderboard">↻ Scores</button></div>';
     host.append(this.hud);this.status=this.hud.querySelector('[data-status]')!;
     this.startButton=this.hud.querySelector('[data-start]')!;this.nameInput=this.hud.querySelector('input')!;this.attackButton=this.hud.querySelector('[data-attack]')!;
+    this.touchTimer=document.createElement('div');this.touchTimer.className='bug-hunt-timer';this.touchTimer.hidden=true;this.touchTimer.setAttribute('role','status');this.touchTimer.setAttribute('aria-live','polite');this.touchTimer.innerHTML='<span>TIME</span><strong data-touch-timer>45s</strong>';host.append(this.touchTimer);
+    this.touchAttackButton=document.createElement('button');this.touchAttackButton.className='bug-hunt-cane';this.touchAttackButton.type='button';this.touchAttackButton.textContent='Cane';this.touchAttackButton.setAttribute('aria-label','Cane');this.touchAttackButton.hidden=true;host.append(this.touchAttackButton);
     this.nameInput.value=this.visitor.display_name;saveVisitor(this.visitor);
     this.startButton.addEventListener('click',()=>{if(this.phase==='unsaved')void this.finish();else void this.start();});
     this.hud.querySelector('[data-refresh]')!.addEventListener('click',()=>void this.refreshBoard());
     this.attackButton.addEventListener('pointerdown',event=>{event.preventDefault();this.attack();});
     this.attackButton.addEventListener('click',event=>{if(event.detail===0)this.attack();});
+    this.touchAttackButton.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();this.attack();});
+    this.touchAttackButton.addEventListener('click',event=>{if(event.detail===0)this.attack();});
     let press:{x:number;y:number;id:number}|null=null;
-    surface.addEventListener('pointerdown',event=>{if(event.button===0)press={x:event.clientX,y:event.clientY,id:event.pointerId};});
-    surface.addEventListener('pointermove',event=>{if(press&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>6)press=null;});
-    surface.addEventListener('pointerup',event=>{if(press?.id===event.pointerId)this.attack();press=null;});
+    surface.addEventListener('pointerdown',event=>{if(event.pointerType==='mouse'&&event.button===0)press={x:event.clientX,y:event.clientY,id:event.pointerId};});
+    surface.addEventListener('pointermove',event=>{if(event.pointerType==='mouse'&&press&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>6)press=null;});
+    surface.addEventListener('pointerup',event=>{if(event.pointerType==='mouse'&&press?.id===event.pointerId)this.attack();if(event.pointerType==='mouse')press=null;});
     surface.addEventListener('pointercancel',()=>{press=null;});
   }
   setPartyMode(enabled:boolean){this.partyMode=enabled;if(!enabled)this.partyJumpProgress=1;}
@@ -123,9 +131,12 @@ export class BugHunt {
     if(this.partyMode)this.partyJumpProgress=Math.min(1,this.partyJumpProgress+dt/c.bugPartyJumpDuration);
     const near=inBugArena(p)||(p.x>=c.bridge.endX-8&&p.x<=c.bridge.endX+2&&Math.abs(p.z-c.bridge.z)<7);
     if(near&&!this.nearby){this.boardLoaded=true;void this.refreshBoard();}
-    this.nearby=near;this.hud.hidden=!near&&this.phase!=='playing'&&this.phase!=='saving'&&this.phase!=='unsaved';
+    this.nearby=near;
+    const inArena=inBugArena(p);
+    const mobilePlaying=this.touchDevice&&this.phase==='playing';
+    this.hud.hidden=mobilePlaying||(!near&&this.phase!=='playing'&&this.phase!=='saving'&&this.phase!=='unsaved');
     if(!this.boardLoaded&&p.x>c.bridge.startX+5){this.boardLoaded=true;void this.refreshBoard();}
-    this.attackButton.hidden=!inBugArena(p);this.startButton.disabled=this.phase==='starting'||this.phase==='saving'||(!near&&this.phase!=='unsaved');
+    this.attackButton.hidden=!inArena;this.touchAttackButton.hidden=!mobilePlaying||!inArena;this.touchTimer.hidden=!mobilePlaying;this.startButton.disabled=this.phase==='starting'||this.phase==='saving'||(!near&&this.phase!=='unsaved');
     if(this.phase==='playing'&&now>=this.deadline)void this.finish();
     const elapsed=(now-this.swingAt)/1000;
     const arm=this.player.model.getObjectByName('rightArm');
@@ -151,7 +162,9 @@ export class BugHunt {
       bug.model.rotation.y=bug.heading;position.y=this.partyMode?bugPartyJumpOffset(this.partyJumpProgress):bugVerticalOffset(time,index);
       bug.model.children.filter(child=>child.name.startsWith('leg')).forEach((leg,j)=>{leg.rotation.x=Math.sin(time*18+j)*.35;});
     });
-    this.hud.querySelector('[data-timer]')!.textContent=`${this.phase==='playing'?secondsLeft(this.deadline,now):this.phase==='idle'||this.phase==='starting'?45:0}s`;
+    const remaining=`${this.phase==='playing'?secondsLeft(this.deadline,now):this.phase==='idle'||this.phase==='starting'?45:0}s`;
+    this.hud.querySelector('[data-timer]')!.textContent=remaining;
+    this.touchTimer.querySelector('[data-touch-timer]')!.textContent=remaining;
     this.hud.querySelector('[data-score]')!.textContent=bugLabel(this.score);
   }
 }
