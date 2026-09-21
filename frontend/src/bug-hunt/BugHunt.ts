@@ -3,7 +3,7 @@ import type { Player } from '../world/actors';
 import { bugHuntConfig as c } from '../world/bugHuntConfig';
 import { createBugIsland } from '../world/bugIsland';
 import { bugPartyJumpOffset, bugVerticalOffset, hitTarget, inBugArena, secondsLeft } from './logic';
-import { HuntServiceError, huntService, saveVisitor, visitorIdentity, type HuntSession } from './service';
+import { createLocalHuntSession, HuntServiceError, huntService, isHuntServiceUnavailable, saveVisitor, visitorIdentity, type HuntSession } from './service';
 import './style.css';
 
 const bugLabel=(count:number)=>`${count} ${count===1?'bug':'bugs'}`;
@@ -104,16 +104,22 @@ export class BugHunt {
     this.visitor.display_name=name;saveVisitor(this.visitor);
     try{
       this.session=await huntService.start(this.visitor);this.score=0;this.deadline=performance.now()+this.session.duration_seconds*1000;
-      this.phase='playing';this.swingAt=-Infinity;this.bugs.forEach((bug,i)=>{bug.respawnAt=0;this.placeBug(bug,i);});
-      this.status.textContent='Go! Chase the bugs and swing your cane.';this.startButton.hidden=true;this.nameInput.disabled=true;
-      (document.activeElement as HTMLElement)?.blur();
-      void this.refreshBoard();
-    }catch(error){this.phase='idle';this.status.textContent=error instanceof Error?error.message:'Could not start the round.';}
-    finally{this.startButton.disabled=false;}
+    }catch(error){
+      if(!isHuntServiceUnavailable(error)){this.phase='idle';this.status.textContent=error instanceof Error?error.message:'Could not start the round.';this.startButton.disabled=false;return;}
+      this.session=createLocalHuntSession();this.score=0;this.deadline=performance.now()+this.session.duration_seconds*1000;
+    }
+    this.phase='playing';this.swingAt=-Infinity;this.bugs.forEach((bug,i)=>{bug.respawnAt=0;this.placeBug(bug,i);});
+    this.status.textContent=this.session.local?'Go! Chase the bugs. Scores are unavailable, so this round will not be saved.':'Go! Chase the bugs and swing your cane.';this.startButton.hidden=true;this.nameInput.disabled=true;
+    (document.activeElement as HTMLElement)?.blur();
+    void this.refreshBoard();
+    this.startButton.disabled=false;
   }
   private async finish(){
     if(!this.session||!['playing','unsaved'].includes(this.phase))return;
     this.phase='saving';this.startButton.hidden=false;this.startButton.disabled=true;this.status.textContent=`Time! ${bugLabel(this.score)} caught. Saving your score…`;
+    if(this.session.local){
+      this.phase='finished';this.status.textContent=`You caught ${bugLabel(this.score)}. Score not saved because the leaderboard is unavailable.`;this.startButton.textContent='Play again';this.nameInput.disabled=false;this.startButton.disabled=false;return;
+    }
     try{const result=await huntService.finish(this.session,this.score);this.phase='finished';this.status.textContent=`You caught ${bugLabel(result.score)}! Personal best: ${result.personal_best}. Score saved.`;this.startButton.textContent='Play again';this.nameInput.disabled=false;void this.refreshBoard();}
     catch(error){
       if(error instanceof HuntServiceError&&[404,410].includes(error.status)){

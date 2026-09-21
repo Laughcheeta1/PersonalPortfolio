@@ -10,13 +10,15 @@ const browser = await chromium.launch({
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   const errors = [], submissions = [], starts = [];
-  let boardLoads = 0, failSave = false;
+  let boardLoads = 0, failSave = false, scoreServiceUnavailable = false;
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/bug-hunt/leaderboard', route => {
     boardLoads++;
+    if (scoreServiceUnavailable) return route.fulfill({ status: 503, json: { detail: 'Scores are temporarily unavailable.' } });
     return route.fulfill({ json: { duration_seconds: 45, entries: [{ rank: 1, display_name: starts.at(-1)?.display_name ?? 'Previous name', score: submissions.length ? submissions[0].score : 12 }] } });
   });
   await page.route('**/bug-hunt/sessions', route => {
+    if (scoreServiceUnavailable) return route.fulfill({ status: 503, json: { detail: 'Scores are temporarily unavailable.' } });
     starts.push(route.request().postDataJSON());
     return route.fulfill({ json: { session_id: 'browser-round', session_token: 'browser-token', duration_seconds: 45 } });
   });
@@ -102,6 +104,16 @@ try {
   await page.waitForFunction(() => window.__hunt.game.snapshot.phase === 'finished');
   assert.equal(submissions.length, 3);
   assert.deepEqual(submissions[1], submissions[2]);
+  scoreServiceUnavailable = true;
+  await page.getByRole('button', { name: 'Play again', exact: true }).click();
+  await page.waitForFunction(() => window.__hunt.game.snapshot.phase === 'playing');
+  assert.equal(starts.length, 2);
+  assert.match(await page.getByRole('status').filter({ hasText: 'Scores are unavailable' }).first().textContent(), /will not be saved/);
+  await page.evaluate(() => window.__hunt.step(46000));
+  await page.waitForFunction(() => window.__hunt.game.snapshot.phase === 'finished');
+  await page.getByRole('status').filter({ hasText: 'Score not saved because the leaderboard is unavailable' }).waitFor();
+  assert.equal(submissions.length, 3);
+  console.log('PASS: desktop hunt remains playable when the score service is unavailable and does not submit a fabricated score.');
   await page.evaluate(() => {
     const { camera, player, step } = window.__hunt;
     player.model.position.set(29, 0, 0); camera.position.set(43, 95, 78); camera.lookAt(40, 0, 0); step();
@@ -117,4 +129,37 @@ try {
   assert.equal(await main.evaluate(() => window.portfolioDebug.bugHunt.phase), 'idle');
   assert.deepEqual(mainErrors, []);
   console.log('PASS: normal application initializes the integrated eight-bug game without browser exceptions.');
+
+  const phone = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  const phoneErrors = [];
+  phone.on('pageerror', error => phoneErrors.push(error.message));
+  await phone.route('**/bug-hunt/leaderboard', route => route.fulfill({ status: 503, json: { detail: 'Scores are temporarily unavailable.' } }));
+  await phone.route('**/bug-hunt/sessions', route => route.fulfill({ status: 503, json: { detail: 'Scores are temporarily unavailable.' } }));
+  await phone.route(`${origin}/`, route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><html><body style="margin:0"></body></html>' }));
+  await phone.goto(origin);
+  await phone.evaluate(async () => {
+    const THREE = await import('/node_modules/three/build/three.module.js');
+    const { BugHunt } = await import('/src/bug-hunt/BugHunt.ts');
+    const { Player } = await import('/src/world/actors.ts');
+    const { createEnvironment } = await import('/src/world/environment.ts');
+    const scene = new THREE.Scene();
+    const surface = document.createElement('div'); document.body.append(surface);
+    const environment = createEnvironment(); scene.add(environment.group);
+    const player = new Player(false, environment.obstacles); scene.add(player.model); player.model.position.set(60, 0, 0);
+    const game = new BugHunt(scene, document.body, player, surface, () => true);
+    let now = performance.now(); Object.defineProperty(performance, 'now', { configurable: true, value: () => now });
+    window.__hunt = { game, player, step(ms = 0, dt = 0) { now += ms; game.update(dt, now / 1000); } };
+    window.__hunt.step();
+  });
+  assert.equal(await phone.evaluate(() => matchMedia('(pointer: coarse)').matches), true);
+  await phone.getByRole('button', { name: 'Start hunt', exact: true }).click();
+  await phone.waitForFunction(() => window.__hunt.game.snapshot.phase === 'playing');
+  await phone.evaluate(() => window.__hunt.step());
+  assert.equal(await phone.locator('.bug-hunt-timer').evaluate(element => !element.hasAttribute('hidden')), true);
+  await phone.evaluate(() => window.__hunt.step(46000));
+  await phone.waitForFunction(() => window.__hunt.game.snapshot.phase === 'finished');
+  await phone.evaluate(() => window.__hunt.step());
+  await phone.getByRole('status').filter({ hasText: 'Score not saved because the leaderboard is unavailable' }).waitFor();
+  assert.deepEqual(phoneErrors, []);
+  console.log('PASS: coarse-pointer phone hunt remains playable when the score service is unavailable.');
 } finally { await browser.close(); }

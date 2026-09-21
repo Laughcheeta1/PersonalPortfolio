@@ -1,5 +1,6 @@
 import { apiBaseUrl } from '../services';
-export interface HuntSession {session_id:string;session_token:string;duration_seconds:number}
+export const HUNT_DURATION_SECONDS=45;
+export interface HuntSession {session_id:string;session_token:string;duration_seconds:number;local?:boolean}
 export interface Leaderboard {entries:{rank:number;display_name:string;score:number}[];duration_seconds:number}
 export interface HuntResult {score:number;personal_best:number}
 export function visitorIdentity():{player_id:string;display_name:string} {
@@ -16,13 +17,23 @@ export function saveVisitor(visitor:ReturnType<typeof visitorIdentity>) {
 export class HuntServiceError extends Error {
   constructor(public status:number,message:string){super(message);}
 }
+export function isHuntServiceUnavailable(error:unknown):boolean {
+  return error instanceof HuntServiceError&&(error.status===0||error.status>=500);
+}
+export function createLocalHuntSession():HuntSession {
+  return {session_id:`local-${crypto.randomUUID()}`,session_token:'',duration_seconds:HUNT_DURATION_SECONDS,local:true};
+}
 async function request<T>(path:string,body?:unknown):Promise<T>{
-  const response=await fetch(`${apiBaseUrl}/bug-hunt${path}`,{
-    method:body?'POST':'GET',cache:'no-store',headers:body?{'Content-Type':'application/json'}:undefined,
-    body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(15000),
-  });
-  const payload=await response.json();
-  if(!response.ok)throw new HuntServiceError(response.status,typeof payload.detail==='string'?payload.detail:'The score service is unavailable. Please try again.');
+  let response:Response;
+  try{response=await fetch(`${apiBaseUrl}/bug-hunt${path}`,{
+      method:body?'POST':'GET',cache:'no-store',headers:body?{'Content-Type':'application/json'}:undefined,
+      body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(15000),
+    });
+  }catch{throw new HuntServiceError(0,'The score service is unavailable.');}
+  let payload:unknown;
+  try{payload=await response.json();}catch{throw new HuntServiceError(response.status,'The score service returned an invalid response.');}
+  const detail=payload&&typeof payload==='object'&&typeof (payload as Record<string,unknown>).detail==='string'?(payload as Record<string,unknown>).detail as string:'The score service is unavailable. Please try again.';
+  if(!response.ok)throw new HuntServiceError(response.status,detail);
   return payload as T;
 }
 export const huntService={
