@@ -15,6 +15,12 @@ describe('tutorial translations', () => {
     }
     expect(spanish.fingerGuide.title).not.toBe(english.fingerGuide.title);
     expect(spanish.fingerGuide.handAlt).not.toBe(english.fingerGuide.handAlt);
+    expect(english.handPlacement.keyboardInstructions).toContain('Pinky on Shift');
+    expect(english.handPlacement.mouseInstructions).toContain('right hand on the mouse');
+    expect(english.interactions.model.center).toBe('Move the camera to center the panel.');
+    expect(english.interactions.model.scroll).toBe('You can scroll on the panel.');
+    expect(english.interactions.model.click).toBe('You can click things on the panel.');
+    expect(english.interactions.guide.response).toBe('You sent a message! In the actual world you will get a response from an AI');
     expect(spanish.complete.enter).not.toBe(english.complete.enter);
   });
 });

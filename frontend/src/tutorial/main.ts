@@ -1,13 +1,16 @@
 import * as THREE from 'three';
+import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { config } from '../config';
 import { createOrientationTip, isSmallViewport } from '../orientation';
 import { Input } from '../input';
 import { Player } from '../world/actors';
+import { createCharacter, createLandmark } from '../world/models';
 import { damping } from '../world/physics';
 import { getLanguage, onLanguageChange } from '../i18n';
 import { createLanguageMenu } from '../i18n/LanguageMenu';
 import { getTutorialCopy, type FingerId } from './i18n';
+import { TutorialInteractionPanels, type TutorialInteractionStep } from './interactionPanels';
 import { isInFrontalCone, isTutorialComplete, joystickMatchesStep, keyMatchesStep, nextStepIndex, tutorialSteps } from './state';
 import './style.css';
 
@@ -16,16 +19,36 @@ if (!app) throw new Error('Tutorial host is missing.');
 
 const homeUrl = new URL('../', document.baseURI).toString();
 const handImageUrl = new URL('../../assets/tutorial-hand.png', import.meta.url).href;
+const handPlacementImageUrl = new URL('../../assets/tutorial-hand-placement.png', import.meta.url).href;
 const tutorialChoiceKey = 'portfolio.tutorial.v1.choice';
 const roomCenter = { x: -23, z: 0 } as const;
 const initialCopy = getTutorialCopy(getLanguage());
 
 app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLabel}">
   <div id="tutorial-world"></div>
+  <section id="tutorial-hand-placement" class="tutorial-hand-placement" role="dialog" aria-modal="true" aria-labelledby="tutorial-hand-placement-title">
+    <div class="tutorial-hand-placement__card">
+      <img class="tutorial-hand-placement__image" src="${handPlacementImageUrl}" alt="${initialCopy.handPlacement.imageAlt}">
+      <div class="tutorial-hand-placement__content">
+        <span id="tutorial-hand-placement-eyebrow" class="tutorial-eyebrow">${initialCopy.handPlacement.eyebrow}</span>
+        <h1 id="tutorial-hand-placement-title">${initialCopy.handPlacement.title}</h1>
+        <p id="tutorial-hand-placement-body">${initialCopy.handPlacement.body}</p>
+        <div class="tutorial-hand-placement__instruction">
+          <strong id="tutorial-hand-placement-keyboard-label">${initialCopy.handPlacement.keyboardLabel}</strong>
+          <p id="tutorial-hand-placement-keyboard-instructions">${initialCopy.handPlacement.keyboardInstructions}</p>
+        </div>
+        <div class="tutorial-hand-placement__instruction">
+          <strong id="tutorial-hand-placement-mouse-label">${initialCopy.handPlacement.mouseLabel}</strong>
+          <p id="tutorial-hand-placement-mouse-instructions">${initialCopy.handPlacement.mouseInstructions}</p>
+        </div>
+        <button id="tutorial-hand-placement-ok" class="tutorial-primary tutorial-hand-placement__ok" type="button">${initialCopy.handPlacement.ok}</button>
+      </div>
+    </div>
+  </section>
   <header class="tutorial-header">
     <a class="tutorial-brand" href="${homeUrl}" aria-label="${initialCopy.brandLabel}"><span class="tutorial-brand__mark">✳</span><span><span id="tutorial-brand-name">${initialCopy.brandName}</span><small>${initialCopy.brandCaption}</small></span></a>
     <div class="tutorial-header__title"><span>${initialCopy.headerEyebrow}</span><strong>${initialCopy.headerTitle}</strong></div>
-    <div class="tutorial-header__controls"><div id="tutorial-language"></div><div class="tutorial-progress" aria-label="${initialCopy.progressLabel}"><span id="tutorial-step-count">01 / 07</span><div class="tutorial-progress__track"><span id="tutorial-progress-fill"></span></div></div></div>
+    <div class="tutorial-header__controls"><div id="tutorial-language"></div><div class="tutorial-progress" aria-label="${initialCopy.progressLabel}"><span id="tutorial-step-count">01 / 09</span><div class="tutorial-progress__track"><span id="tutorial-progress-fill"></span></div></div></div>
   </header>
 
   <section class="tutorial-card" aria-live="polite" aria-atomic="true">
@@ -69,7 +92,16 @@ app.innerHTML = `<main class="tutorial-shell" aria-label="${initialCopy.shellLab
 const orientationTip = createOrientationTip(app, initialCopy.orientation, 'tutorial-orientation-tip');
 
 const world = document.querySelector<HTMLElement>('#tutorial-world')!;
-const canvasHost = world;
+const handPlacement = document.querySelector<HTMLElement>('#tutorial-hand-placement')!;
+const handPlacementImage = document.querySelector<HTMLImageElement>('.tutorial-hand-placement__image')!;
+const handPlacementEyebrow = document.querySelector<HTMLElement>('#tutorial-hand-placement-eyebrow')!;
+const handPlacementTitle = document.querySelector<HTMLElement>('#tutorial-hand-placement-title')!;
+const handPlacementBody = document.querySelector<HTMLElement>('#tutorial-hand-placement-body')!;
+const handPlacementKeyboardLabel = document.querySelector<HTMLElement>('#tutorial-hand-placement-keyboard-label')!;
+const handPlacementKeyboardInstructions = document.querySelector<HTMLElement>('#tutorial-hand-placement-keyboard-instructions')!;
+const handPlacementMouseLabel = document.querySelector<HTMLElement>('#tutorial-hand-placement-mouse-label')!;
+const handPlacementMouseInstructions = document.querySelector<HTMLElement>('#tutorial-hand-placement-mouse-instructions')!;
+const handPlacementOk = document.querySelector<HTMLButtonElement>('#tutorial-hand-placement-ok')!;
 const tutorialCard = document.querySelector<HTMLElement>('.tutorial-card')!;
 const title = document.querySelector<HTMLElement>('#tutorial-title')!;
 const eyebrow = document.querySelector<HTMLElement>('#tutorial-eyebrow')!;
@@ -123,6 +155,11 @@ renderer.toneMappingExposure = .92;
 renderer.domElement.setAttribute('tabindex', '0');
 renderer.domElement.setAttribute('aria-label', initialCopy.canvasLabel);
 world.append(renderer.domElement);
+const cssRenderer = new CSS3DRenderer();
+cssRenderer.setSize(innerWidth, innerHeight);
+cssRenderer.domElement.className = 'tutorial-spatial-dom';
+world.append(cssRenderer.domElement);
+const domScene = new THREE.Scene();
 languageControl.addEventListener('click', event => {
   if (!(event.target instanceof Element) || !event.target.closest('[data-language]')) return;
   window.setTimeout(() => renderer.domElement.focus(), 0);
@@ -149,14 +186,7 @@ const addBox = (group: THREE.Group, size: [number, number, number], position: [n
 const room = new THREE.Group();
 room.name = 'tutorial-bank-space';
 const floorMaterial = new THREE.MeshStandardMaterial({ color: '#cbbd9f', roughness: .9 });
-const wallMaterial = new THREE.MeshStandardMaterial({ color: '#eee5d1', roughness: .88 });
-const trimMaterial = new THREE.MeshStandardMaterial({ color: '#59766a', roughness: .64 });
 addBox(room, [58, .45, 40], [roomCenter.x, -.23, roomCenter.z], floorMaterial);
-addBox(room, [58, 12, .38], [roomCenter.x, 5.8, -20], wallMaterial);
-addBox(room, [58, 12, .38], [roomCenter.x, 5.8, 20], wallMaterial);
-addBox(room, [.38, 12, 40], [-52, 5.8, roomCenter.z], wallMaterial);
-addBox(room, [.38, 12, 40], [6, 5.8, roomCenter.z], wallMaterial);
-addBox(room, [58, 1.5, .5], [roomCenter.x, 8.7, -19.7], trimMaterial);
 const floorGrid = new THREE.GridHelper(58, 29, '#9d8f78', '#c0b295');
 floorGrid.position.set(roomCenter.x, .012, roomCenter.z);
 (floorGrid.material as THREE.Material).transparent = true;
@@ -173,16 +203,24 @@ Object.assign(sunLight.shadow.camera, { left: -34, right: 34, top: 30, bottom: -
 sunLight.shadow.bias = -.001;
 scene.add(ambient, sunLight, sunLight.target);
 
-const sun = new THREE.Mesh(new THREE.SphereGeometry(1.15, 32, 20), new THREE.MeshStandardMaterial({ color: '#ffd56e', emissive: '#f2a72f', emissiveIntensity: .75, roughness: .42, metalness: .02 }));
-sun.name = 'tutorial-sun';
-sun.position.set(-23, 7.4, 0);
-sun.castShadow = true;
-scene.add(sun);
-
 const player = new Player(false, []);
 player.model.position.set(roomCenter.x, 0, roomCenter.z + 1);
 scene.add(player.model);
 sunLight.target = player.model;
+
+const rocketPosition = new THREE.Vector3(roomCenter.x, 0, roomCenter.z - 11);
+const rocket = createLandmark('rocket');
+rocket.name = 'tutorial-rocket';
+rocket.position.copy(rocketPosition);
+rocket.scale.setScalar(.82);
+scene.add(rocket);
+
+const guidePosition = new THREE.Vector3(roomCenter.x + 11, 0, roomCenter.z + 1);
+const guide = createCharacter(true);
+guide.name = 'tutorial-guide';
+guide.position.copy(guidePosition);
+guide.rotation.y = Math.PI;
+scene.add(guide);
 
 const camera = new THREE.PerspectiveCamera(config.camera.fov, innerWidth / innerHeight, config.camera.near, config.camera.far);
 const input = new Input(renderer.domElement, stick, () => renderer.domElement.focus());
@@ -236,12 +274,39 @@ let currentStep = 0;
 let previous = performance.now();
 let time = 0;
 let completionJumpPending = false;
+let handPlacementOpen = true;
 let noticeTimeout: ReturnType<typeof setTimeout> | undefined;
 const viewDirection = new THREE.Vector3();
 const projectedBall = new THREE.Vector3();
+let interactionPresence = { modelNear: false, guideNear: false };
+
+const interactionPanels = new TutorialInteractionPanels(domScene, {
+  onModelClick: () => {
+    feedback.textContent = getTutorialCopy(getLanguage()).interactions.model.clicked;
+  },
+  onModelContinue: () => advanceStep(),
+  onGuideMessage: () => {
+    feedback.textContent = getTutorialCopy(getLanguage()).feedback.guideSuccess;
+  },
+  onGuideContinue: () => advanceStep(),
+});
+interactionPanels.setCopy(initialCopy.interactions);
+
+handPlacementOk.addEventListener('click', () => {
+  handPlacementOpen = false;
+  handPlacement.hidden = true;
+  handPlacement.setAttribute('aria-hidden', 'true');
+  input.clear();
+  renderer.domElement.focus();
+});
+window.requestAnimationFrame(() => handPlacementOk.focus({ preventScroll: true }));
 
 function currentTutorialStep() {
   return tutorialSteps[currentStep];
+}
+function currentInteractionStep(): TutorialInteractionStep {
+  const step = currentTutorialStep();
+  return step?.kind === 'model' || step?.kind === 'guide' ? step.kind : null;
 }
 function showNotice(message: string) {
   notice.textContent = message;
@@ -275,6 +340,16 @@ function renderLanguage() {
   runButton.textContent = strings.touchRunText;
   jumpButton.setAttribute('aria-label', strings.touchJumpLabel);
   jumpButton.textContent = strings.touchJumpLabel.toUpperCase();
+  handPlacementEyebrow.textContent = strings.handPlacement.eyebrow;
+  handPlacementTitle.textContent = strings.handPlacement.title;
+  handPlacementBody.textContent = strings.handPlacement.body;
+  handPlacementKeyboardLabel.textContent = strings.handPlacement.keyboardLabel;
+  handPlacementKeyboardInstructions.textContent = strings.handPlacement.keyboardInstructions;
+  handPlacementMouseLabel.textContent = strings.handPlacement.mouseLabel;
+  handPlacementMouseInstructions.textContent = strings.handPlacement.mouseInstructions;
+  handPlacementImage.alt = strings.handPlacement.imageAlt;
+  handPlacementOk.textContent = strings.handPlacement.ok;
+  interactionPanels.setCopy(strings.interactions);
   fingerGuide.setAttribute('aria-label', strings.fingerGuide.diagramLabel);
   fingerEyebrow.textContent = strings.fingerGuide.eyebrow;
   fingerTitle.textContent = strings.fingerGuide.title;
@@ -311,9 +386,11 @@ function renderStage() {
   const step = currentTutorialStep();
   const strings = getTutorialCopy(getLanguage());
   renderRoute();
+  interactionPanels.setStep(currentInteractionStep());
   if (!step) return;
   const index = currentStep + 1;
   const isCamera = step.id === 'camera';
+  const isInteraction = step.kind === 'model' || step.kind === 'guide';
   stepCount.textContent = `${String(index).padStart(2, '0')} / ${String(tutorialSteps.length).padStart(2, '0')}`;
   progressFill.style.width = `${(currentStep / tutorialSteps.length) * 100}%`;
   const stepCopy = strings.steps[step.id];
@@ -321,14 +398,14 @@ function renderStage() {
   const touchDevice = matchMedia('(pointer: coarse)').matches;
   title.textContent = touchDevice ? stepCopy.touchTitle : stepCopy.title;
   copy.textContent = touchDevice ? stepCopy.touchBody : stepCopy.body;
-  keyPrompt.hidden = touchDevice;
+  keyPrompt.hidden = touchDevice || isInteraction;
   keyPrompt.innerHTML = isCamera ? `<span class="drag-key">↔</span><span>${strings.promptDrag}</span>` : `<kbd>${stepCopy.keyLabel}</kbd><span>${strings.promptTurn}</span>`;
   keyPrompt.classList.toggle('is-camera', isCamera);
   focusProgress.hidden = !isCamera;
   cameraHint.hidden = !isCamera;
   for (const ball of focusBalls) ball.mesh.visible = isCamera;
   if (isCamera && !focusBalls.some(ball => ball.mesh.visible)) placeFocusBalls();
-  setActiveFinger(isCamera ? undefined : step.keyLabel.toLowerCase());
+  setActiveFinger(isCamera || isInteraction ? undefined : step.keyLabel.toLowerCase());
   feedback.textContent = '';
   tutorialCard.dataset.stage = step.id;
 }
@@ -367,6 +444,7 @@ function advanceStep() {
 
 function registerKey(event: KeyboardEvent) {
   if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (handPlacementOpen) return;
   const step = currentTutorialStep();
   if (!step || step.kind !== 'key') return;
   if (keyMatchesStep(step, event.code)) {
@@ -446,20 +524,20 @@ function frame(now: number) {
   const dt = Math.min((now - previous) / 1000, config.performance.maxDelta);
   previous = now;
   time += dt;
-  updateTouchMovement();
-  if (!isTutorialComplete(currentStep) || completionJumpPending || !player.grounded) {
+  if (!handPlacementOpen) updateTouchMovement();
+  if (!handPlacementOpen && (!isTutorialComplete(currentStep) || completionJumpPending || !player.grounded)) {
     player.update(input, dt, time);
     if (completionJumpPending && !player.grounded) completionJumpPending = false;
   }
   updateCamera(dt);
   sunLight.target.position.copy(player.model.position);
-  updateFocus();
+  if (!handPlacementOpen) updateFocus();
+  interactionPresence = interactionPanels.update(currentInteractionStep(), player.model.position, rocketPosition, guidePosition, camera);
   if (!config.animation.reducedMotion) {
-    sun.rotation.y += dt * .08;
-    sun.position.y = 7.4 + Math.sin(time * .45) * .12;
     for (const ball of focusBalls) ball.mesh.position.y = 2.35 + Math.sin(time * 1.4 + focusDirections.findIndex(direction => direction.id === ball.id)) * .08;
   }
   renderer.render(scene, camera);
+  cssRenderer.render(domScene, camera);
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
@@ -469,6 +547,7 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setPixelRatio(Math.min(devicePixelRatio, isSmallViewport() ? config.performance.mobileDpr : config.performance.maxDpr));
   renderer.setSize(innerWidth, innerHeight);
+  cssRenderer.setSize(innerWidth, innerHeight);
 });
 renderer.domElement.addEventListener('webglcontextlost', event => {
   event.preventDefault();
@@ -480,6 +559,8 @@ Object.defineProperty(window, 'tutorialDebug', { get: () => ({
   stepIndex: currentStep,
   complete: isTutorialComplete(currentStep),
   focusedBalls: focusBalls.filter(ball => ball.focused).map(ball => ball.id),
+  sceneObjects: scene.children.map(object => object.name).filter(Boolean),
+  interaction: { step: currentInteractionStep(), ...interactionPresence },
   player: { x: player.model.position.x, y: player.model.position.y, z: player.model.position.z, grounded: player.grounded },
   camera: { yaw: input.yaw, pitch: input.pitch },
 }) });

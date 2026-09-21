@@ -3,7 +3,7 @@ import { isInFrontalCone, isTutorialComplete, joystickMatchesStep, keyMatchesSte
 
 describe('tutorial progression', () => {
   it('keeps the hands-on sequence in the requested order', () => {
-    expect(tutorialSteps.map(step => step.id)).toEqual(['forward', 'backward', 'left', 'right', 'camera', 'run', 'jump']);
+    expect(tutorialSteps.map(step => step.id)).toEqual(['forward', 'backward', 'left', 'right', 'camera', 'run', 'jump', 'model', 'guide']);
     expect(tutorialSteps.map(step => step.title)).toEqual([
       'Press W to move forward',
       'Press S to move backwards',
@@ -12,6 +12,8 @@ describe('tutorial progression', () => {
       'Drag to move the camera',
       'Hold Shift to run',
       'Press Space to jump',
+      'Open a 3D model panel',
+      'Send a message to your guide',
     ]);
   });
 

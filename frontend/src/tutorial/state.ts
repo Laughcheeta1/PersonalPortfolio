@@ -1,4 +1,4 @@
-export type TutorialStepKind = 'key' | 'look';
+export type TutorialStepKind = 'key' | 'look' | 'model' | 'guide';
 
 export const tutorialSteps = [
   { id: 'forward', kind: 'key', code: 'KeyW', keyLabel: 'W', title: 'Press W to move forward' },
@@ -8,6 +8,8 @@ export const tutorialSteps = [
   { id: 'camera', kind: 'look', keyLabel: 'DRAG', title: 'Drag to move the camera' },
   { id: 'run', kind: 'key', code: 'Shift', keyLabel: 'shift', title: 'Hold Shift to run' },
   { id: 'jump', kind: 'key', code: 'Space', keyLabel: 'space', title: 'Press Space to jump' },
+  { id: 'model', kind: 'model', keyLabel: '', title: 'Open a 3D model panel' },
+  { id: 'guide', kind: 'guide', keyLabel: '', title: 'Send a message to your guide' },
 ] as const satisfies readonly {
   id: string;
   kind: TutorialStepKind;
