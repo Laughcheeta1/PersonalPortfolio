@@ -27,7 +27,8 @@ select{font:inherit;color:inherit}#language{max-width:100px;border:1px solid #ff
 @media(pointer:coarse) and (orientation:portrait) and (max-width:640px){.map-card{transform:scale(1.25)}#jump,#run{bottom:calc(190px + env(safe-area-inset-bottom))}#notice{bottom:calc(270px + env(safe-area-inset-bottom))}dialog{max-height:calc(100dvh - 32px);overflow:auto;padding:28px 22px}.destination-list{max-height:calc(100dvh - 220px)}}
 
 @media(pointer:coarse){
-  html,body{touch-action:manipulation}
   .map-card,.touch-hint{display:none}
   .world-panel,.chat-anchor{-webkit-overflow-scrolling:touch}
 }
+
+html,body,body *{touch-action:manipulation}
